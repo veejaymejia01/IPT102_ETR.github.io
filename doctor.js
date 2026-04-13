@@ -1,4 +1,4 @@
-const API = 'http://localhost:3000/api';
+const API = 'https://etr-backend.onrender.com';
 const token = localStorage.getItem('healthcare_token') || '';
 const currentUser = JSON.parse(localStorage.getItem('healthcare_user') || 'null');
 
