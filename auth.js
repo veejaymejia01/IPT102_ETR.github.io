@@ -1,4 +1,4 @@
-const API = 'http://localhost:3000/api';
+const API = 'https://etr-backend.onrender.com';
 
 async function apiFetch(url, options = {}) {
   const response = await fetch(API + url, {
