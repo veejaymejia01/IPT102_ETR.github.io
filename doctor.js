@@ -7,7 +7,7 @@ let appointments = [];
 let selectedPatientId = null;
 
 if (!currentUser || currentUser.role !== 'doctor') {
-  window.location.href = 'login.html';
+  window.location.href = 'index.html';
 }
 
 function el(id) { return document.getElementById(id); }
