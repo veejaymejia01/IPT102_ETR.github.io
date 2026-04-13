@@ -19,7 +19,7 @@ function showSection(id) {
 function logout() {
   localStorage.removeItem('healthcare_token');
   localStorage.removeItem('healthcare_user');
-  window.location.href = 'login.html';
+  window.location.href = 'index.html';
 }
 
 async function apiFetch(url, options = {}) {
