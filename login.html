@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Healthcare Portal Login</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="loginScreen">
+    <div class="login-card">
+      <h2>Healthcare Portal Login</h2>
+      <p class="muted">Sign in as Admin or Doctor.</p>
+      <input id="loginEmail" type="email" value="admin@hospital.com" placeholder="Email" />
+      <input id="loginPassword" type="password" value="admin123" placeholder="Password" />
+      <select id="loginRole">
+        <option value="admin">Admin</option>
+        <option value="doctor">Doctor</option>
+      </select>
+      <button class="action" onclick="login()">Sign In</button>
+      <div id="loginError" class="error"></div>
+    </div>
+  </div>
+  <script src="auth.js"></script>
+</body>
+</html>

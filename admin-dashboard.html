@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>Healthcare Portal</h1>
+    <p>Admin Dashboard</p>
+  </header>
+
+  <nav>
+    <button onclick="showSection('dashboard')">Dashboard</button>
+    <button onclick="showSection('appointments')">Appointments</button>
+    <button onclick="showSection('patients')">Patients</button>
+    <button onclick="showSection('notifications')">Notifications</button>
+    <button onclick="showSection('billing')">Billing</button>
+  </nav>
+
+  <div class="container">
+    <div class="topbar">
+      <div>
+        <strong id="welcomeText">Welcome</strong>
+        <span class="badge">Admin</span>
+      </div>
+      <button class="action" onclick="logout()">Logout</button>
+    </div>
+
+    <section id="dashboard">
+      <div class="grid">
+        <div class="card"><div class="muted">Total Patients</div><div class="metric" id="patientCount">0</div></div>
+        <div class="card"><div class="muted">Appointments</div><div class="metric" id="appointmentCount">0</div></div>
+        <div class="card"><div class="muted">Invoices</div><div class="metric" id="billCount">0</div></div>
+      </div>
+    </section>
+
+    <section id="appointments" class="hidden">
+      <div class="card">
+        <h2>Appointments</h2>
+        <div class="toolbar">
+          <input id="appointmentPatient" placeholder="Patient name" />
+          <input id="appointmentDate" type="datetime-local" />
+          <button class="action" onclick="addAppointment()">Add Appointment</button>
+        </div>
+        <table>
+          <thead><tr><th>Patient</th><th>Date</th><th>Status</th></tr></thead>
+          <tbody id="appointmentTable"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="patients" class="hidden">
+      <div class="card">
+        <h2>Patients</h2>
+        <div class="toolbar">
+          <input id="patientSearch" placeholder="Search patient" oninput="renderPatients()" />
+          <button class="action" onclick="showSection('addPatientPage')">Add Patient</button>
+        </div>
+        <div id="patientList"></div>
+      </div>
+
+      <div class="card">
+        <h2>Patient Record</h2>
+        <div id="recordDetails" class="list-item muted">Click a patient to view record details.</div>
+        <div class="toolbar">
+          <input id="editPatientName" placeholder="Patient name" />
+          <input id="editPatientPhone" placeholder="Phone" />
+        </div>
+        <div class="toolbar">
+          <input id="editPatientCondition" placeholder="Condition" />
+          <input id="editPatientDiagnosis" placeholder="Diagnosis" />
+          <button class="action" onclick="savePatientRecord()">Save Record</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="addPatientPage" class="hidden">
+      <div class="card">
+        <h2>Add Patient Details</h2>
+        <div class="toolbar">
+          <input id="addName" placeholder="Full Name" />
+          <input id="addPhone" placeholder="Phone" />
+        </div>
+        <div class="toolbar">
+          <input id="addCondition" placeholder="Condition" />
+          <input id="addDiagnosis" placeholder="Diagnosis" />
+        </div>
+        <div class="toolbar">
+          <button class="action" onclick="submitNewPatient()">Save Patient</button>
+          <button class="secondary" onclick="showSection('patients')">Cancel</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="notifications" class="hidden">
+      <div class="card">
+        <h2>Patient Notifications</h2>
+        <div class="toolbar">
+          <select id="notificationPatient"></select>
+        </div>
+        <div class="toolbar">
+          <input id="notificationMessage" placeholder="Message to patient" />
+          <button class="action" onclick="sendNotification()">Send Notification</button>
+        </div>
+        <table>
+          <thead><tr><th>Patient</th><th>Type</th><th>Message</th><th>Status</th></tr></thead>
+          <tbody id="notificationTable"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="billing" class="hidden">
+      <div class="card">
+        <h2>Billing</h2>
+        <div class="toolbar">
+          <select id="billingPatient"></select>
+          <input id="billingInvoice" placeholder="Invoice" />
+          <input id="billingAmount" type="number" placeholder="Amount" />
+          <button class="action" onclick="addBill()">Add Bill</button>
+        </div>
+        <table>
+          <thead><tr><th>Invoice</th><th>Amount</th></tr></thead>
+          <tbody id="billingTable"></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <script src="admin.js"></script>
+</body>
+</html>

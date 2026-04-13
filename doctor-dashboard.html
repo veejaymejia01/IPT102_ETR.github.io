@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Doctor Dashboard</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>Healthcare Portal</h1>
+    <p>Doctor Dashboard</p>
+  </header>
+
+  <nav>
+    <button onclick="showSection('dashboard')">Dashboard</button>
+    <button onclick="showSection('appointments')">Appointments</button>
+    <button onclick="showSection('patients')">Patients</button>
+  </nav>
+
+  <div class="container">
+    <div class="topbar">
+      <div>
+        <strong id="welcomeText">Welcome</strong>
+        <span class="badge">Doctor</span>
+      </div>
+      <button class="action" onclick="logout()">Logout</button>
+    </div>
+
+    <section id="dashboard">
+      <div class="card">
+        <h2>Today's Appointments</h2>
+        <div class="muted">Grouped by time slot</div>
+        <div class="appointment-preview-grid">
+          <div class="card">
+            <h3 style="margin-top:0">Morning</h3>
+            <div id="todayMorningAppointmentList"></div>
+          </div>
+          <div class="card">
+            <h3 style="margin-top:0">Afternoon</h3>
+            <div id="todayAfternoonAppointmentList"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="appointments" class="hidden">
+      <div class="card">
+        <div class="topbar">
+          <div>
+            <h2 style="margin:0">Appointments Overview</h2>
+            <div class="muted">Preview and mark done</div>
+          </div>
+          <input id="appointmentSearch" placeholder="Search appointments" oninput="renderAppointments()" />
+        </div>
+
+        <div class="appointment-preview-grid">
+          <div class="card"><div class="muted">Total</div><div class="metric" id="appointmentTotalMetric">0</div></div>
+          <div class="card"><div class="muted">Today</div><div class="metric" id="appointmentTodayMetric">0</div></div>
+          <div class="card"><div class="muted">Done</div><div class="metric" id="appointmentDoneMetric">0</div></div>
+        </div>
+
+        <div class="appointment-preview-grid">
+          <div class="card">
+            <h3 style="margin-top:0">Morning</h3>
+            <div id="appointmentMorningList"></div>
+          </div>
+          <div class="card">
+            <h3 style="margin-top:0">Afternoon</h3>
+            <div id="appointmentAfternoonList"></div>
+          </div>
+        </div>
+
+        <table>
+          <thead><tr><th>Patient</th><th>Date</th><th>Status</th></tr></thead>
+          <tbody id="appointmentTable"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="patients" class="hidden">
+      <div class="card">
+        <h2>Patients</h2>
+        <div class="toolbar">
+          <input id="patientSearch" placeholder="Search patient" oninput="renderPatients()" />
+        </div>
+        <div id="patientList"></div>
+      </div>
+
+      <div class="card">
+        <h2>Patient Record</h2>
+        <div id="recordDetails" class="list-item muted">Click a patient to view record details.</div>
+        <div class="toolbar">
+          <input id="editPatientName" placeholder="Patient name" />
+          <input id="editPatientPhone" placeholder="Phone" />
+        </div>
+        <div class="toolbar">
+          <input id="editPatientCondition" placeholder="Condition" />
+          <input id="editPatientDiagnosis" placeholder="Diagnosis" />
+          <button class="action" onclick="savePatientRecord()">Save Record</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script src="doctor.js"></script>
+</body>
+</html>
