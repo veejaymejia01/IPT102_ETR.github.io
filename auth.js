@@ -1,5 +1,6 @@
 const API = 'https://etr-backend.onrender.com';
 
+
 async function apiFetch(url, options = {}) {
   const response = await fetch(API + url, {
     ...options,
@@ -24,7 +25,6 @@ async function apiFetch(url, options = {}) {
 async function login() {
   const email = document.getElementById('loginEmail').value.trim();
   const password = document.getElementById('loginPassword').value.trim();
-  const selectedRole = document.getElementById('loginRole').value;
   const errorBox = document.getElementById('loginError');
   errorBox.innerText = '';
 
@@ -41,7 +41,7 @@ async function login() {
 
     const user = {
       email: data.user?.email || email,
-      role: data.user?.role || selectedRole,
+      role: data.user?.role || '',
       name: data.user?.name || 'User'
     };
 
@@ -56,17 +56,34 @@ async function login() {
       errorBox.innerText = 'Unsupported role.';
     }
   } catch (error) {
-    if (
-      (email === 'admin@hospital.com' && password === 'admin123') ||
-      (email === 'doctor@hospital.com' && password === 'doctor123')
-    ) {
-      const role = email.startsWith('admin') ? 'admin' : 'doctor';
+    if (email === 'admin@hospital.com' && password === 'admin123') {
       localStorage.setItem('healthcare_token', 'demo-token');
-      localStorage.setItem('healthcare_user', JSON.stringify({ email, role, name: 'Demo User' }));
-      window.location.href = role === 'admin' ? 'admin-dashboard.html' : 'doctor-dashboard.html';
+      localStorage.setItem(
+        'healthcare_user',
+        JSON.stringify({
+          email,
+          role: 'admin',
+          name: 'Demo Admin'
+        })
+      );
+      window.location.href = 'admin-dashboard.html';
       return;
     }
 
-    errorBox.innerText = 'Login failed.';
+    if (email === 'doctor@hospital.com' && password === 'doctor123') {
+      localStorage.setItem('healthcare_token', 'demo-token');
+      localStorage.setItem(
+        'healthcare_user',
+        JSON.stringify({
+          email,
+          role: 'doctor',
+          name: 'Demo Doctor'
+        })
+      );
+      window.location.href = 'doctor-dashboard.html';
+      return;
+    }
+
+    errorBox.innerText = 'Login failed. Check your backend or credentials.';
   }
 }
