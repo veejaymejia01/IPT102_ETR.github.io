@@ -6,6 +6,11 @@
   <title>Doctor Dashboard</title>
   <link rel="stylesheet" href="style.css" />
 </head>
+  <link
+  href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.css"
+  rel="stylesheet"
+/>
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
 <body>
   <header>
     <h1>Healthcare Portal</h1>
@@ -28,21 +33,54 @@
     </div>
 
     <section id="dashboard">
+  <div class="card">
+    <h2>Today's Appointments</h2>
+    <div class="muted">Only today's schedule is shown here</div>
+    <div class="appointment-preview-grid">
       <div class="card">
-        <h2>Today's Appointments</h2>
-        <div class="muted">Grouped by time slot</div>
-        <div class="appointment-preview-grid">
-          <div class="card">
-            <h3 style="margin-top:0">Morning</h3>
-            <div id="todayMorningAppointmentList"></div>
-          </div>
-          <div class="card">
-            <h3 style="margin-top:0">Afternoon</h3>
-            <div id="todayAfternoonAppointmentList"></div>
-          </div>
+        <h3 style="margin-top:0">Morning</h3>
+        <div id="todayMorningAppointmentList"></div>
+      </div>
+      <div class="card">
+        <h3 style="margin-top:0">Afternoon</h3>
+        <div id="todayAfternoonAppointmentList"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="appointments" class="hidden">
+  <div class="card">
+    <div class="topbar">
+      <div>
+        <h2 style="margin:0">Schedule Calendar</h2>
+        <div class="muted">Click a day to view morning and afternoon appointments</div>
+      </div>
+      <input id="appointmentSearch" placeholder="Search appointments" oninput="renderSelectedDayAppointments()" />
+    </div>
+
+    <div id="calendar"></div>
+
+    <div class="card" style="margin-top:16px">
+      <h3 id="selectedDateTitle">Selected Day Schedule</h3>
+      <div class="appointment-preview-grid">
+        <div class="card">
+          <h3 style="margin-top:0">Morning</h3>
+          <div id="selectedMorningAppointmentList"></div>
+        </div>
+        <div class="card">
+          <h3 style="margin-top:0">Afternoon</h3>
+          <div id="selectedAfternoonAppointmentList"></div>
         </div>
       </div>
-    </section>
+    </div>
+
+    <table>
+      <thead><tr><th>Patient</th><th>Date</th><th>Status</th></tr></thead>
+      <tbody id="appointmentTable"></tbody>
+    </table>
+  </div>
+</section>
 
     <section id="appointments" class="hidden">
       <div class="card">
