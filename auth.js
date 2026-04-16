@@ -1,4 +1,4 @@
-const API = 'https://etr-backend.onrender.com';
+const API = 'https://etr-backend.onrender.com/api';
 
 
 async function apiFetch(url, options = {}) {
