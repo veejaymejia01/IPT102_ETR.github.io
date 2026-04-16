@@ -84,9 +84,6 @@ function getHour(item) {
   return match ? Number(match[1]) : null;
 }
 
-function getAppointmentCountByDate(dateStr) {
-  return appointments.filter((a) => getDatePart(a) === dateStr).length;
-}
 
 function renderSlot(containerId, items, showDoneButton = false) {
   const container = el(containerId);
@@ -206,10 +203,13 @@ function buildCalendarEvents() {
     grouped[date] += 1;
   });
 
-  return Object.keys(grouped).map((date) => ({
-    title: `${grouped[date]} patient${grouped[date] > 1 ? 's' : ''}`,
-    date
-  }));
+  return Object.keys(grouped).map((date) => {
+    const count = grouped[date];
+    return {
+      title: `${count} patient${count > 1 ? 's' : ''}`,
+      date
+    };
+  });
 }
 
 function highlightSelectedDate() {
@@ -218,13 +218,17 @@ function highlightSelectedDate() {
   document.querySelectorAll('.fc-daygrid-day').forEach((day) => {
     day.classList.remove('selected-day');
     day.classList.remove('today-day');
+    day.classList.remove('past-day');
   });
-
-  document.querySelectorAll('.day-count-badge').forEach((badge) => badge.remove());
 
   document.querySelectorAll('.fc-daygrid-day').forEach((day) => {
     const dateStr = day.getAttribute('data-date');
     if (!dateStr) return;
+
+    if (dateStr < today) {
+      day.classList.add('past-day');
+      return;
+    }
 
     if (dateStr === today) {
       day.classList.add('today-day');
@@ -232,17 +236,6 @@ function highlightSelectedDate() {
 
     if (dateStr === selectedDate) {
       day.classList.add('selected-day');
-    }
-
-    const count = getAppointmentCountByDate(dateStr);
-    if (count > 0) {
-      const top = day.querySelector('.fc-daygrid-day-top');
-      if (top && !top.querySelector('.day-count-badge')) {
-        const badge = document.createElement('div');
-        badge.className = 'day-count-badge';
-        badge.innerText = `${count}`;
-        top.appendChild(badge);
-      }
     }
   });
 }
@@ -258,6 +251,12 @@ function initCalendar() {
   calendar = new FullCalendar.Calendar(calendarEl, {
     initialView: 'dayGridMonth',
     height: 'auto',
+    headerToolbar: {
+      left: 'prev,next today',
+      center: 'title',
+      right: 'dayGridMonth'
+    },
+    customButtons: {},
     events: buildCalendarEvents(),
 
     dateClick(info) {
@@ -276,6 +275,15 @@ function initCalendar() {
   });
 
   calendar.render();
+
+  const todayBtn = calendarEl.querySelector('.fc-today-button');
+  if (todayBtn) {
+    todayBtn.addEventListener('click', () => {
+      selectedDate = getTodayDateString();
+      renderSelectedDayAppointments();
+      setTimeout(() => highlightSelectedDate(), 0);
+    });
+  }
 }
 
 function renderPatients() {
