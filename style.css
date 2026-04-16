@@ -219,3 +219,21 @@ th {
 .selected-day a {
   color: white !important;
 }
+
+
+.today-day {
+  background-color: #dbeafe !important;
+  border: 2px solid #1d4ed8 !important;
+  border-radius: 6px;
+}
+
+.day-count-badge {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 2px 6px;
+  font-size: 11px;
+  border-radius: 999px;
+  background: #e5e7eb;
+  color: #374151;
+  font-weight: 700;
+}
