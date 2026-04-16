@@ -66,7 +66,9 @@ function render() {
   el('appointmentCount').innerText = appointments.length;
   el('billCount').innerText = bills.length;
 
-  if (!selectedPatientId && patients.length) selectedPatientId = patients[0].id;
+  if (!selectedPatientId && patients.length) {
+    selectedPatientId = patients[0].id;
+  }
 
   renderAppointments();
   renderPatients();
@@ -171,6 +173,18 @@ async function addAppointment() {
       status: 'Scheduled'
     })
   });
+
+  const patient = patients.find((p) => p.name.toLowerCase() === patientName.toLowerCase());
+  if (patient) {
+    await apiFetch('/notifications/send', {
+      method: 'POST',
+      body: JSON.stringify({
+        patientId: patient.id,
+        patientName: patient.name,
+        message: `Your appointment is confirmed for ${appointmentDate}.`
+      })
+    });
+  }
 
   el('appointmentPatient').value = '';
   el('appointmentDate').value = '';
