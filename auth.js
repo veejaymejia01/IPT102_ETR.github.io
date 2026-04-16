@@ -1,6 +1,5 @@
 const API = 'https://etr-backend.onrender.com/api';
 
-
 async function apiFetch(url, options = {}) {
   const response = await fetch(API + url, {
     ...options,
