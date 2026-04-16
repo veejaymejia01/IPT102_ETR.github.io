@@ -129,6 +129,7 @@ function renderSelectedDayAppointments() {
     const patient = String(a.patientName || '').toLowerCase();
     const date = String(a.appointmentDate || '').toLowerCase();
     const status = String(a.status || '').toLowerCase();
+
     return sameDay && (
       patient.includes(search) ||
       date.includes(search) ||
@@ -147,17 +148,44 @@ function renderSelectedDayAppointments() {
   });
 
   if (el('selectedDateTitle')) {
-    el('selectedDateTitle').innerText = `Schedule for ${selectedDate}`;
+    el('selectedDateTitle').innerText = `Patient Schedule for ${selectedDate}`;
   }
 
-  renderSlot('selectedMorningAppointmentList', morning, true);
-  renderSlot('selectedAfternoonAppointmentList', afternoon, true);
+  renderPatientScheduleList('selectedMorningAppointmentList', morning);
+  renderPatientScheduleList('selectedAfternoonAppointmentList', afternoon);
 
   if (el('appointmentTable')) {
-    el('appointmentTable').innerHTML = selectedAppointments.map((a) =>
-      `<tr><td>${a.patientName}</td><td>${a.appointmentDate}</td><td>${a.status}</td></tr>`
-    ).join('');
+    el('appointmentTable').innerHTML = selectedAppointments.map((a) => `
+      <tr>
+        <td>${a.patientName}</td>
+        <td>${a.appointmentDate}</td>
+        <td>${a.status}</td>
+      </tr>
+    `).join('');
   }
+}
+
+function renderPatientScheduleList(containerId, items) {
+  const container = el(containerId);
+  if (!container) return;
+
+  if (!items.length) {
+    container.innerHTML = '<div class="muted">No patients scheduled</div>';
+    return;
+  }
+
+  container.innerHTML = items.map((item) => `
+    <div class="list-item">
+      <strong>${item.patientName}</strong>
+      <div class="muted">Time: ${String(item.appointmentDate).split(' ')[1] || item.appointmentDate}</div>
+      <div class="${item.status === 'Done' ? 'badge status-done' : 'badge'}" style="margin-top:8px">
+        ${item.status || 'Scheduled'}
+      </div>
+      ${item.status !== 'Done'
+        ? `<button class="action" style="margin-top:8px" onclick="markAppointmentDone('${item.id}')">Done</button>`
+        : ''}
+    </div>
+  `).join('');
 }
 
 function buildCalendarEvents() {
