@@ -255,6 +255,7 @@ function render() {
   renderRecordDetails();
   initCalendar();
   renderSelectedDayAppointments();
+  setTimeout(() => highlightSelectedDate(), 100);
 }
 
 loadAll().catch(() => {
