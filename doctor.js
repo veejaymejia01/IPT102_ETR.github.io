@@ -66,12 +66,21 @@ function getTodayDateString() {
 }
 
 function getDatePart(item) {
-  return String(item.appointmentDate || '').split(' ')[0];
+  const raw = String(item.appointmentDate || '');
+  if (!raw) return '';
+  return raw.includes('T') ? raw.split('T')[0] : raw.split(' ')[0];
+}
+function getTimePart(item) {
+  const raw = String(item.appointmentDate || '');
+  if (!raw) return '';
+  if (raw.includes('T')) return raw.split('T')[1].slice(0, 5);
+  if (raw.includes(' ')) return raw.split(' ')[1] || '';
+  return raw;
 }
 
 function getHour(item) {
-  const raw = String(item.appointmentDate || '');
-  const match = raw.match(/(\d{2}):(\d{2})/);
+  const time = getTimePart(item);
+  const match = time.match(/(\d{2}):(\d{2})/);
   return match ? Number(match[1]) : null;
 }
 
@@ -153,12 +162,13 @@ function renderSelectedDayAppointments() {
   renderPatientScheduleList('selectedMorningAppointmentList', morning);
   renderPatientScheduleList('selectedAfternoonAppointmentList', afternoon);
 
-  if (el('appointmentTable')) {
-    el('appointmentTable').innerHTML = selectedAppointments.map((a) => `
+  const table = el('appointmentTable');
+  if (table) {
+    table.innerHTML = selectedAppointments.map((a) => `
       <tr>
         <td>${a.patientName}</td>
-        <td>${a.appointmentDate}</td>
-        <td>${a.status}</td>
+        <td>${getTimePart(a)}</td>
+        <td>${a.status || 'Scheduled'}</td>
       </tr>
     `).join('');
   }
@@ -176,7 +186,7 @@ function renderPatientScheduleList(containerId, items) {
   container.innerHTML = items.map((item) => `
     <div class="list-item">
       <strong>${item.patientName}</strong>
-      <div class="muted">Time: ${String(item.appointmentDate).split(' ')[1] || item.appointmentDate}</div>
+      <div class="muted">Time: ${getTimePart(item)}</div>
       <div class="${item.status === 'Done' ? 'badge status-done' : 'badge'}" style="margin-top:8px">
         ${item.status || 'Scheduled'}
       </div>
