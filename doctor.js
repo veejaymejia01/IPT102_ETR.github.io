@@ -62,14 +62,22 @@ async function loadAll() {
   render();
 }
 
+function getTodayDateString() {
+  return new Date().toISOString().split('T')[0];
+}
+
+function getDatePart(item) {
+  return String(item.appointmentDate || '').split(' ')[0];
+}
+
 function getHour(item) {
   const raw = String(item.appointmentDate || '');
   const match = raw.match(/(\d{2}):(\d{2})/);
   return match ? Number(match[1]) : null;
 }
 
-function getDatePart(item) {
-  return String(item.appointmentDate || '').split(' ')[0];
+function getAppointmentCountByDate(dateStr) {
+  return appointments.filter((a) => getDatePart(a) === dateStr).length;
 }
 
 function renderSlot(containerId, items, showDoneButton = false) {
@@ -96,7 +104,7 @@ function renderSlot(containerId, items, showDoneButton = false) {
 }
 
 function renderTodayAppointments() {
-  const today = new Date().toISOString().split('T')[0];
+  const today = getTodayDateString();
   const todayAppointments = appointments.filter((a) => getDatePart(a) === today);
 
   const morning = todayAppointments.filter((a) => {
@@ -114,15 +122,18 @@ function renderTodayAppointments() {
 }
 
 function renderSelectedDayAppointments() {
-  const search = (el('appointmentSearch').value || '').toLowerCase();
+  const search = (el('appointmentSearch')?.value || '').toLowerCase();
 
   const selectedAppointments = appointments.filter((a) => {
     const sameDay = getDatePart(a) === selectedDate;
     const patient = String(a.patientName || '').toLowerCase();
     const date = String(a.appointmentDate || '').toLowerCase();
     const status = String(a.status || '').toLowerCase();
-    const matchesSearch = patient.includes(search) || date.includes(search) || status.includes(search);
-    return sameDay && matchesSearch;
+    return sameDay && (
+      patient.includes(search) ||
+      date.includes(search) ||
+      status.includes(search)
+    );
   });
 
   const morning = selectedAppointments.filter((a) => {
@@ -135,154 +146,26 @@ function renderSelectedDayAppointments() {
     return hour !== null && hour >= 12;
   });
 
-  el('selectedDateTitle').innerText = `Schedule for ${selectedDate}`;
+  if (el('selectedDateTitle')) {
+    el('selectedDateTitle').innerText = `Schedule for ${selectedDate}`;
+  }
+
   renderSlot('selectedMorningAppointmentList', morning, true);
   renderSlot('selectedAfternoonAppointmentList', afternoon, true);
 
-  el('appointmentTable').innerHTML = selectedAppointments.map((a) =>
-    `<tr><td>${a.patientName}</td><td>${a.appointmentDate}</td><td>${a.status}</td></tr>`
-  ).join('');
+  if (el('appointmentTable')) {
+    el('appointmentTable').innerHTML = selectedAppointments.map((a) =>
+      `<tr><td>${a.patientName}</td><td>${a.appointmentDate}</td><td>${a.status}</td></tr>`
+    ).join('');
+  }
 }
 
 function buildCalendarEvents() {
   return appointments.map((a) => ({
     id: a.id,
-    title: `${a.patientName} (${a.status || 'Scheduled'})`,
+    title: `${a.patientName}`,
     date: getDatePart(a)
   }));
-}
-
-function initCalendar() {
-  const calendarEl = el('calendar');
-  if (!calendarEl) return;
-
-  if (calendar) {
-    calendar.destroy();
-  }
-
-  calendar = new FullCalendar.Calendar(calendarEl, {
-    initialView: 'dayGridMonth',
-    height: 'auto',
-    events: buildCalendarEvents(),
-
-    dateClick(info) {
-      selectedDate = info.dateStr;
-      renderSelectedDayAppointments();
-      setTimeout(() => highlightSelectedDate(), 0);
-    },
-
-    datesSet() {
-      setTimeout(() => highlightSelectedDate(), 0);
-    },
-
-    dayCellDidMount() {
-      setTimeout(() => highlightSelectedDate(), 0);
-    }
-  });
-
-  calendar.render();
-}
-}
-
-function renderPatients() {
-  const search = (el('patientSearch').value || '').toLowerCase();
-  const filtered = patients.filter((p) =>
-    p.name.toLowerCase().includes(search) || (p.condition || '').toLowerCase().includes(search)
-  );
-
-  el('patientList').innerHTML = filtered.map((p) => `
-    <button class="list-item patient-button" onclick="openPatientRecord('${p.id}')">
-      <strong>${p.name}</strong>
-      <div class="muted">${p.condition || 'General'}</div>
-    </button>
-  `).join('');
-}
-
-function openPatientRecord(id) {
-  selectedPatientId = id;
-  showSection('patients');
-  renderRecordDetails();
-}
-
-function renderRecordDetails() {
-  const patient = patients.find((p) => p.id === selectedPatientId) || patients[0];
-  if (!patient) return;
-
-  el('recordDetails').innerHTML = `
-    <strong>${patient.name}</strong>
-    <div class="muted">ID: ${patient.id}</div>
-    <div class="muted">Phone: ${patient.phone || 'N/A'}</div>
-    <div class="muted">Condition: ${patient.condition || 'General'}</div>
-    <div class="muted">Diagnosis: ${patient.diagnosis || 'Pending assessment'}</div>
-  `;
-
-  el('editPatientName').value = patient.name || '';
-  el('editPatientPhone').value = patient.phone || '';
-  el('editPatientCondition').value = patient.condition || '';
-  el('editPatientDiagnosis').value = patient.diagnosis || '';
-}
-
-async function savePatientRecord() {
-  const patient = patients.find((p) => p.id === selectedPatientId);
-  if (!patient) return;
-
-  const updated = {
-    ...patient,
-    name: el('editPatientName').value.trim() || patient.name,
-    phone: el('editPatientPhone').value.trim() || patient.phone,
-    condition: el('editPatientCondition').value.trim() || patient.condition,
-    diagnosis: el('editPatientDiagnosis').value.trim() || patient.diagnosis
-  };
-
-  await apiFetch(`/patients/${patient.id}`, {
-    method: 'PATCH',
-    body: JSON.stringify(updated)
-  });
-
-  await loadAll();
-}
-
-async function markAppointmentDone(id) {
-  await apiFetch(`/appointments/${id}/status`, {
-    method: 'PATCH',
-    body: JSON.stringify({ status: 'Done' })
-  });
-
-  await loadAll();
-}
-
-function render() {
-  el('welcomeText').innerText = `Welcome, ${currentUser.email}`;
-  renderTodayAppointments();
-  renderPatients();
-  renderRecordDetails();
-  initCalendar();
-  renderSelectedDayAppointments();
-  setTimeout(() => highlightSelectedDate(), 100);
-}
-
-loadAll().catch(() => {
-  alert('Failed to load database data. Check backend connection.');
-});
-
-function highlightSelectedDate() {
-  // remove old highlight
-  document.querySelectorAll('.fc-daygrid-day').forEach(day => {
-    day.classList.remove('selected-day');
-  });
-
-  // add highlight to selected date
-  const target = document.querySelector(`[data-date="${selectedDate}"]`);
-  if (target) {
-    target.classList.add('selected-day');
-  }
-}
-function getTodayDateString() {
-  return new Date().toISOString().split('T')[0];
-}
-
-function getAppointmentCountByDate(dateStr) {
-  return appointments.filter((a) => getDatePart(a) === dateStr).length;
 }
 
 function highlightSelectedDate() {
@@ -313,9 +196,130 @@ function highlightSelectedDate() {
       if (top && !top.querySelector('.day-count-badge')) {
         const badge = document.createElement('div');
         badge.className = 'day-count-badge';
-        badge.innerText = `${count} appt${count > 1 ? 's' : ''}`;
+        badge.innerText = `${count}`;
         top.appendChild(badge);
       }
     }
   });
 }
+
+function initCalendar() {
+  const calendarEl = el('calendar');
+  if (!calendarEl || typeof FullCalendar === 'undefined') return;
+
+  if (calendar) {
+    calendar.destroy();
+  }
+
+  calendar = new FullCalendar.Calendar(calendarEl, {
+    initialView: 'dayGridMonth',
+    height: 'auto',
+    events: buildCalendarEvents(),
+
+    dateClick(info) {
+      selectedDate = info.dateStr;
+      renderSelectedDayAppointments();
+      setTimeout(() => highlightSelectedDate(), 0);
+    },
+
+    datesSet() {
+      setTimeout(() => highlightSelectedDate(), 0);
+    },
+
+    dayCellDidMount() {
+      setTimeout(() => highlightSelectedDate(), 0);
+    }
+  });
+
+  calendar.render();
+}
+
+function renderPatients() {
+  const search = (el('patientSearch')?.value || '').toLowerCase();
+  const filtered = patients.filter((p) =>
+    p.name.toLowerCase().includes(search) ||
+    (p.condition || '').toLowerCase().includes(search)
+  );
+
+  if (el('patientList')) {
+    el('patientList').innerHTML = filtered.map((p) => `
+      <button class="list-item patient-button" onclick="openPatientRecord('${p.id}')">
+        <strong>${p.name}</strong>
+        <div class="muted">${p.condition || 'General'}</div>
+      </button>
+    `).join('');
+  }
+}
+
+function openPatientRecord(id) {
+  selectedPatientId = id;
+  showSection('patients');
+  renderRecordDetails();
+}
+
+function renderRecordDetails() {
+  const patient = patients.find((p) => p.id === selectedPatientId) || patients[0];
+  if (!patient) return;
+
+  if (el('recordDetails')) {
+    el('recordDetails').innerHTML = `
+      <strong>${patient.name}</strong>
+      <div class="muted">ID: ${patient.id}</div>
+      <div class="muted">Phone: ${patient.phone || 'N/A'}</div>
+      <div class="muted">Condition: ${patient.condition || 'General'}</div>
+      <div class="muted">Diagnosis: ${patient.diagnosis || 'Pending assessment'}</div>
+    `;
+  }
+
+  if (el('editPatientName')) el('editPatientName').value = patient.name || '';
+  if (el('editPatientPhone')) el('editPatientPhone').value = patient.phone || '';
+  if (el('editPatientCondition')) el('editPatientCondition').value = patient.condition || '';
+  if (el('editPatientDiagnosis')) el('editPatientDiagnosis').value = patient.diagnosis || '';
+}
+
+async function savePatientRecord() {
+  const patient = patients.find((p) => p.id === selectedPatientId);
+  if (!patient) return;
+
+  const updated = {
+    ...patient,
+    name: el('editPatientName')?.value.trim() || patient.name,
+    phone: el('editPatientPhone')?.value.trim() || patient.phone,
+    condition: el('editPatientCondition')?.value.trim() || patient.condition,
+    diagnosis: el('editPatientDiagnosis')?.value.trim() || patient.diagnosis
+  };
+
+  await apiFetch(`/patients/${patient.id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(updated)
+  });
+
+  await loadAll();
+}
+
+async function markAppointmentDone(id) {
+  await apiFetch(`/appointments/${id}/status`, {
+    method: 'PATCH',
+    body: JSON.stringify({ status: 'Done' })
+  });
+
+  await loadAll();
+}
+
+function render() {
+  if (el('welcomeText')) {
+    el('welcomeText').innerText = `Welcome, ${currentUser.email}`;
+  }
+
+  renderTodayAppointments();
+  renderPatients();
+  renderRecordDetails();
+  initCalendar();
+  renderSelectedDayAppointments();
+  setTimeout(() => highlightSelectedDate(), 100);
+}
+
+loadAll().catch((error) => {
+  console.error(error);
+  alert('Failed to load doctor data. Check backend connection or doctor.js errors.');
+});
