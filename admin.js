@@ -90,11 +90,16 @@ function renderPatients() {
   );
 
   el('patientList').innerHTML = filtered.map((p) => `
-    <button class="list-item patient-button" onclick="openPatientRecord('${p.id}')">
+  <div class="list-item">
+    <div onclick="openPatientRecord('${p.id}')" style="cursor:pointer">
       <strong>${p.name}</strong>
       <div class="muted">${p.condition || 'General'}</div>
+    </div>
+    <button class="secondary" style="margin-top:8px" onclick="deletePatient('${p.id}')">
+      Delete
     </button>
-  `).join('');
+  </div>
+`).join('');
 }
 
 function renderRecordDetails() {
@@ -264,3 +269,18 @@ async function sendNotification() {
 loadAll().catch(() => {
   alert('Failed to load database data. Check backend connection.');
 });
+
+async function deletePatient(id) {
+  const confirmDelete = confirm('Are you sure you want to delete this patient?');
+  if (!confirmDelete) return;
+
+  await apiFetch(`/patients/${id}`, {
+    method: 'DELETE'
+  });
+
+  if (selectedPatientId === id) {
+    selectedPatientId = null;
+  }
+
+  await loadAll();
+}
