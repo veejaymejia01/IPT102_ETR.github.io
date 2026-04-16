@@ -161,24 +161,27 @@ function initCalendar() {
   }
 
   calendar = new FullCalendar.Calendar(calendarEl, {
-  initialView: 'dayGridMonth',
-  height: 'auto',
-  events: buildCalendarEvents(),
+    initialView: 'dayGridMonth',
+    height: 'auto',
+    events: buildCalendarEvents(),
 
-  dateClick(info) {
-    selectedDate = info.dateStr;
-    highlightSelectedDate();
-    renderSelectedDayAppointments();
-  },
+    dateClick(info) {
+      selectedDate = info.dateStr;
+      renderSelectedDayAppointments();
+      setTimeout(() => highlightSelectedDate(), 0);
+    },
 
-  dayCellDidMount(info) {
-    if (info.dateStr === selectedDate) {
-      info.el.classList.add('selected-day');
+    datesSet() {
+      setTimeout(() => highlightSelectedDate(), 0);
+    },
+
+    dayCellDidMount() {
+      setTimeout(() => highlightSelectedDate(), 0);
     }
-  }
-});
+  });
 
   calendar.render();
+}
 }
 
 function renderPatients() {
@@ -273,4 +276,46 @@ function highlightSelectedDate() {
   if (target) {
     target.classList.add('selected-day');
   }
+}
+function getTodayDateString() {
+  return new Date().toISOString().split('T')[0];
+}
+
+function getAppointmentCountByDate(dateStr) {
+  return appointments.filter((a) => getDatePart(a) === dateStr).length;
+}
+
+function highlightSelectedDate() {
+  const today = getTodayDateString();
+
+  document.querySelectorAll('.fc-daygrid-day').forEach((day) => {
+    day.classList.remove('selected-day');
+    day.classList.remove('today-day');
+  });
+
+  document.querySelectorAll('.day-count-badge').forEach((badge) => badge.remove());
+
+  document.querySelectorAll('.fc-daygrid-day').forEach((day) => {
+    const dateStr = day.getAttribute('data-date');
+    if (!dateStr) return;
+
+    if (dateStr === today) {
+      day.classList.add('today-day');
+    }
+
+    if (dateStr === selectedDate) {
+      day.classList.add('selected-day');
+    }
+
+    const count = getAppointmentCountByDate(dateStr);
+    if (count > 0) {
+      const top = day.querySelector('.fc-daygrid-day-top');
+      if (top && !top.querySelector('.day-count-badge')) {
+        const badge = document.createElement('div');
+        badge.className = 'day-count-badge';
+        badge.innerText = `${count} appt${count > 1 ? 's' : ''}`;
+        top.appendChild(badge);
+      }
+    }
+  });
 }
