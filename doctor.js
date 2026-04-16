@@ -7,6 +7,8 @@ const currentUser = JSON.parse(localStorage.getItem('healthcare_user') || 'null'
 let patients = [];
 let appointments = [];
 let selectedPatientId = null;
+let selectedDate = new Date().toISOString().split('T')[0];
+let calendar = null;
 
 if (!currentUser || currentUser.role !== 'doctor' || !token) {
   window.location.href = 'index.html';
@@ -20,6 +22,10 @@ function showSection(id) {
   document.querySelectorAll('section').forEach((section) => section.classList.add('hidden'));
   const target = el(id);
   if (target) target.classList.remove('hidden');
+
+  if (id === 'appointments' && calendar) {
+    setTimeout(() => calendar.updateSize(), 50);
+  }
 }
 
 function logout() {
@@ -62,7 +68,11 @@ function getHour(item) {
   return match ? Number(match[1]) : null;
 }
 
-function renderSlot(containerId, items) {
+function getDatePart(item) {
+  return String(item.appointmentDate || '').split(' ')[0];
+}
+
+function renderSlot(containerId, items, showDoneButton = false) {
   const container = el(containerId);
   if (!container) return;
 
@@ -78,14 +88,16 @@ function renderSlot(containerId, items) {
       <div class="${item.status === 'Done' ? 'badge status-done' : 'badge'}" style="margin-top:8px">
         ${item.status || 'Scheduled'}
       </div>
-      ${item.status !== 'Done' ? `<button class="action" style="margin-top:8px" onclick="markAppointmentDone('${item.id}')">Done</button>` : ''}
+      ${showDoneButton && item.status !== 'Done'
+        ? `<button class="action" style="margin-top:8px" onclick="markAppointmentDone('${item.id}')">Done</button>`
+        : ''}
     </div>
   `).join('');
 }
 
 function renderTodayAppointments() {
   const today = new Date().toISOString().split('T')[0];
-  const todayAppointments = appointments.filter((a) => String(a.appointmentDate).includes(today));
+  const todayAppointments = appointments.filter((a) => getDatePart(a) === today);
 
   const morning = todayAppointments.filter((a) => {
     const hour = getHour(a);
@@ -97,50 +109,68 @@ function renderTodayAppointments() {
     return hour !== null && hour >= 12;
   });
 
-  renderSlot('todayMorningAppointmentList', morning);
-  renderSlot('todayAfternoonAppointmentList', afternoon);
+  renderSlot('todayMorningAppointmentList', morning, false);
+  renderSlot('todayAfternoonAppointmentList', afternoon, false);
 }
 
-function renderAppointments() {
+function renderSelectedDayAppointments() {
   const search = (el('appointmentSearch').value || '').toLowerCase();
-  const filtered = appointments.filter((a) => {
+
+  const selectedAppointments = appointments.filter((a) => {
+    const sameDay = getDatePart(a) === selectedDate;
     const patient = String(a.patientName || '').toLowerCase();
     const date = String(a.appointmentDate || '').toLowerCase();
     const status = String(a.status || '').toLowerCase();
-    return patient.includes(search) || date.includes(search) || status.includes(search);
+    const matchesSearch = patient.includes(search) || date.includes(search) || status.includes(search);
+    return sameDay && matchesSearch;
   });
 
-  const morning = filtered.filter((a) => {
+  const morning = selectedAppointments.filter((a) => {
     const hour = getHour(a);
     return hour !== null && hour < 12;
   });
 
-  const afternoon = filtered.filter((a) => {
+  const afternoon = selectedAppointments.filter((a) => {
     const hour = getHour(a);
     return hour !== null && hour >= 12;
   });
 
-  renderSlot('appointmentMorningList', morning);
-  renderSlot('appointmentAfternoonList', afternoon);
+  el('selectedDateTitle').innerText = `Schedule for ${selectedDate}`;
+  renderSlot('selectedMorningAppointmentList', morning, true);
+  renderSlot('selectedAfternoonAppointmentList', afternoon, true);
 
-  el('appointmentTable').innerHTML = filtered.map((a) =>
+  el('appointmentTable').innerHTML = selectedAppointments.map((a) =>
     `<tr><td>${a.patientName}</td><td>${a.appointmentDate}</td><td>${a.status}</td></tr>`
   ).join('');
-
-  el('appointmentTotalMetric').innerText = filtered.length;
-  el('appointmentTodayMetric').innerText = filtered.filter((a) =>
-    String(a.appointmentDate).includes(new Date().toISOString().split('T')[0])
-  ).length;
-  el('appointmentDoneMetric').innerText = filtered.filter((a) => a.status === 'Done').length;
 }
 
-async function markAppointmentDone(id) {
-  await apiFetch(`/appointments/${id}/status`, {
-    method: 'PATCH',
-    body: JSON.stringify({ status: 'Done' })
+function buildCalendarEvents() {
+  return appointments.map((a) => ({
+    id: a.id,
+    title: `${a.patientName} (${a.status || 'Scheduled'})`,
+    date: getDatePart(a)
+  }));
+}
+
+function initCalendar() {
+  const calendarEl = el('calendar');
+  if (!calendarEl) return;
+
+  if (calendar) {
+    calendar.destroy();
+  }
+
+  calendar = new FullCalendar.Calendar(calendarEl, {
+    initialView: 'dayGridMonth',
+    height: 'auto',
+    events: buildCalendarEvents(),
+    dateClick(info) {
+      selectedDate = info.dateStr;
+      renderSelectedDayAppointments();
+    }
   });
 
-  await loadAll();
+  calendar.render();
 }
 
 function renderPatients() {
@@ -201,12 +231,22 @@ async function savePatientRecord() {
   await loadAll();
 }
 
+async function markAppointmentDone(id) {
+  await apiFetch(`/appointments/${id}/status`, {
+    method: 'PATCH',
+    body: JSON.stringify({ status: 'Done' })
+  });
+
+  await loadAll();
+}
+
 function render() {
   el('welcomeText').innerText = `Welcome, ${currentUser.email}`;
   renderTodayAppointments();
-  renderAppointments();
   renderPatients();
   renderRecordDetails();
+  initCalendar();
+  renderSelectedDayAppointments();
 }
 
 loadAll().catch(() => {
