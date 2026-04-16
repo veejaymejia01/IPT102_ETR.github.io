@@ -189,10 +189,17 @@ function renderPatientScheduleList(containerId, items) {
 }
 
 function buildCalendarEvents() {
-  return appointments.map((a) => ({
-    id: a.id,
-    title: `${a.patientName}`,
-    date: getDatePart(a)
+  const grouped = {};
+
+  appointments.forEach((a) => {
+    const date = getDatePart(a);
+    if (!grouped[date]) grouped[date] = 0;
+    grouped[date] += 1;
+  });
+
+  return Object.keys(grouped).map((date) => ({
+    title: `${grouped[date]} patient${grouped[date] > 1 ? 's' : ''}`,
+    date
   }));
 }
 
