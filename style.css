@@ -196,3 +196,17 @@ th {
   margin-top: 12px;
   margin-bottom: 12px;
 }
+
+#calendar {
+  background: white;
+  border-radius: 12px;
+  padding: 12px;
+}
+
+.fc .fc-toolbar-title {
+  font-size: 1.2rem;
+}
+
+.fc-daygrid-day {
+  cursor: pointer;
+}
