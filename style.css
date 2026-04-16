@@ -210,3 +210,12 @@ th {
 .fc-daygrid-day {
   cursor: pointer;
 }
+.selected-day {
+  background-color: #0f766e !important;
+  color: white !important;
+  border-radius: 6px;
+}
+
+.selected-day a {
+  color: white !important;
+}
