@@ -161,14 +161,22 @@ function initCalendar() {
   }
 
   calendar = new FullCalendar.Calendar(calendarEl, {
-    initialView: 'dayGridMonth',
-    height: 'auto',
-    events: buildCalendarEvents(),
-    dateClick(info) {
-      selectedDate = info.dateStr;
-      renderSelectedDayAppointments();
+  initialView: 'dayGridMonth',
+  height: 'auto',
+  events: buildCalendarEvents(),
+
+  dateClick(info) {
+    selectedDate = info.dateStr;
+    highlightSelectedDate();
+    renderSelectedDayAppointments();
+  },
+
+  dayCellDidMount(info) {
+    if (info.dateStr === selectedDate) {
+      info.el.classList.add('selected-day');
     }
-  });
+  }
+});
 
   calendar.render();
 }
@@ -252,3 +260,16 @@ function render() {
 loadAll().catch(() => {
   alert('Failed to load database data. Check backend connection.');
 });
+
+function highlightSelectedDate() {
+  // remove old highlight
+  document.querySelectorAll('.fc-daygrid-day').forEach(day => {
+    day.classList.remove('selected-day');
+  });
+
+  // add highlight to selected date
+  const target = document.querySelector(`[data-date="${selectedDate}"]`);
+  if (target) {
+    target.classList.add('selected-day');
+  }
+}
