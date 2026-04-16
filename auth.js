@@ -55,34 +55,6 @@ async function login() {
       errorBox.innerText = 'Unsupported role.';
     }
   } catch (error) {
-    if (email === 'admin@hospital.com' && password === 'admin123') {
-      localStorage.setItem('healthcare_token', 'demo-token');
-      localStorage.setItem(
-        'healthcare_user',
-        JSON.stringify({
-          email,
-          role: 'admin',
-          name: 'Demo Admin'
-        })
-      );
-      window.location.href = 'admin-dashboard.html';
-      return;
-    }
-
-    if (email === 'doctor@hospital.com' && password === 'doctor123') {
-      localStorage.setItem('healthcare_token', 'demo-token');
-      localStorage.setItem(
-        'healthcare_user',
-        JSON.stringify({
-          email,
-          role: 'doctor',
-          name: 'Demo Doctor'
-        })
-      );
-      window.location.href = 'doctor-dashboard.html';
-      return;
-    }
-
-    errorBox.innerText = 'Login failed. Check your backend or credentials.';
+    errorBox.innerText = error.message || 'Login failed.';
   }
 }
