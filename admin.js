@@ -182,22 +182,38 @@ async function addAppointment() {
   });
 
   const patient = patients.find((p) => p.name.toLowerCase() === patientName.toLowerCase());
-  if (patient) {
-    await apiFetch('/notifications/send', {
-      method: 'POST',
-      body: JSON.stringify({
-        patientId: patient.id,
+
+  if (patient && patient.email) {
+    try {
+      await apiFetch('/email/send', {
+        method: 'POST',
+        body: JSON.stringify({
+          patientId: patient.id,
+          subject: 'Appointment Confirmed',
+          message: `Hello ${patient.name}, your appointment is scheduled for ${appointmentDate}.`
+        })
+      });
+
+      notifications.unshift({
         patientName: patient.name,
-        message: `Your appointment is confirmed for ${appointmentDate}.`
-      })
-    });
+        type: 'Email',
+        message: `Appointment confirmation sent to ${patient.email}`,
+        status: 'Sent'
+      });
+    } catch (error) {
+      notifications.unshift({
+        patientName: patient.name,
+        type: 'Email',
+        message: `Failed to send appointment confirmation to ${patient.email}`,
+        status: 'Failed'
+      });
+    }
   }
 
   el('appointmentPatient').value = '';
   el('appointmentDate').value = '';
   await loadAll();
 }
-
 function renderBilling() {
   el('billingPatient').innerHTML = patients.map((p) =>
     `<option value="${p.id}">${p.id}</option>`
