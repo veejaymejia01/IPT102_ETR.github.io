@@ -116,6 +116,7 @@ function renderRecordDetails() {
 
   el('editPatientName').value = patient.name || '';
   el('editPatientPhone').value = patient.phone || '';
+
   el('editPatientCondition').value = patient.condition || '';
   el('editPatientDiagnosis').value = patient.diagnosis || '';
 }
@@ -134,6 +135,7 @@ async function savePatientRecord() {
     ...patient,
     name: el('editPatientName').value.trim() || patient.name,
     phone: el('editPatientPhone').value.trim() || patient.phone,
+    email: el('editPatientEmail').value.trim() || null,
     condition: el('editPatientCondition').value.trim() || patient.condition,
     diagnosis: el('editPatientDiagnosis').value.trim() || patient.diagnosis
   };
@@ -147,13 +149,13 @@ async function savePatientRecord() {
 }
 
 async function submitNewPatient() {
-  const newPatient = {
-    name: el('addName').value.trim(),
-    phone: el('addPhone').value.trim() || 'N/A',
-    condition: el('addCondition').value.trim() || 'General',
-    diagnosis: el('addDiagnosis').value.trim() || 'Pending assessment'
-  };
-
+ const newPatient = {
+  name: el('addName').value.trim(),
+  email: el('addEmail').value.trim() || null,
+  phone: el('addPhone').value.trim() || 'N/A',
+  condition: el('addCondition').value.trim() || 'General',
+  diagnosis: el('addDiagnosis').value.trim() || 'Pending assessment'
+};
   if (!newPatient.name) return;
 
   await apiFetch('/patients', {
