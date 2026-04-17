@@ -104,14 +104,14 @@
           <select id="notificationPatient"></select>
         </div>
         <div class="toolbar">
-          <input id="notificationMessage" placeholder="Message to patient" />
-          <button class="action" onclick="sendNotification()">Send Notification</button>
+        <select id="notificationPatient"></select>
+        <input id="notificationSubject" placeholder="Email subject" />
         </div>
-        <table>
-          <thead><tr><th>Patient</th><th>Type</th><th>Message</th><th>Status</th></tr></thead>
-          <tbody id="notificationTable"></tbody>
-        </table>
-      </div>
+        <div class="toolbar">
+        <input id="notificationMessage" placeholder="Message to patient" />
+        <button class="action" onclick="sendNotification()">Send SMS</button>
+        <button class="action" onclick="sendEmailNotification()">Send Email</button>
+</div>
     </section>
 
     <section id="billing" class="hidden">
