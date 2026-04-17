@@ -286,3 +286,31 @@ async function deletePatient(id) {
 
   await loadAll();
 }
+async function sendEmailNotification() {
+  const patientId = el('notificationPatient').value;
+  const patient = patients.find((p) => p.id === patientId);
+  const subject = el('notificationSubject').value.trim() || 'Healthcare Notification';
+  const message = el('notificationMessage').value.trim();
+
+  if (!patient || !message) return;
+
+  await apiFetch('/email/send', {
+    method: 'POST',
+    body: JSON.stringify({
+      patientId,
+      subject,
+      message
+    })
+  });
+
+  notifications.unshift({
+    patientName: patient.name,
+    type: 'Email',
+    message,
+    status: 'Sent'
+  });
+
+  el('notificationSubject').value = '';
+  el('notificationMessage').value = '';
+  renderNotifications();
+}
