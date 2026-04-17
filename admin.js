@@ -116,7 +116,7 @@ function renderRecordDetails() {
 
   el('editPatientName').value = patient.name || '';
   el('editPatientPhone').value = patient.phone || '';
-
+  el('editPatientEmail').value = patient.email || '';
   el('editPatientCondition').value = patient.condition || '';
   el('editPatientDiagnosis').value = patient.diagnosis || '';
 }
