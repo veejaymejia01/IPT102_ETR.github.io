@@ -1,199 +1,134 @@
 <!DOCTYPE html>
-
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Doctor Dashboard</title>
-  <link rel="stylesheet" href="style.css" />
-  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.css" rel="stylesheet" />
-  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
 </head>
+
 <body>
-  <section class="app-shell">
-    <aside class="sidebar">
-      <div class="sidebar-brand">
-        <h1>Healthcare Portal</h1>
-        <p>Doctor-facing view for daily schedules, patient records, and consultation flow.</p>
-      </div>
-
-      <div class="role-panel doctor-theme">
-        <div class="role-badge">Doctor Access</div>
-        <p class="sidebar-note">
-          Track daily appointments, review selected-day schedules, and update patient records.
-        </p>
-      </div>
-
-      <div class="nav-list">
-        <button class="nav-btn active" onclick="showSection('dashboard', this)">Dashboard</button>
-        <button class="nav-btn" onclick="showSection('appointments', this)">Appointments</button>
-        <button class="nav-btn" onclick="showSection('patients', this)">Patients</button>
-      </div>
-
-      <div class="nav-spacer"></div>
-      <button class="logout-btn" onclick="logout()">Logout</button>
-    </aside>
-
-    <main class="main">
-      <div class="topbar">
-        <div>
-          <h2>Doctor Dashboard</h2>
-          <p id="welcomeText">Welcome</p>
-        </div>
-        <div class="topbar-actions">
-          <input
-            id="appointmentSearch"
-            class="search-input"
-            placeholder="Search appointments"
-            oninput="renderSelectedDayAppointments()"
-          />
-        </div>
-      </div>
-
-      <section id="dashboard">
-        <div class="content-grid single-gap">
-          <div class="panel">
-            <div class="panel-head">
-              <div>
-                <h3>Today's Appointments</h3>
-                <p>Only today’s schedule is shown here, grouped by morning and afternoon.</p>
-              </div>
+    <section class="app-shell">
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <h1>Healthcare Portal</h1>
+                <p>Doctor-facing view for daily schedules, patient records, and consultation flow.</p>
             </div>
-
-            <div class="panel-body calendar-shell">
-              <div class="calendar-card">
-                <strong>Morning</strong>
-                <div id="todayMorningAppointmentList" class="appt-list spaced-top"></div>
-              </div>
-
-              <div class="calendar-card">
-                <strong>Afternoon</strong>
-                <div id="todayAfternoonAppointmentList" class="appt-list spaced-top"></div>
-              </div>
+            <div class="role-panel doctor-theme">
+                <div class="role-badge">Doctor Access</div>
+                <p class="sidebar-note">Track daily appointments, review selected-day schedules, and update patient
+                    records.</p>
             </div>
-          </div>
-        </div>
-      </section>
-
-      <section id="appointments" class="hidden">
-        <div class="panel">
-          <div class="panel-head">
-            <div>
-              <h3>Schedule Calendar</h3>
-              <p>Click a date to see the morning and afternoon patient schedule for that selected day.</p>
-            </div>
-            <button class="btn btn-secondary inline-btn" onclick="goToTodaySchedule()">Today</button>
-          </div>
-
-          <div class="panel-body stack">
-            <div id="calendar" class="calendar-modern"></div>
-
-            <div class="panel embedded-panel">
-              <div class="panel-head compact-head">
+            <div class="nav-list"><button class="nav-btn active"
+                    onclick="showSection('dashboard',this)">Dashboard</button><button class="nav-btn"
+                    onclick="showSection('appointments',this)">Appointments</button><button class="nav-btn"
+                    onclick="showSection('patients',this)">Patients</button></div>
+            <div class="nav-spacer"></div><button class="logout-btn" onclick="logout()">Logout</button>
+        </aside>
+        <main class="main">
+            <div class="topbar">
                 <div>
-                  <h3 id="selectedDateTitle">Patient Schedule</h3>
-                  <p>Selected date schedule preview.</p>
+                    <h2>Doctor Dashboard</h2>
+                    <p id="welcomeText">Welcome</p>
                 </div>
-              </div>
-
-              <div class="panel-body calendar-shell">
-                <div class="calendar-card">
-                  <strong>Morning</strong>
-                  <div id="selectedMorningAppointmentList" class="appt-list spaced-top"></div>
+                <div class="topbar-actions"><input id="appointmentSearch" class="search-input"
+                        placeholder="Search appointments" oninput="renderSelectedDayAppointments()"></div>
+            </div>
+            <section id="dashboard">
+                <div class="content-grid">
+                    <div class="panel">
+                        <div class="panel-head">
+                            <div>
+                                <h3>Today's Appointments</h3>
+                                <p>Only today’s schedule is shown here, grouped by morning and afternoon.</p>
+                            </div>
+                        </div>
+                        <div class="panel-body calendar-shell">
+                            <div class="calendar-card"><strong>Morning</strong>
+                                <div id="todayMorningAppointmentList" class="appt-list spaced-top"></div>
+                            </div>
+                            <div class="calendar-card"><strong>Afternoon</strong>
+                                <div id="todayAfternoonAppointmentList" class="appt-list spaced-top"></div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-
-                <div class="calendar-card">
-                  <strong>Afternoon</strong>
-                  <div id="selectedAfternoonAppointmentList" class="appt-list spaced-top"></div>
+            </section>
+            <section id="appointments" class="hidden">
+                <div class="panel">
+                    <div class="panel-head">
+                        <div>
+                            <h3>Schedule Calendar</h3>
+                            <p>Click a date to see the morning and afternoon patient schedule for that selected day.</p>
+                        </div><button class="btn btn-secondary inline-btn" onclick="goToTodaySchedule()">Today</button>
+                    </div>
+                    <div class="panel-body stack">
+                        <div id="calendar" class="calendar-modern"></div>
+                        <div class="panel embedded-panel">
+                            <div class="panel-head compact-head">
+                                <div>
+                                    <h3 id="selectedDateTitle">Patient Schedule</h3>
+                                    <p>Selected date schedule preview.</p>
+                                </div>
+                            </div>
+                            <div class="panel-body calendar-shell">
+                                <div class="calendar-card"><strong>Morning</strong>
+                                    <div id="selectedMorningAppointmentList" class="appt-list spaced-top"></div>
+                                </div>
+                                <div class="calendar-card"><strong>Afternoon</strong>
+                                    <div id="selectedAfternoonAppointmentList" class="appt-list spaced-top"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="table-wrap">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Patient</th>
+                                        <th>Time</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="appointmentTable"></tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
-              </div>
-            </div>
-
-            <div class="table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Patient</th>
-                    <th>Time</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody id="appointmentTable"></tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section id="patients" class="hidden">
-        <div class="content-grid single-gap">
-          <div class="panel">
-            <div class="panel-head">
-              <div>
-                <h3>Patients</h3>
-                <p>Search patients and open records from a cleaner clinical layout.</p>
-              </div>
-            </div>
-
-            <div class="panel-body">
-              <div class="toolbar">
-                <input
-                  id="patientSearch"
-                  class="search-input full"
-                  placeholder="Search patient"
-                  oninput="renderPatients()"
-                />
-              </div>
-
-              <div class="table-wrap">
-                <table class="patients-table">
-                  <thead>
-                    <tr>
-                      <th>Name</th>
-                      <th>Phone</th>
-                      <th>Condition</th>
-                      <th>Diagnosis</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody id="patientTable"></tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-
-          <div class="panel">
-            <div class="panel-head">
-              <div>
-                <h3>Patient Record</h3>
-                <p>Review and update patient details from the doctor side.</p>
-              </div>
-            </div>
-
-            <div class="panel-body stack">
-              <div id="recordDetails" class="patient-record-box">
-                Click a patient to view record details.
-              </div>
-
-              <div class="toolbar wrap-3">
-                <input id="editPatientName" placeholder="Patient name" />
-                <input id="editPatientPhone" placeholder="Phone" />
-                <input id="editPatientCondition" placeholder="Condition" />
-              </div>
-
-              <div class="toolbar wrap-2">
-                <input id="editPatientDiagnosis" placeholder="Diagnosis" />
-                <button class="btn btn-primary inline-btn" onclick="savePatientRecord()">
-                  Save Record
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-    </main>
-  </section>
-
-  <script src="doctor.js"></script>
+            </section>
+            <section id="patients" class="hidden">
+                <div class="panel">
+                    <div class="panel-head">
+                        <div>
+                            <h3>Patients</h3>
+                            <p>Search patients and open records.</p>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <div class="toolbar"><input id="patientSearch" class="search-input full"
+                                placeholder="Search patient" oninput="renderPatients()"></div>
+                        <div class="table-wrap">
+                            <table class="patients-table">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Phone</th>
+                                        <th>Condition</th>
+                                        <th>Diagnosis</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="patientTable"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </section>
+    <script src="doctor.js"></script>
 </body>
+
 </html>
