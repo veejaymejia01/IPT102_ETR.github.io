@@ -18,10 +18,40 @@ function el(id) {
   return document.getElementById(id);
 }
 
-function showSection(id) {
-  document.querySelectorAll('section').forEach((section) => section.classList.add('hidden'));
+function showSection(id, btn = null) {
+  document.querySelectorAll('main section').forEach((section) => {
+    section.classList.add('hidden');
+  });
+
   const target = el(id);
-  if (target) target.classList.remove('hidden');
+  if (target) {
+    target.classList.remove('hidden');
+  }
+
+  document.querySelectorAll('.nav-btn').forEach((nav) => {
+    nav.classList.remove('active');
+  });
+
+  if (btn) {
+    btn.classList.add('active');
+  }
+
+  if (id === 'patients') {
+    renderPatients();
+    renderRecordDetails();
+  }
+
+  if (id === 'appointments') {
+    renderAppointments();
+  }
+
+  if (id === 'notifications') {
+    renderNotifications();
+  }
+
+  if (id === 'billing') {
+    renderBilling();
+  }
 }
 
 function logout() {
