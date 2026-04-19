@@ -6,19 +6,50 @@
   <title>Healthcare Portal Login</title>
   <link rel="stylesheet" href="style.css" />
 </head>
-<body>
-  <div id="loginScreen">
-    <div class="login-card">
-      <h2>Healthcare Portal Login</h2>
-      <p class="muted">Sign in with your account.</p>
-
-      <input id="loginEmail" type="email" placeholder="Email" />
-      <input id="loginPassword" type="password" placeholder="Password" />
-
-      <button class="action" onclick="login()">Sign In</button>
-      <div id="loginError" class="error"></div>
+<body class="login-body">
+  <section class="login-screen">
+    <div class="login-side">
+      <div class="brand-chip">● Healthcare Management System</div>
+      <h1 class="hero-title">Professional scheduling and patient management.</h1>
+      <p class="hero-text">
+        Access appointments, records, notifications, and billing through a modern healthcare portal designed for clarity and trust.
+      </p>
+      <div class="hero-grid">
+        <div class="hero-card">
+          <strong>Secure</strong>
+          <span>Role-based access for daily operations</span>
+        </div>
+        <div class="hero-card">
+          <strong>Fast</strong>
+          <span>Streamlined appointment and patient workflows</span>
+        </div>
+        <div class="hero-card">
+          <strong>Organized</strong>
+          <span>Centralized view of records and schedules</span>
+        </div>
+      </div>
     </div>
-  </div>
+
+    <div class="login-panel-wrap">
+      <div class="login-panel">
+        <h2>Welcome back</h2>
+        <p class="subtle">Sign in to continue to the healthcare portal.</p>
+
+        <div class="field">
+          <label for="loginEmail">Email</label>
+          <input id="loginEmail" type="email" placeholder="admin@hospital.com" />
+        </div>
+
+        <div class="field">
+          <label for="loginPassword">Password</label>
+          <input id="loginPassword" type="password" placeholder="Enter your password" />
+        </div>
+
+        <button class="btn btn-primary" onclick="login()">Sign In</button>
+        <div id="loginError" class="login-error"></div>
+      </div>
+    </div>
+  </section>
 
   <script src="auth.js"></script>
 </body>
