@@ -17,22 +17,23 @@ function el(id) {
   return document.getElementById(id);
 }
 
+function setActiveNav(btn) {
+  document.querySelectorAll('.nav-btn').forEach((nav) => nav.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+}
+
 function showSection(id, btn = null) {
   document.querySelectorAll('main section').forEach((section) => {
     section.classList.add('hidden');
   });
 
   const target = el(id);
-  if (target) {
-    target.classList.remove('hidden');
-  }
+  if (target) target.classList.remove('hidden');
 
-  document.querySelectorAll('.nav-btn').forEach((nav) => {
-    nav.classList.remove('active');
-  });
+  setActiveNav(btn);
 
-  if (btn) {
-    btn.classList.add('active');
+  if (id === 'dashboard') {
+    renderTodayAppointments();
   }
 
   if (id === 'appointments') {
@@ -45,10 +46,6 @@ function showSection(id, btn = null) {
   if (id === 'patients') {
     renderPatients();
     renderRecordDetails();
-  }
-
-  if (id === 'dashboard') {
-    renderTodayAppointments();
   }
 }
 
@@ -83,7 +80,25 @@ async function apiFetch(url, options = {}) {
 async function loadAll() {
   patients = await apiFetch('/patients');
   appointments = await apiFetch('/appointments');
-  render();
+
+  if (!selectedPatientId && patients.length) {
+    selectedPatientId = patients[0].id;
+  }
+
+  renderAll();
+}
+
+function renderAll() {
+  if (el('welcomeText')) {
+    el('welcomeText').innerText = `Welcome, ${currentUser.email}`;
+  }
+
+  renderTodayAppointments();
+  renderPatients();
+  renderRecordDetails();
+  initCalendar();
+  renderSelectedDayAppointments();
+  setTimeout(() => highlightSelectedDate(), 100);
 }
 
 function getTodayDateString() {
@@ -95,6 +110,7 @@ function getDatePart(item) {
   if (!raw) return '';
   return raw.includes('T') ? raw.split('T')[0] : raw.split(' ')[0];
 }
+
 function getTimePart(item) {
   const raw = String(item.appointmentDate || '');
   if (!raw) return '';
@@ -109,26 +125,27 @@ function getHour(item) {
   return match ? Number(match[1]) : null;
 }
 
-
 function renderSlot(containerId, items, showDoneButton = false) {
   const container = el(containerId);
   if (!container) return;
 
   if (!items.length) {
-    container.innerHTML = '<div class="muted">No appointments</div>';
+    container.innerHTML = '<div class="sub-text">No appointments</div>';
     return;
   }
 
   container.innerHTML = items.map((item) => `
-    <div class="list-item">
-      <strong>${item.patientName}</strong>
-      <div class="muted">${item.appointmentDate}</div>
-      <div class="${item.status === 'Done' ? 'badge status-done' : 'badge'}" style="margin-top:8px">
-        ${item.status || 'Scheduled'}
+    <div class="appt-item">
+      <div class="appt-time">${getTimePart(item)}</div>
+      <div class="appt-main">
+        <strong>${item.patientName}</strong>
+        <div class="appt-meta">${item.status || 'Scheduled'}</div>
       </div>
-      ${showDoneButton && item.status !== 'Done'
-        ? `<button class="action" style="margin-top:8px" onclick="markAppointmentDone('${item.id}')">Done</button>`
-        : ''}
+      <div>
+        ${showDoneButton && item.status !== 'Done'
+          ? `<button class="btn btn-primary inline-btn" onclick="markAppointmentDone('${item.id}')">Done</button>`
+          : `<span class="status ${String(item.status || '').toLowerCase() === 'done' ? 'done' : 'scheduled'}">${item.status || 'Scheduled'}</span>`}
+      </div>
     </div>
   `).join('');
 }
@@ -151,8 +168,33 @@ function renderTodayAppointments() {
   renderSlot('todayAfternoonAppointmentList', afternoon, false);
 }
 
+function renderPatientScheduleList(containerId, items) {
+  const container = el(containerId);
+  if (!container) return;
+
+  if (!items.length) {
+    container.innerHTML = '<div class="sub-text">No patients scheduled</div>';
+    return;
+  }
+
+  container.innerHTML = items.map((item) => `
+    <div class="appt-item">
+      <div class="appt-time">${getTimePart(item)}</div>
+      <div class="appt-main">
+        <strong>${item.patientName}</strong>
+        <div class="appt-meta">${item.status || 'Scheduled'}</div>
+      </div>
+      <div>
+        ${item.status !== 'Done'
+          ? `<button class="btn btn-primary inline-btn" onclick="markAppointmentDone('${item.id}')">Done</button>`
+          : `<span class="status done">Done</span>`}
+      </div>
+    </div>
+  `).join('');
+}
+
 function renderSelectedDayAppointments() {
-  const search = (el('appointmentSearch')?.value || '').toLowerCase();
+  const search = String(el('appointmentSearch')?.value || '').toLowerCase();
 
   const selectedAppointments = appointments.filter((a) => {
     const sameDay = getDatePart(a) === selectedDate;
@@ -184,9 +226,8 @@ function renderSelectedDayAppointments() {
   renderPatientScheduleList('selectedMorningAppointmentList', morning);
   renderPatientScheduleList('selectedAfternoonAppointmentList', afternoon);
 
-  const table = el('appointmentTable');
-  if (table) {
-    table.innerHTML = selectedAppointments.map((a) => `
+  if (el('appointmentTable')) {
+    el('appointmentTable').innerHTML = selectedAppointments.map((a) => `
       <tr>
         <td>${a.patientName}</td>
         <td>${getTimePart(a)}</td>
@@ -194,29 +235,6 @@ function renderSelectedDayAppointments() {
       </tr>
     `).join('');
   }
-}
-
-function renderPatientScheduleList(containerId, items) {
-  const container = el(containerId);
-  if (!container) return;
-
-  if (!items.length) {
-    container.innerHTML = '<div class="muted">No patients scheduled</div>';
-    return;
-  }
-
-  container.innerHTML = items.map((item) => `
-    <div class="list-item">
-      <strong>${item.patientName}</strong>
-      <div class="muted">Time: ${getTimePart(item)}</div>
-      <div class="${item.status === 'Done' ? 'badge status-done' : 'badge'}" style="margin-top:8px">
-        ${item.status || 'Scheduled'}
-      </div>
-      ${item.status !== 'Done'
-        ? `<button class="action" style="margin-top:8px" onclick="markAppointmentDone('${item.id}')">Done</button>`
-        : ''}
-    </div>
-  `).join('');
 }
 
 function buildCalendarEvents() {
@@ -281,7 +299,6 @@ function initCalendar() {
       center: 'title',
       right: 'dayGridMonth'
     },
-    customButtons: {},
     events: buildCalendarEvents(),
 
     dateClick(info) {
@@ -311,26 +328,113 @@ function initCalendar() {
   }
 }
 
-function renderPatients() {
-  const search = (el('patientSearch')?.value || '').toLowerCase();
-  const filtered = patients.filter((p) =>
-    p.name.toLowerCase().includes(search) ||
-    (p.condition || '').toLowerCase().includes(search)
-  );
+function goToTodaySchedule() {
+  selectedDate = getTodayDateString();
+  renderSelectedDayAppointments();
 
-  if (el('patientList')) {
-    el('patientList').innerHTML = filtered.map((p) => `
-      <button class="list-item patient-button" onclick="openPatientRecord('${p.id}')">
-        <strong>${p.name}</strong>
-        <div class="muted">${p.condition || 'General'}</div>
-      </button>
-    `).join('');
+  if (calendar) {
+    calendar.today();
+    setTimeout(() => highlightSelectedDate(), 0);
   }
 }
 
-function openPatientRecord(id) {
+function getStatus(patient) {
+  if (!patient.diagnosis) {
+    return { label: 'Pending', class: 'pending' };
+  }
+
+  const text = String(patient.diagnosis).toLowerCase();
+
+  if (
+    text.includes('critical') ||
+    text.includes('pneumonia') ||
+    text.includes('emergency')
+  ) {
+    return { label: 'Critical', class: 'critical' };
+  }
+
+  if (
+    text.includes('follow') ||
+    text.includes('check') ||
+    text.includes('hypertension')
+  ) {
+    return { label: 'Follow-up', class: 'warning' };
+  }
+
+  return { label: 'Stable', class: 'stable' };
+}
+
+function renderPatients() {
+  const table = el('patientTable');
+  const list = el('patientList');
+  const search = String(el('patientSearch')?.value || '').toLowerCase();
+
+  const filtered = patients.filter((patient) => {
+    const name = String(patient.name || '').toLowerCase();
+    const email = String(patient.email || '').toLowerCase();
+    const phone = String(patient.phone || '').toLowerCase();
+    const condition = String(patient.condition || '').toLowerCase();
+    const diagnosis = String(patient.diagnosis || '').toLowerCase();
+
+    return (
+      name.includes(search) ||
+      email.includes(search) ||
+      phone.includes(search) ||
+      condition.includes(search) ||
+      diagnosis.includes(search)
+    );
+  });
+
+  if (table) {
+    table.innerHTML = filtered.map((patient) => {
+      const status = getStatus(patient);
+
+      return `
+        <tr class="patient-row">
+          <td>
+            <strong>${patient.name || ''}</strong><br>
+            <span class="sub-text">${patient.email || 'No email'}</span>
+          </td>
+          <td>${patient.phone || 'N/A'}</td>
+          <td>${patient.condition || 'General'}</td>
+          <td>
+            <span class="badge ${status.class}">${status.label}</span><br>
+            <span class="sub-text">${patient.diagnosis || 'Pending assessment'}</span>
+          </td>
+          <td>
+            <button class="btn btn-secondary small-btn" onclick="selectPatient('${patient.id}')">
+              Open
+            </button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+    return;
+  }
+
+  if (list) {
+    list.innerHTML = filtered.map((patient) => {
+      const status = getStatus(patient);
+
+      return `
+        <div class="patient-card">
+          <div onclick="selectPatient('${patient.id}')" style="cursor:pointer; flex:1;">
+            <strong>${patient.name || ''}</strong>
+            <div class="patient-meta">${patient.email || 'No email'} · ${patient.phone || 'N/A'}</div>
+            <div class="patient-meta">${patient.condition || 'General'} · ${patient.diagnosis || 'Pending assessment'}</div>
+            <div style="margin-top:8px;">
+              <span class="badge ${status.class}">${status.label}</span>
+            </div>
+          </div>
+          <button class="btn btn-secondary inline-btn" onclick="selectPatient('${patient.id}')">Open</button>
+        </div>
+      `;
+    }).join('');
+  }
+}
+
+function selectPatient(id) {
   selectedPatientId = id;
-  showSection('patients');
   renderRecordDetails();
 }
 
@@ -338,13 +442,16 @@ function renderRecordDetails() {
   const patient = patients.find((p) => p.id === selectedPatientId) || patients[0];
   if (!patient) return;
 
+  selectedPatientId = patient.id;
+
   if (el('recordDetails')) {
     el('recordDetails').innerHTML = `
-      <strong>${patient.name}</strong>
-      <div class="muted">ID: ${patient.id}</div>
-      <div class="muted">Phone: ${patient.phone || 'N/A'}</div>
-      <div class="muted">Condition: ${patient.condition || 'General'}</div>
-      <div class="muted">Diagnosis: ${patient.diagnosis || 'Pending assessment'}</div>
+      <strong>${patient.name || ''}</strong><br>
+      <span class="sub-text">ID: ${patient.id || ''}</span><br>
+      <span class="sub-text">Email: ${patient.email || 'No email'}</span><br>
+      <span class="sub-text">Phone: ${patient.phone || 'N/A'}</span><br>
+      <span class="sub-text">Condition: ${patient.condition || 'General'}</span><br>
+      <span class="sub-text">Diagnosis: ${patient.diagnosis || 'Pending assessment'}</span>
     `;
   }
 
@@ -361,6 +468,7 @@ async function savePatientRecord() {
   const updated = {
     ...patient,
     name: el('editPatientName')?.value.trim() || patient.name,
+    email: patient.email || null,
     phone: el('editPatientPhone')?.value.trim() || patient.phone,
     condition: el('editPatientCondition')?.value.trim() || patient.condition,
     diagnosis: el('editPatientDiagnosis')?.value.trim() || patient.diagnosis
@@ -372,31 +480,11 @@ async function savePatientRecord() {
   });
 
   await loadAll();
-}
-
-async function markAppointmentDone(id) {
-  await apiFetch(`/appointments/${id}/status`, {
-    method: 'PATCH',
-    body: JSON.stringify({ status: 'Done' })
-  });
-
-  await loadAll();
-}
-
-function render() {
-  if (el('welcomeText')) {
-    el('welcomeText').innerText = `Welcome, ${currentUser.email}`;
-  }
-
-  renderTodayAppointments();
-  renderPatients();
+  selectedPatientId = patient.id;
   renderRecordDetails();
-  initCalendar();
-  renderSelectedDayAppointments();
-  setTimeout(() => highlightSelectedDate(), 100);
 }
 
 loadAll().catch((error) => {
   console.error(error);
-  alert('Failed to load doctor data. Check backend connection or doctor.js errors.');
+  alert('Failed to load doctor data. Check backend connection.');
 });
