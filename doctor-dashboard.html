@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -19,7 +18,9 @@
 
       <div class="role-panel doctor-theme">
         <div class="role-badge">Doctor Access</div>
-        <p class="sidebar-note">Track daily appointments, review selected-day schedules, and update patient records.</p>
+        <p class="sidebar-note">
+          Track daily appointments, review selected-day schedules, and update patient records.
+        </p>
       </div>
 
       <div class="nav-list">
@@ -39,7 +40,12 @@
           <p id="welcomeText">Welcome</p>
         </div>
         <div class="topbar-actions">
-          <input id="appointmentSearch" class="search-input" placeholder="Search appointments" oninput="renderSelectedDayAppointments()" />
+          <input
+            id="appointmentSearch"
+            class="search-input"
+            placeholder="Search appointments"
+            oninput="renderSelectedDayAppointments()"
+          />
         </div>
       </div>
 
@@ -52,11 +58,13 @@
                 <p>Only today’s schedule is shown here, grouped by morning and afternoon.</p>
               </div>
             </div>
+
             <div class="panel-body calendar-shell">
               <div class="calendar-card">
                 <strong>Morning</strong>
                 <div id="todayMorningAppointmentList" class="appt-list spaced-top"></div>
               </div>
+
               <div class="calendar-card">
                 <strong>Afternoon</strong>
                 <div id="todayAfternoonAppointmentList" class="appt-list spaced-top"></div>
@@ -75,6 +83,7 @@
             </div>
             <button class="btn btn-secondary inline-btn" onclick="goToTodaySchedule()">Today</button>
           </div>
+
           <div class="panel-body stack">
             <div id="calendar" class="calendar-modern"></div>
 
@@ -85,11 +94,13 @@
                   <p>Selected date schedule preview.</p>
                 </div>
               </div>
+
               <div class="panel-body calendar-shell">
                 <div class="calendar-card">
                   <strong>Morning</strong>
                   <div id="selectedMorningAppointmentList" class="appt-list spaced-top"></div>
                 </div>
+
                 <div class="calendar-card">
                   <strong>Afternoon</strong>
                   <div id="selectedAfternoonAppointmentList" class="appt-list spaced-top"></div>
@@ -99,7 +110,13 @@
 
             <div class="table-wrap">
               <table>
-                <thead><tr><th>Patient</th><th>Time</th><th>Status</th></tr></thead>
+                <thead>
+                  <tr>
+                    <th>Patient</th>
+                    <th>Time</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
                 <tbody id="appointmentTable"></tbody>
               </table>
             </div>
@@ -116,11 +133,31 @@
                 <p>Search patients and open records from a cleaner clinical layout.</p>
               </div>
             </div>
+
             <div class="panel-body">
               <div class="toolbar">
-                <input id="patientSearch" class="search-input full" placeholder="Search patient" oninput="renderPatients()" />
+                <input
+                  id="patientSearch"
+                  class="search-input full"
+                  placeholder="Search patient"
+                  oninput="renderPatients()"
+                />
               </div>
-              <div id="patientList"></div>
+
+              <div class="table-wrap">
+                <table class="patients-table">
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Phone</th>
+                      <th>Condition</th>
+                      <th>Diagnosis</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="patientTable"></tbody>
+                </table>
+              </div>
             </div>
           </div>
 
@@ -131,16 +168,23 @@
                 <p>Review and update patient details from the doctor side.</p>
               </div>
             </div>
+
             <div class="panel-body stack">
-              <div id="recordDetails" class="patient-record-box">Click a patient to view record details.</div>
+              <div id="recordDetails" class="patient-record-box">
+                Click a patient to view record details.
+              </div>
+
               <div class="toolbar wrap-3">
                 <input id="editPatientName" placeholder="Patient name" />
                 <input id="editPatientPhone" placeholder="Phone" />
                 <input id="editPatientCondition" placeholder="Condition" />
               </div>
+
               <div class="toolbar wrap-2">
                 <input id="editPatientDiagnosis" placeholder="Diagnosis" />
-                <button class="btn btn-primary inline-btn" onclick="savePatientRecord()">Save Record</button>
+                <button class="btn btn-primary inline-btn" onclick="savePatientRecord()">
+                  Save Record
+                </button>
               </div>
             </div>
           </div>
