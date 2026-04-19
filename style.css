@@ -52,7 +52,7 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 24px;
+  gap: 16px;
 }
 
 .brand-chip {
@@ -79,6 +79,7 @@ body {
   font-size: 1.05rem;
   max-width: 620px;
   line-height: 1.7;
+  margin-bottom: 0;
 }
 
 .hero-grid {
