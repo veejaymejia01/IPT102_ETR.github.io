@@ -828,3 +828,31 @@ tr:last-child td {
     margin-right: 0;
   }
 }
+/* Make dashboard use full width */
+.content-grid.full-width {
+  display: block;
+  width: 100%;
+}
+
+.panel.full-panel {
+  width: 100%;
+}
+
+/* Make today's appointments stretch nicely */
+.calendar-shell {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  width: 100%;
+}
+
+/* Make cards fill height */
+.calendar-card {
+  min-height: 250px;
+  width: 100%;
+}
+
+/* Better spacing */
+.panel-body {
+  width: 100%;
+}
