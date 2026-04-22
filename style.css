@@ -508,3 +508,13 @@ th {
 .fc-daygrid-day-top {
   cursor: pointer;
 }
+/* selected day highlight */
+.fc-daygrid-day.selected-day {
+  background: #ccfbf1 !important;
+  border: 2px solid #0f766e !important;
+}
+
+/* today (optional different style) */
+.fc-day-today {
+  background: #fef9c3 !important;
+}
