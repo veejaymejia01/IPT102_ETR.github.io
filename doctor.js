@@ -153,42 +153,37 @@ function initDoctorCalendar() {
     doctorCalendar.destroy();
   }
 
-  doctorCalendar = new FullCalendar.Calendar(calendarEl, {
-    initialView: 'dayGridMonth',
-    height: 'auto',
+doctorCalendar = new FullCalendar.Calendar(calendarEl, {
+  initialView: 'dayGridMonth',
+  height: 'auto',
+  headerToolbar: {
+    left: 'prev,next today',
+    center: 'title',
+    right: ''
+  },
+  events: buildDoctorCalendarEvents(),
+  dateClick(info) {
+    selectedCalendarDate = info.dateStr;
 
-    headerToolbar: {
-      left: 'prev,next today',
-      center: 'title',
-      right: 'dayGridMonth,timeGridWeek'
-    },
+    const input = document.getElementById('selectedDate');
+    if (input) input.value = info.dateStr;
 
-    events: buildDoctorCalendarEvents(),
+    highlightDoctorSelectedDay();
+    renderAppointmentsPage();
+  },
+  eventClick(info) {
+    selectedCalendarDate = info.event.startStr.split('T')[0];
 
-    dateClick(info) {
-      selectedCalendarDate = info.dateStr;
+    const input = document.getElementById('selectedDate');
+    if (input) input.value = selectedCalendarDate;
 
-      const input = document.getElementById('selectedDate');
-      if (input) input.value = info.dateStr;
-
-      highlightDoctorSelectedDay();
-      renderAppointmentsPage();
-    },
-
-    eventClick(info) {
-      selectedCalendarDate = info.event.startStr.split('T')[0];
-
-      const input = document.getElementById('selectedDate');
-      if (input) input.value = selectedCalendarDate;
-
-      highlightDoctorSelectedDay();
-      renderAppointmentsPage();
-    },
-
-    datesSet() {
-      setTimeout(highlightDoctorSelectedDay, 10);
-    }
-  });
+    highlightDoctorSelectedDay();
+    renderAppointmentsPage();
+  },
+  datesSet() {
+    setTimeout(highlightDoctorSelectedDay, 10);
+  }
+});
 
   doctorCalendar.render();
 
