@@ -6,6 +6,7 @@ let appointments = JSON.parse(localStorage.getItem('appointments') || '[]');
 let doctorCalendar = null;
 let selectedCalendarDate = new Date().toISOString().split('T')[0];
 
+
 if (!currentUser || currentUser.role !== 'doctor') {
   window.location.href = 'index.html';
 }
@@ -155,33 +156,53 @@ function initDoctorCalendar() {
   doctorCalendar = new FullCalendar.Calendar(calendarEl, {
     initialView: 'dayGridMonth',
     height: 'auto',
+
     headerToolbar: {
       left: 'prev,next today',
       center: 'title',
       right: 'dayGridMonth,timeGridWeek'
     },
-    events: appointments.map((a) => ({
-      title: a.patientName,
-      start: a.appointmentDate
-    })),
-    dateClick: function(info) {
+
+    events: buildDoctorCalendarEvents(),
+
+    dateClick(info) {
+      selectedCalendarDate = info.dateStr;
+
       const input = document.getElementById('selectedDate');
-      if (input) {
-        input.value = info.dateStr;
-      }
+      if (input) input.value = info.dateStr;
+
+      highlightDoctorSelectedDay();
       renderAppointmentsPage();
     },
-    eventClick: function(info) {
-      const clickedDate = info.event.startStr.split('T')[0];
+
+    eventClick(info) {
+      selectedCalendarDate = info.event.startStr.split('T')[0];
+
       const input = document.getElementById('selectedDate');
-      if (input) {
-        input.value = clickedDate;
-      }
+      if (input) input.value = selectedCalendarDate;
+
+      highlightDoctorSelectedDay();
       renderAppointmentsPage();
+    },
+
+    datesSet() {
+      setTimeout(highlightDoctorSelectedDay, 10);
     }
   });
 
   doctorCalendar.render();
+
+  setTimeout(highlightDoctorSelectedDay, 10);
+}
+function highlightDoctorSelectedDay() {
+  document.querySelectorAll('#doctorCalendar .fc-daygrid-day').forEach((cell) => {
+    cell.classList.remove('selected-day');
+
+    const date = cell.getAttribute('data-date');
+    if (date === selectedCalendarDate) {
+      cell.classList.add('selected-day');
+    }
+  });
 }
 
 function renderAppointmentsPage() {
