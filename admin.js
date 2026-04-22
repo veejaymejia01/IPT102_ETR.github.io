@@ -119,12 +119,7 @@ function renderSlot(containerId, items) {
   `).join('');
 }
 
-function buildAdminCalendarEvents() {
-  return appointments.map((appointment) => ({
-    title: appointment.patientName,
-    start: appointment.appointmentDate
-  }));
-}
+
 function buildAdminCalendarEvents() {
   const grouped = {};
 
