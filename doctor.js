@@ -5,6 +5,7 @@ let patients = JSON.parse(localStorage.getItem('patients') || '[]');
 let appointments = JSON.parse(localStorage.getItem('appointments') || '[]');
 let doctorCalendar = null;
 
+
 if (!currentUser || currentUser.role !== 'doctor') {
   window.location.href = 'index.html';
 }
