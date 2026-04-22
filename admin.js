@@ -4,6 +4,7 @@ let bills = JSON.parse(localStorage.getItem('bills') || '[]');
 let notifications = JSON.parse(localStorage.getItem('notifications') || '[]');
 let selectedPatientId = null;
 let adminCalendar = null;
+let selectedCalendarDate = new Date().toISOString().split('T')[0];
 
 
 const currentUser = JSON.parse(localStorage.getItem('healthcare_user') || 'null');
