@@ -140,7 +140,7 @@ function buildAdminCalendarEvents() {
 }
 
 function initAdminCalendar() {
-  const calendarEl = el('adminCalendar');
+  const calendarEl = document.getElementById('adminCalendar');
   if (!calendarEl || typeof FullCalendar === 'undefined') return;
 
   if (adminCalendar) {
@@ -150,28 +150,45 @@ function initAdminCalendar() {
   adminCalendar = new FullCalendar.Calendar(calendarEl, {
     initialView: 'dayGridMonth',
     height: 'auto',
+
     headerToolbar: {
       left: 'prev,next today',
       center: 'title',
       right: 'dayGridMonth,timeGridWeek'
     },
+
     events: buildAdminCalendarEvents(),
+
     dateClick(info) {
-      if (el('adminSelectedDate')) {
-        el('adminSelectedDate').value = info.dateStr;
-      }
+      selectedCalendarDate = info.dateStr;
+
+      const input = document.getElementById('adminSelectedDate');
+      if (input) input.value = info.dateStr;
+
+      highlightSelectedDay();
       renderAdminAppointmentsPage();
     },
+
     eventClick(info) {
-      const clickedDate = info.event.startStr.split('T')[0];
-      if (el('adminSelectedDate')) {
-        el('adminSelectedDate').value = clickedDate;
-      }
+      selectedCalendarDate = info.event.startStr.split('T')[0];
+
+      const input = document.getElementById('adminSelectedDate');
+      if (input) input.value = selectedCalendarDate;
+
+      highlightSelectedDay();
       renderAdminAppointmentsPage();
+    },
+
+    datesSet() {
+      // re-apply highlight when navigating months
+      setTimeout(highlightSelectedDay, 10);
     }
   });
 
   adminCalendar.render();
+
+  // initial highlight
+  setTimeout(highlightSelectedDay, 10);
 }
 
 function refreshAdminCalendar() {
