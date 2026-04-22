@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard</title>
     <link rel="stylesheet" href="style.css">
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
 </head>
 
 <body>
@@ -29,12 +31,6 @@
             <div class="nav-spacer"></div><button class="logout-btn" onclick="logout()">Logout</button>
         </aside>
         <main class="main">
-            <div class="topbar">
-                <div>
-                    <h2>Dashboard Overview</h2>
-                    <p id="welcomeText">Welcome</p>
-                </div>
-            </div>
             <section id="dashboard">
                 <div class="metric-grid">
                     <div class="metric-card">
@@ -64,22 +60,45 @@
                         </div>
                     </div>
                     <div class="panel-body">
-                        <div class="toolbar"><input id="appointmentPatient" placeholder="Patient name"><input
-                                id="appointmentDate" type="datetime-local"><button class="btn btn-primary inline-btn"
-                                onclick="addAppointment()">Add Appointment</button></div>
-                        <div class="table-wrap">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Patient</th>
-                                        <th>Date</th>
-                                        <th>Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="appointmentTable"></tbody>
-                            </table>
-                        </div>
-                    </div>
+                        <div class="panel-body stack">
+  <div class="toolbar">
+    <input id="appointmentPatient" placeholder="Patient name" />
+    <input id="appointmentDate" type="datetime-local" />
+    <button class="btn btn-primary inline-btn" onclick="addAppointment()">Add Appointment</button>
+  </div>
+
+  <div id="adminCalendar" class="calendar-modern"></div>
+
+  <div class="calendar-shell">
+    <div class="calendar-card">
+      <strong>Morning</strong>
+      <div id="adminMorningAppointmentList" class="appt-list spaced-top"></div>
+    </div>
+
+    <div class="calendar-card">
+      <strong>Afternoon</strong>
+      <div id="adminAfternoonAppointmentList" class="appt-list spaced-top"></div>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <input id="adminSelectedDate" type="date" onchange="renderAdminAppointmentsPage()" />
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Patient</th>
+          <th>Date</th>
+          <th>Time</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="appointmentTable"></tbody>
+    </table>
+  </div>
+</div>
                 </div>
             </section>
             <section id="patients" class="hidden">
