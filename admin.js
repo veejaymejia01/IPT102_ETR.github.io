@@ -234,7 +234,16 @@ function renderAdminAppointmentsPage() {
     </tr>
   `).join('');
 }
+function highlightSelectedDay() {
+  document.querySelectorAll('.fc-daygrid-day').forEach((cell) => {
+    cell.classList.remove('selected-day');
 
+    const date = cell.getAttribute('data-date');
+    if (date === selectedCalendarDate) {
+      cell.classList.add('selected-day');
+    }
+  });
+}
 function goToTodayAdminSchedule() {
   const today = new Date().toISOString().split('T')[0];
   if (el('adminSelectedDate')) {
