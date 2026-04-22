@@ -5,6 +5,7 @@ let notifications = JSON.parse(localStorage.getItem('notifications') || '[]');
 let selectedPatientId = null;
 let adminCalendar = null;
 
+
 const currentUser = JSON.parse(localStorage.getItem('healthcare_user') || 'null');
 
 if (!currentUser || currentUser.role !== 'admin') {
