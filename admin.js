@@ -31,6 +31,12 @@ function showSection(id, btn = null) {
   document.querySelectorAll('main section').forEach((section) => {
     section.classList.add('hidden');
   });
+  function buildAdminCalendarEvents() {
+  return appointments.map((appointment) => ({
+    title: appointment.patientName,
+    start: appointment.appointmentDate
+  }));
+}
 
   const target = el(id);
   if (target) target.classList.remove('hidden');
@@ -125,39 +131,11 @@ function buildCalendarEvents() {
   }));
 }
 
-function initAdminCalendar() {
-  const calendarEl = el('adminCalendar');
-  if (!calendarEl || typeof FullCalendar === 'undefined') return;
-
-  if (adminCalendar) {
-    adminCalendar.destroy();
-  }
-
-  adminCalendar = new FullCalendar.Calendar(calendarEl, {
-    initialView: 'dayGridMonth',
-    height: 'auto',
-    headerToolbar: {
-      left: 'prev,next today',
-      center: 'title',
-      right: 'dayGridMonth,timeGridWeek'
-    },
-    events: buildCalendarEvents(),
-    dateClick(info) {
-      if (el('adminSelectedDate')) {
-        el('adminSelectedDate').value = info.dateStr;
-      }
-      renderAdminAppointmentsPage();
-    }
-  });
-
-  adminCalendar.render();
-}
-
-function refreshCalendar() {
-  if (adminCalendar) {
-    adminCalendar.removeAllEvents();
-    buildCalendarEvents().forEach((event) => adminCalendar.addEvent(event));
-  }
+function buildAdminCalendarEvents() {
+  return appointments.map((appointment) => ({
+    title: appointment.patientName,
+    start: appointment.appointmentDate
+  }));
 }
 
 function renderAdminAppointmentsPage() {
@@ -415,7 +393,7 @@ function addAppointment() {
   appointments.push(appointment);
   saveAll();
   renderAdminAppointmentsPage();
-  refreshCalendar();
+  refreshAdminCalendar();
 
   if (el('appointmentPatient')) el('appointmentPatient').value = '';
   if (el('appointmentDate')) el('appointmentDate').value = '';
@@ -443,14 +421,15 @@ function renderAll() {
   }
 
   if (el('adminSelectedDate') && !el('adminSelectedDate').value) {
-    el('adminSelectedDate').value = new Date().toISOString().split('T')[0];
-  }
+  el('adminSelectedDate').value = new Date().toISOString().split('T')[0];
+}
 
   renderAdminAppointmentsPage();
   renderPatients();
   renderRecordDetails();
   renderBilling();
   renderNotifications();
+  renderAdminAppointmentsPage();
   initAdminCalendar();
 }
 
