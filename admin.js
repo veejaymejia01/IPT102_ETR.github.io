@@ -6,7 +6,6 @@ let selectedPatientId = null;
 let adminCalendar = null;
 let selectedCalendarDate = new Date().toISOString().split('T')[0];
 
-
 const currentUser = JSON.parse(localStorage.getItem('healthcare_user') || 'null');
 
 if (!currentUser || currentUser.role !== 'admin') {
