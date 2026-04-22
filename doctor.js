@@ -6,7 +6,6 @@ let appointments = JSON.parse(localStorage.getItem('appointments') || '[]');
 let doctorCalendar = null;
 let selectedCalendarDate = new Date().toISOString().split('T')[0];
 
-
 if (!currentUser || currentUser.role !== 'doctor') {
   window.location.href = 'index.html';
 }
