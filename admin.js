@@ -148,42 +148,36 @@ function initAdminCalendar() {
   }
 
   adminCalendar = new FullCalendar.Calendar(calendarEl, {
-    initialView: 'dayGridMonth',
-    height: 'auto',
+  initialView: 'dayGridMonth',
+  height: 'auto',
+  headerToolbar: {
+    left: 'prev,next today',
+    center: 'title',
+    right: ''
+  },
+  events: buildAdminCalendarEvents(),
+  dateClick(info) {
+    selectedCalendarDate = info.dateStr;
 
-    headerToolbar: {
-      left: 'prev,next today',
-      center: 'title',
-      right: 'dayGridMonth,timeGridWeek'
-    },
+    const input = document.getElementById('adminSelectedDate');
+    if (input) input.value = info.dateStr;
 
-    events: buildAdminCalendarEvents(),
+    highlightSelectedDay();
+    renderAdminAppointmentsPage();
+  },
+  eventClick(info) {
+    selectedCalendarDate = info.event.startStr.split('T')[0];
 
-    dateClick(info) {
-      selectedCalendarDate = info.dateStr;
+    const input = document.getElementById('adminSelectedDate');
+    if (input) input.value = selectedCalendarDate;
 
-      const input = document.getElementById('adminSelectedDate');
-      if (input) input.value = info.dateStr;
-
-      highlightSelectedDay();
-      renderAdminAppointmentsPage();
-    },
-
-    eventClick(info) {
-      selectedCalendarDate = info.event.startStr.split('T')[0];
-
-      const input = document.getElementById('adminSelectedDate');
-      if (input) input.value = selectedCalendarDate;
-
-      highlightSelectedDay();
-      renderAdminAppointmentsPage();
-    },
-
-    datesSet() {
-      // re-apply highlight when navigating months
-      setTimeout(highlightSelectedDay, 10);
-    }
-  });
+    highlightSelectedDay();
+    renderAdminAppointmentsPage();
+  },
+  datesSet() {
+    setTimeout(highlightSelectedDay, 10);
+  }
+});
 
   adminCalendar.render();
 
