@@ -31,12 +31,6 @@ function showSection(id, btn = null) {
   document.querySelectorAll('main section').forEach((section) => {
     section.classList.add('hidden');
   });
-  function buildAdminCalendarEvents() {
-  return appointments.map((appointment) => ({
-    title: appointment.patientName,
-    start: appointment.appointmentDate
-  }));
-}
 
   const target = el(id);
   if (target) target.classList.remove('hidden');
@@ -95,7 +89,7 @@ function getTimePart(value) {
 }
 
 function getHour(value) {
-  const match = getTimePart(value).match(/(\\d{2}):(\\d{2})/);
+  const match = getTimePart(value).match(/(\d{2}):(\d{2})/);
   return match ? Number(match[1]) : null;
 }
 
@@ -124,18 +118,52 @@ function renderSlot(containerId, items) {
   `).join('');
 }
 
-function buildCalendarEvents() {
+function buildAdminCalendarEvents() {
   return appointments.map((appointment) => ({
     title: appointment.patientName,
     start: appointment.appointmentDate
   }));
 }
 
-function buildAdminCalendarEvents() {
-  return appointments.map((appointment) => ({
-    title: appointment.patientName,
-    start: appointment.appointmentDate
-  }));
+function initAdminCalendar() {
+  const calendarEl = el('adminCalendar');
+  if (!calendarEl || typeof FullCalendar === 'undefined') return;
+
+  if (adminCalendar) {
+    adminCalendar.destroy();
+  }
+
+  adminCalendar = new FullCalendar.Calendar(calendarEl, {
+    initialView: 'dayGridMonth',
+    height: 'auto',
+    headerToolbar: {
+      left: 'prev,next today',
+      center: 'title',
+      right: 'dayGridMonth,timeGridWeek'
+    },
+    events: buildAdminCalendarEvents(),
+    dateClick(info) {
+      if (el('adminSelectedDate')) {
+        el('adminSelectedDate').value = info.dateStr;
+      }
+      renderAdminAppointmentsPage();
+    },
+    eventClick(info) {
+      const clickedDate = info.event.startStr.split('T')[0];
+      if (el('adminSelectedDate')) {
+        el('adminSelectedDate').value = clickedDate;
+      }
+      renderAdminAppointmentsPage();
+    }
+  });
+
+  adminCalendar.render();
+}
+
+function refreshAdminCalendar() {
+  if (!adminCalendar) return;
+  adminCalendar.removeAllEvents();
+  buildAdminCalendarEvents().forEach((event) => adminCalendar.addEvent(event));
 }
 
 function renderAdminAppointmentsPage() {
@@ -292,7 +320,7 @@ function deletePatient(id) {
 
   saveAll();
   renderAll();
-  refreshCalendar();
+  refreshAdminCalendar();
 }
 
 function renderBilling() {
@@ -421,15 +449,14 @@ function renderAll() {
   }
 
   if (el('adminSelectedDate') && !el('adminSelectedDate').value) {
-  el('adminSelectedDate').value = new Date().toISOString().split('T')[0];
-}
+    el('adminSelectedDate').value = new Date().toISOString().split('T')[0];
+  }
 
   renderAdminAppointmentsPage();
   renderPatients();
   renderRecordDetails();
   renderBilling();
   renderNotifications();
-  renderAdminAppointmentsPage();
   initAdminCalendar();
 }
 
