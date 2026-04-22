@@ -125,6 +125,23 @@ function buildAdminCalendarEvents() {
     start: appointment.appointmentDate
   }));
 }
+function buildAdminCalendarEvents() {
+  const grouped = {};
+
+  appointments.forEach((appointment) => {
+    const date = getDatePart(appointment.appointmentDate);
+    if (!grouped[date]) {
+      grouped[date] = 0;
+    }
+    grouped[date] += 1;
+  });
+
+  return Object.keys(grouped).map((date) => ({
+    title: `${grouped[date]} patient${grouped[date] > 1 ? 's' : ''}`,
+    start: date,
+    allDay: true
+  }));
+}
 
 function initAdminCalendar() {
   const calendarEl = el('adminCalendar');
