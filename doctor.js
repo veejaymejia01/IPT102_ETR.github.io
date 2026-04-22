@@ -23,7 +23,7 @@ function showSection(id, btn = null) {
     section.classList.add('hidden');
   });
 
-  const target = el(id);
+  const target = document.getElementById(id);
   if (target) target.classList.remove('hidden');
 
   document.querySelectorAll('.nav-btn').forEach((nav) => {
@@ -32,12 +32,20 @@ function showSection(id, btn = null) {
 
   if (btn) btn.classList.add('active');
 
-  if (id === 'dashboard') renderTodayAppointments();
-  if (id === 'appointments') {
-    renderAppointmentsPage();
-    initDoctorCalendar();
+  if (id === 'dashboard') {
+    renderTodayAppointments();
   }
-  if (id === 'patients') renderPatients();
+
+  if (id === 'appointments') {
+    setTimeout(() => {
+      initDoctorCalendar();
+      renderAppointmentsPage();
+    }, 50);
+  }
+
+  if (id === 'patients') {
+    renderPatients();
+  }
 }
 
 function getStatus(patient) {
@@ -125,7 +133,7 @@ function buildDoctorCalendarEvents() {
 }
 
 function initDoctorCalendar() {
-  const calendarEl = el('doctorCalendar');
+  const calendarEl = document.getElementById('doctorCalendar');
   if (!calendarEl || typeof FullCalendar === 'undefined') return;
 
   if (doctorCalendar) {
@@ -140,17 +148,22 @@ function initDoctorCalendar() {
       center: 'title',
       right: 'dayGridMonth,timeGridWeek'
     },
-    events: buildDoctorCalendarEvents(),
-    dateClick(info) {
-      if (el('selectedDate')) {
-        el('selectedDate').value = info.dateStr;
+    events: appointments.map((a) => ({
+      title: a.patientName,
+      start: a.appointmentDate
+    })),
+    dateClick: function(info) {
+      const input = document.getElementById('selectedDate');
+      if (input) {
+        input.value = info.dateStr;
       }
       renderAppointmentsPage();
     },
-    eventClick(info) {
+    eventClick: function(info) {
       const clickedDate = info.event.startStr.split('T')[0];
-      if (el('selectedDate')) {
-        el('selectedDate').value = clickedDate;
+      const input = document.getElementById('selectedDate');
+      if (input) {
+        input.value = clickedDate;
       }
       renderAppointmentsPage();
     }
