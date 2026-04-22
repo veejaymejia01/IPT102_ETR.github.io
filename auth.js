@@ -3,6 +3,7 @@ const API = 'https://etr-backend.onrender.com/api';
 function seedUsers() {
   const users = JSON.parse(localStorage.getItem('healthcare_users') || '[]');
 
+  
   if (!users.find((u) => u.email === 'admin@hospital.com')) {
     users.push({
       id: 1,
