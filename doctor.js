@@ -8,6 +8,7 @@ let patients = [],
   appointments = [],
   selectedDate = new Date().toISOString().split("T")[0],
   calendar = null;
+let doctorCalendar = null;
 if (!currentUser || currentUser.role !== "doctor" || !token)
   window.location.href = "index.html";
 function el(id) {
@@ -57,6 +58,10 @@ async function apiFetch(url, options = {}) {
 async function loadAll() {
   patients = await apiFetch("/patients");
   appointments = await apiFetch("/appointments");
+
+   if (el('selectedDate')) {
+    el('selectedDate').value = new Date().toISOString().split('T')[0];
+  }
   renderAll();
 }
 function renderAll() {
@@ -137,6 +142,88 @@ function renderPatientScheduleList(containerId, items) {
     )
     .join("");
 }
+function buildDoctorCalendarEvents() {
+  return appointments.map((appointment) => ({
+    title: appointment.patientName,
+    start: appointment.appointmentDate
+  }));
+  function initDoctorCalendar() {
+  const calendarEl = el('doctorCalendar');
+  if (!calendarEl || typeof FullCalendar === 'undefined') return;
+
+  if (doctorCalendar) {
+    doctorCalendar.destroy();
+  }
+
+  doctorCalendar = new FullCalendar.Calendar(calendarEl, {
+    initialView: 'dayGridMonth',
+    height: 'auto',
+    headerToolbar: {
+      left: 'prev,next today',
+      center: 'title',
+      right: 'dayGridMonth,timeGridWeek'
+    },
+    events: buildDoctorCalendarEvents(),
+
+    dateClick(info) {
+      if (el('selectedDate')) {
+        el('selectedDate').value = info.dateStr;
+      }
+      renderAppointmentsPage();
+    },
+
+    eventClick(info) {
+      const clickedDate = info.event.startStr.split('T')[0];
+      if (el('selectedDate')) {
+        el('selectedDate').value = clickedDate;
+      }
+      renderAppointmentsPage();
+    }
+  });
+
+  doctorCalendar.render();
+}
+}function renderAppointmentsPage() {
+  const date = el('selectedDate')?.value || new Date().toISOString().split('T')[0];
+  const search = String(el('appointmentSearch')?.value || '').toLowerCase();
+
+  const items = appointments.filter((appointment) => {
+    return (
+      getDatePart(appointment.appointmentDate) === date &&
+      [appointment.patientName, appointment.appointmentDate, appointment.status]
+        .some((value) => String(value || '').toLowerCase().includes(search))
+    );
+  });
+
+  const morning = items.filter((appointment) => {
+    const hour = getHour(appointment.appointmentDate);
+    return hour !== null && hour < 12;
+  });
+
+  const afternoon = items.filter((appointment) => {
+    const hour = getHour(appointment.appointmentDate);
+    return hour !== null && hour >= 12;
+  });
+
+  renderSlot('selectedMorningAppointmentList', morning, true);
+  renderSlot('selectedAfternoonAppointmentList', afternoon, true);
+
+  if (el('appointmentTable')) {
+    el('appointmentTable').innerHTML = items.map((appointment) => `
+      <tr>
+        <td>${appointment.patientName}</td>
+        <td>${appointment.appointmentDate}</td>
+        <td>${appointment.status}</td>
+        <td>
+          ${appointment.status !== 'Done'
+            ? `<button class="btn btn-primary small-btn" onclick="markAppointmentDone(${appointment.id})">Done</button>`
+            : ''}
+        </td>
+      </tr>
+    `).join('');
+  }
+}
+
 function renderSelectedDayAppointments() {
   const s = String(el("appointmentSearch")?.value || "").toLowerCase();
   const selectedAppointments = appointments.filter((a) => {
