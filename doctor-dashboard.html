@@ -6,8 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Doctor Dashboard</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
 </head>
 
 <body>
@@ -29,14 +29,6 @@
             <div class="nav-spacer"></div><button class="logout-btn" onclick="logout()">Logout</button>
         </aside>
         <main class="main">
-            <div class="topbar">
-                <div>
-                    <h2>Doctor Dashboard</h2>
-                    <p id="welcomeText">Welcome</p>
-                </div>
-                <div class="topbar-actions"><input id="appointmentSearch" class="search-input"
-                        placeholder="Search appointments" oninput="renderSelectedDayAppointments()"></div>
-            </div>
             <section id="dashboard">
                 <div class="content-grid full-width">
                       <div class="panel full-panel">
@@ -57,47 +49,47 @@
                     </div>
                 </div>
             </section>
-            <section id="appointments" class="hidden">
-                <div class="panel">
-                    <div class="panel-head">
-                        <div>
-                            <h3>Schedule Calendar</h3>
-                            <p>Click a date to see the morning and afternoon patient schedule for that selected day.</p>
-                        </div><button class="btn btn-secondary inline-btn" onclick="goToTodaySchedule()">Today</button>
-                    </div>
-                    <div class="panel-body stack">
-                        <div id="calendar" class="calendar-modern"></div>
-                        <div class="panel embedded-panel">
-                            <div class="panel-head compact-head">
-                                <div>
-                                    <h3 id="selectedDateTitle">Patient Schedule</h3>
-                                    <p>Selected date schedule preview.</p>
-                                </div>
-                            </div>
-                            <div class="panel-body calendar-shell">
-                                <div class="calendar-card"><strong>Morning</strong>
-                                    <div id="selectedMorningAppointmentList" class="appt-list spaced-top"></div>
-                                </div>
-                                <div class="calendar-card"><strong>Afternoon</strong>
-                                    <div id="selectedAfternoonAppointmentList" class="appt-list spaced-top"></div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="table-wrap">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Patient</th>
-                                        <th>Time</th>
-                                        <th>Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="appointmentTable"></tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </section>
+<section id="appointments" class="hidden">
+  <div class="panel">
+    <div class="panel-head">
+      <div>
+        <h3>Appointments</h3>
+        <p>Click a day in the calendar to show appointments for that date.</p>
+      </div>
+      <input id="selectedDate" type="date" onchange="renderAppointmentsPage()" />
+    </div>
+
+    <div class="panel-body stack">
+      <div id="doctorCalendar" class="calendar-modern"></div>
+
+      <div class="calendar-shell">
+        <div class="calendar-card">
+          <strong>Morning</strong>
+          <div id="selectedMorningAppointmentList" class="appt-list"></div>
+        </div>
+
+        <div class="calendar-card">
+          <strong>Afternoon</strong>
+          <div id="selectedAfternoonAppointmentList" class="appt-list"></div>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Patient</th>
+              <th>Date</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="appointmentTable"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
             <section id="patients" class="hidden">
                 <div class="panel">
                     <div class="panel-head">
