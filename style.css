@@ -491,3 +491,20 @@ th {
     align-items: stretch;
   }
 }
+#adminCalendar,
+#doctorCalendar {
+  width: 100%;
+  position: relative;
+  z-index: 1;
+}
+
+.fc {
+  position: relative;
+  z-index: 1;
+}
+
+.fc-daygrid-day,
+.fc-daygrid-day-frame,
+.fc-daygrid-day-top {
+  cursor: pointer;
+}
