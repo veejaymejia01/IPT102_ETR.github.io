@@ -397,22 +397,35 @@ function addBill() {
 }
 
 function renderNotifications() {
-  if (el('notificationPatient')) {
-    el('notificationPatient').innerHTML = patients.map((patient) => `
-      <option value="${patient.id}">${patient.id} - ${patient.name}</option>
-    `).join('');
-  }
+  el('notificationPatient').innerHTML = patients.map((patient) => `
+    <option value="${patient.id}">${patient.id} - ${patient.name}</option>
+  `).join('');
 
-  if (el('notificationTable')) {
-    el('notificationTable').innerHTML = notifications.map((notification) => `
-      <tr>
-        <td>${notification.patient_name}</td>
-        <td>${notification.type}</td>
-        <td>${notification.message}</td>
-        <td>${notification.status}</td>
-      </tr>
-    `).join('');
-  }
+  el('notificationTable').innerHTML = notifications.map((notification) => `
+    <tr>
+      <td>${notification.patient_name || notification.patientName || ''}</td>
+      <td>${notification.type || 'Email'}</td>
+      <td>${notification.message || ''}</td>
+      <td>${notification.status || 'Sent'}</td>
+      <td>
+        <button class="btn btn-danger small-btn" onclick="deleteNotification('${notification.id}')">
+          Delete
+        </button>
+      </td>
+    </tr>
+  `).join('');
+}
+async function deleteNotification(id) {
+  if (!confirm('Delete this notification?')) return;
+
+  await fetch(`${API}/notifications/${id}`, {
+    method: 'DELETE',
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+
+  await loadAll();
 }
 
 function sendNotification() {
