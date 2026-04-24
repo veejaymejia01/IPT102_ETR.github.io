@@ -397,13 +397,20 @@ function addBill() {
 }
 
 function renderNotifications() {
-  el('notificationPatient').innerHTML = patients.map((patient) => `
-    <option value="${patient.id}">${patient.id} - ${patient.name}</option>
-  `).join('');
+  const patientSelect = el('notificationPatient');
+  const table = el('notificationTable');
 
-  el('notificationTable').innerHTML = notifications.map((notification) => `
+  if (patientSelect) {
+    patientSelect.innerHTML = patients.map((patient) => `
+      <option value="${patient.id}">${patient.id} - ${patient.name}</option>
+    `).join('');
+  }
+
+  if (!table) return;
+
+  table.innerHTML = notifications.map((notification) => `
     <tr>
-      <td>${notification.patient_name || notification.patientName || ''}</td>
+      <td>${notification.patientName || notification.patient_name || ''}</td>
       <td>${notification.type || 'Email'}</td>
       <td>${notification.message || ''}</td>
       <td>${notification.status || 'Sent'}</td>
@@ -415,39 +422,58 @@ function renderNotifications() {
     </tr>
   `).join('');
 }
+
+async function sendNotification() {
+  const patientId = el('notificationPatient')?.value;
+  const patient = patients.find((item) => Number(item.id) === Number(patientId));
+  const message = el('notificationMessage')?.value.trim();
+
+  if (!message) return;
+
+  const response = await fetch(`${API}/notifications/send`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify({
+      patientName: patient ? patient.name : 'Unknown Patient',
+      message
+    })
+  });
+
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    alert(data.error || 'Failed to send notification');
+    return;
+  }
+
+  el('notificationMessage').value = '';
+  await loadAll();
+}
+
 async function deleteNotification(id) {
   if (!confirm('Delete this notification?')) return;
 
-  await fetch(`${API}/notifications/${id}`, {
+  const response = await fetch(`${API}/notifications/${id}`, {
     method: 'DELETE',
     headers: {
+      'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`
     }
   });
 
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    alert(data.error || 'Failed to delete notification');
+    return;
+  }
+
   await loadAll();
 }
 
-function sendNotification() {
-  const patientId = el('notificationPatient')?.value;
-  const patient = patients.find((item) => Number(item.id) === Number(patientId));
-
-  const notification = {
-    id: Date.now(),
-    patient_name: patient ? patient.name : '',
-    type: 'Email',
-    message: el('notificationMessage')?.value.trim(),
-    status: 'Sent'
-  };
-
-  if (!notification.message) return;
-
-  notifications.push(notification);
-  saveAll();
-  renderNotifications();
-
-  if (el('notificationMessage')) el('notificationMessage').value = '';
-}
 
 function addAppointment() {
   const patientName = el('appointmentPatient')?.value.trim();
