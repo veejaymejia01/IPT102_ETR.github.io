@@ -1,1 +1,33 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Patient Record</title><link rel="stylesheet" href="style.css"></head><body><div class="main" style="max-width:900px;margin:auto;"><div class="topbar"><div><h2>Patient Record</h2><p>Edit patient information.</p></div></div><div class="panel"><div class="panel-body stack"><input id="editPatientName" placeholder="Patient name"><input id="editPatientEmail" placeholder="Email"><input id="editPatientPhone" placeholder="Phone"><input id="editPatientCondition" placeholder="Condition"><input id="editPatientDiagnosis" placeholder="Diagnosis"><div class="toolbar"><button class="btn btn-primary inline-btn" onclick="savePatient()">Save</button><button class="btn btn-secondary inline-btn" onclick="goBack()">Back</button></div></div></div></div><script src="patient-record.js"></script></body></html>
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Record</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="main" style="max-width:900px;margin:auto;">
+        <div class="topbar">
+            <div>
+                <h2>Patient Record</h2>
+                <p>Edit patient information.</p>
+            </div>
+        </div>
+        <div class="panel">
+            <div class="panel-body stack"><input id="editPatientName" placeholder="Patient name"><input
+                    id="editPatientEmail" placeholder="Email"><input id="editPatientPhone" placeholder="Phone"><input
+                    id="editPatientCondition" placeholder="Condition"><input id="editPatientDiagnosis"
+                    placeholder="Diagnosis">
+                <div class="toolbar"><button class="btn btn-primary inline-btn"
+                        onclick="savePatient()">Save</button><button class="btn btn-secondary inline-btn"
+                        onclick="goBack()">Back</button></div>
+            </div>
+        </div>
+    </div>
+    <script src="patient-record.js"></script>
+</body>
+
+</html>

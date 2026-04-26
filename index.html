@@ -1,1 +1,36 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Healthcare Portal Login</title><link rel="stylesheet" href="style.css"></head><body class="login-body"><section class="login-screen"><div class="login-side"><div class="brand-chip">● Healthcare Management System</div><h1 class="hero-title">Professional scheduling and patient management.</h1><p class="hero-text">Access appointments, records, notifications, and billing through a modern healthcare portal designed for clarity and trust.</p></div><div class="login-panel-wrap"><div class="login-panel"><h2>Welcome back</h2><p class="subtle">Sign in to continue to the healthcare portal.</p><div class="field"><label>Email</label><input id="loginEmail" type="email" placeholder="admin@hospital.com"></div><div class="field"><label>Password</label><input id="loginPassword" type="password" placeholder="Enter your password"></div><button class="btn btn-primary full-btn" onclick="login()">Sign In</button><div id="loginError" class="login-error"></div><div class="auth-links">No patient account yet? <a href="register.html">Create one here</a></div></div></div></section><script src="auth.js"></script></body></html>
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Healthcare Portal Login</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body class="login-body">
+    <section class="login-screen">
+        <div class="login-side">
+            <div class="brand-chip">● Healthcare Management System</div>
+            <h1 class="hero-title">Professional scheduling and patient management.</h1>
+            <p class="hero-text">Access appointments, records, notifications, and billing through a modern healthcare
+                portal designed for clarity and trust.</p>
+        </div>
+        <div class="login-panel-wrap">
+            <div class="login-panel">
+                <h2>Welcome back</h2>
+                <p class="subtle">Sign in to continue to the healthcare portal.</p>
+                <div class="field"><label>Email</label><input id="loginEmail" type="email"
+                        placeholder="admin@hospital.com"></div>
+                <div class="field"><label>Password</label><input id="loginPassword" type="password"
+                        placeholder="Enter your password"></div><button class="btn btn-primary full-btn"
+                    onclick="login()">Sign In</button>
+                <div id="loginError" class="login-error"></div>
+                <div class="auth-links">No patient account yet? <a href="register.html">Create one here</a></div>
+            </div>
+        </div>
+    </section>
+    <script src="auth.js"></script>
+</body>
+
+</html>

@@ -1,1 +1,81 @@
-const API='https://your-backend-name.onrender.com/api';const token=localStorage.getItem('healthcare_token')||'';const currentUser=JSON.parse(localStorage.getItem('healthcare_user')||'null');let appointments=[],profile=null;if(!currentUser||currentUser.role!=='patient'||!token)window.location.href='index.html';function el(id){return document.getElementById(id)}function showSection(id,btn=null){document.querySelectorAll('main section').forEach(s=>s.classList.add('hidden'));const t=el(id);if(t)t.classList.remove('hidden');document.querySelectorAll('.nav-btn').forEach(n=>n.classList.remove('active'));if(btn)btn.classList.add('active')}function logout(){localStorage.removeItem('healthcare_token');localStorage.removeItem('healthcare_user');window.location.href='index.html'}async function apiFetch(url,options={}){const r=await fetch(API+url,{...options,headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`,...(options.headers||{})}});let d=null;try{d=await r.json()}catch{}if(!r.ok)throw new Error(d?.error||'Request failed');return d}async function loadAll(){appointments=await apiFetch('/patient/appointments');profile=await apiFetch('/patient/profile');render()}function render(){if(el('welcomeText'))el('welcomeText').innerText=`Welcome, ${currentUser.name||currentUser.email}`;const next=appointments.find(a=>a.status!=='Done');if(el('nextAppointmentBox'))el('nextAppointmentBox').innerHTML=next?`<strong>Next Appointment</strong><br>${next.appointmentDate} · ${next.status}`:'No upcoming appointment.';if(el('appointmentTable'))el('appointmentTable').innerHTML=appointments.map(a=>`<tr><td>${a.appointmentDate}</td><td>${a.status}</td></tr>`).join('');if(el('profileBox')&&profile)el('profileBox').innerHTML=`<strong>${profile.name||''}</strong><br><span class="sub-text">Email: ${profile.email||'No email'}</span><br><span class="sub-text">Phone: ${profile.phone||'N/A'}</span><br><span class="sub-text">Condition: ${profile.condition||'General'}</span><br><span class="sub-text">Diagnosis: ${profile.diagnosis||'Pending assessment'}</span>`}async function bookAppointment(){const appointmentDate=el('appointmentDate')?.value;if(!appointmentDate)return;await apiFetch('/patient/appointments',{method:'POST',body:JSON.stringify({appointmentDate})});if(el('appointmentDate'))el('appointmentDate').value='';await loadAll();showSection('appointments')}loadAll().catch(e=>{console.error(e);alert('Failed to load patient dashboard.')});
+const API = "https://etr-backend.onrender.com/api";
+const token = localStorage.getItem("healthcare_token") || "";
+const currentUser = JSON.parse(
+  localStorage.getItem("healthcare_user") || "null",
+);
+let appointments = [],
+  profile = null;
+if (!currentUser || currentUser.role !== "patient" || !token)
+  window.location.href = "index.html";
+function el(id) {
+  return document.getElementById(id);
+}
+function showSection(id, btn = null) {
+  document
+    .querySelectorAll("main section")
+    .forEach((s) => s.classList.add("hidden"));
+  const t = el(id);
+  if (t) t.classList.remove("hidden");
+  document
+    .querySelectorAll(".nav-btn")
+    .forEach((n) => n.classList.remove("active"));
+  if (btn) btn.classList.add("active");
+}
+function logout() {
+  localStorage.removeItem("healthcare_token");
+  localStorage.removeItem("healthcare_user");
+  window.location.href = "index.html";
+}
+async function apiFetch(url, options = {}) {
+  const r = await fetch(API + url, {
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+      ...(options.headers || {}),
+    },
+  });
+  let d = null;
+  try {
+    d = await r.json();
+  } catch {}
+  if (!r.ok) throw new Error(d?.error || "Request failed");
+  return d;
+}
+async function loadAll() {
+  appointments = await apiFetch("/patient/appointments");
+  profile = await apiFetch("/patient/profile");
+  render();
+}
+function render() {
+  if (el("welcomeText"))
+    el("welcomeText").innerText =
+      `Welcome, ${currentUser.name || currentUser.email}`;
+  const next = appointments.find((a) => a.status !== "Done");
+  if (el("nextAppointmentBox"))
+    el("nextAppointmentBox").innerHTML = next
+      ? `<strong>Next Appointment</strong><br>${next.appointmentDate} · ${next.status}`
+      : "No upcoming appointment.";
+  if (el("appointmentTable"))
+    el("appointmentTable").innerHTML = appointments
+      .map((a) => `<tr><td>${a.appointmentDate}</td><td>${a.status}</td></tr>`)
+      .join("");
+  if (el("profileBox") && profile)
+    el("profileBox").innerHTML =
+      `<strong>${profile.name || ""}</strong><br><span class="sub-text">Email: ${profile.email || "No email"}</span><br><span class="sub-text">Phone: ${profile.phone || "N/A"}</span><br><span class="sub-text">Condition: ${profile.condition || "General"}</span><br><span class="sub-text">Diagnosis: ${profile.diagnosis || "Pending assessment"}</span>`;
+}
+async function bookAppointment() {
+  const appointmentDate = el("appointmentDate")?.value;
+  if (!appointmentDate) return;
+  await apiFetch("/patient/appointments", {
+    method: "POST",
+    body: JSON.stringify({ appointmentDate }),
+  });
+  if (el("appointmentDate")) el("appointmentDate").value = "";
+  await loadAll();
+  showSection("appointments");
+}
+loadAll().catch((e) => {
+  console.error(e);
+  alert("Failed to load patient dashboard.");
+});
