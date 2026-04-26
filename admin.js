@@ -175,9 +175,22 @@ async function submitNewPatient() {
 }
 async function deletePatient(id) {
   if (!confirm("Delete this patient?")) return;
-  await apiFetch(`/patients/${id}`, { method: "DELETE" });
-  if (selectedPatientId === id) selectedPatientId = null;
-  await loadAll();
+
+  try {
+    await apiFetch(`/patients/${id}`, {
+      method: "DELETE"
+    });
+
+    if (selectedPatientId === id) {
+      selectedPatientId = null;
+    }
+
+    await loadAll();
+    alert("Patient deleted successfully.");
+  } catch (error) {
+    console.error("Delete patient error:", error);
+    alert(error.message || "Failed to delete patient.");
+  }
 }
 function renderBilling() {
   if (el("billingPatient"))
