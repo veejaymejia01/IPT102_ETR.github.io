@@ -2,122 +2,124 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Healthcare Portal</title>
-  
+  <link rel="stylesheet" href="style.css" />
 
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f4f6f9;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      margin: 0;
-    }
-
-    .login-card {
-      background: #fff;
-      padding: 30px;
-      border-radius: 10px;
-      width: 350px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.08);
-    }
-
-    h2 {
-      margin-bottom: 5px;
-    }
-
-    p {
-      color: #666;
-      margin-bottom: 20px;
-      font-size: 14px;
-    }
-
-    input {
+    .auth-card {
       width: 100%;
-      padding: 12px;
-      margin-bottom: 15px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      font-size: 14px;
-      box-sizing: border-box;
+      max-width: 420px;
+      background: white;
+      padding: 34px;
+      border-radius: 22px;
+      box-shadow: 0 20px 50px rgba(15, 23, 42, 0.12);
     }
 
-    .password-wrapper {
+    .auth-card h2 {
+      margin: 0 0 6px;
+      font-size: 1.9rem;
+    }
+
+    .floating-field {
       position: relative;
+      margin-bottom: 18px;
     }
 
-    .password-wrapper input {
-      padding-right: 60px;
+    .floating-field input {
+      width: 100%;
+      padding: 18px 46px 10px 14px;
+      border: 1px solid #d1d5db;
+      border-radius: 12px;
+      font-size: 15px;
+      outline: none;
+      background: white;
     }
 
-    .password-toggle {
+    .floating-field label {
       position: absolute;
-      right: 10px;
-      top: 38%;
+      left: 14px;
+      top: 14px;
+      color: #64748b;
+      font-size: 14px;
+      pointer-events: none;
+      transition: 0.18s ease;
+      background: white;
+      padding: 0 4px;
+    }
+
+    .floating-field input:focus {
+      border-color: #0f766e;
+      box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.12);
+    }
+
+    .floating-field input:focus + label,
+    .floating-field input:not(:placeholder-shown) + label {
+      top: -8px;
+      font-size: 12px;
+      color: #0f766e;
+    }
+
+    .eye-btn {
+      position: absolute;
+      right: 12px;
+      top: 50%;
       transform: translateY(-50%);
+      width: 28px;
+      height: 28px;
       border: none;
       background: transparent;
-      color: #007bff;
-      font-size: 13px;
+      color: #64748b;
       cursor: pointer;
-      font-weight: 600;
-      width: auto;
       padding: 0;
     }
 
-    .remember-row {
+    .eye-btn svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .auth-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 18px;
+      font-size: 0.9rem;
+    }
+
+    .remember-label {
       display: flex;
       align-items: center;
       gap: 8px;
-      margin-bottom: 15px;
-      font-size: 13px;
-      color: #555;
+      color: #475569;
     }
 
-    .remember-row input {
+    .remember-label input {
       width: auto;
       margin: 0;
     }
 
-    button {
-      width: 100%;
-      padding: 12px;
-      background: #007bff;
-      color: #fff;
+    .link-btn {
       border: none;
-      border-radius: 6px;
-      font-size: 15px;
+      background: transparent;
+      color: #0f766e;
+      font-weight: 700;
       cursor: pointer;
+      padding: 0;
+      width: auto;
     }
 
-    button:hover {
-      background: #0056b3;
-    }
-
-    button:disabled {
-      opacity: 0.7;
-      cursor: not-allowed;
-    }
-
-    .switch {
-      margin-top: 15px;
-      text-align: center;
-      font-size: 13px;
-    }
-
-    .switch span {
-      color: #007bff;
-      cursor: pointer;
+    .primary-auth-btn {
+      width: 100%;
+      min-height: 46px;
     }
 
     .spinner {
       display: inline-block;
-      width: 14px;
-      height: 14px;
-      border: 2px solid rgba(255,255,255,0.5);
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,255,255,0.55);
       border-top-color: white;
       border-radius: 50%;
       animation: spin 0.8s linear infinite;
@@ -129,21 +131,28 @@
       to { transform: rotate(360deg); }
     }
 
+    .auth-switch {
+      margin-top: 18px;
+      text-align: center;
+      color: #64748b;
+      font-size: 0.92rem;
+    }
+
     .toast {
       position: fixed;
-      top: 20px;
-      right: 20px;
-      background: #111827;
+      top: 22px;
+      right: 22px;
+      background: #0f172a;
       color: white;
       padding: 14px 18px;
-      border-radius: 8px;
-      font-size: 14px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+      border-radius: 12px;
+      box-shadow: 0 16px 40px rgba(15,23,42,0.18);
       opacity: 0;
-      transform: translateY(-10px);
+      transform: translateY(-12px);
       pointer-events: none;
-      transition: 0.25s ease;
+      transition: 0.22s ease;
       z-index: 9999;
+      font-size: 14px;
     }
 
     .toast.show {
@@ -161,89 +170,130 @@
   </style>
 </head>
 
-<body>
+<body class="login-body">
   <div id="toast" class="toast"></div>
 
-  <div class="login-card">
-
-    <div id="loginSection">
-      <h2>Welcome back</h2>
-      <p>Sign in to your healthcare portal</p>
-
-      <input id="loginEmail" type="email" placeholder="Email" />
-
-      <div class="password-wrapper">
-        <input id="loginPassword" type="password" placeholder="Password" />
-        <button
-          type="button"
-          class="password-toggle"
-          id="toggleLoginPassword"
-          onclick="togglePassword('loginPassword','toggleLoginPassword')"
-        >
-          Show
-        </button>
-      </div>
-
-      <label class="remember-row">
-        <input id="rememberMe" type="checkbox" />
-        Remember login
-      </label>
-
-      <button id="loginBtn" onclick="login()">
-        Sign In
-      </button>
-
-      <div class="switch">
-        Don't have an account?
-        <span onclick="showRegister()">Register</span>
-      </div>
+  <section class="login-screen">
+    <div class="login-side">
+      <div class="brand-chip">● Healthcare Management System</div>
+      <h1 class="hero-title">Professional scheduling and patient management.</h1>
+      <p class="hero-text">
+        Access appointments, records, notifications, and billing through a modern healthcare portal designed for clarity and trust.
+      </p>
     </div>
 
-    <div id="registerSection" style="display:none;">
-      <h2>Create account</h2>
-      <p>Register as a patient</p>
+    <div class="login-panel-wrap">
+      <div class="auth-card">
+        <div id="loginSection">
+          <h2>Welcome back</h2>
+          <p class="subtle">Sign in to your healthcare portal.</p>
 
-      <input id="registerName" placeholder="Full name" />
-      <input id="registerEmail" type="email" placeholder="Email" />
+          <div class="floating-field">
+            <input id="loginEmail" type="email" placeholder=" " />
+            <label>Email</label>
+          </div>
 
-      <div class="password-wrapper">
-        <input id="registerPassword" type="password" placeholder="Password" />
-        <button
-          type="button"
-          class="password-toggle"
-          id="toggleRegisterPassword"
-          onclick="togglePassword('registerPassword','toggleRegisterPassword')"
-        >
-          Show
-        </button>
-      </div>
+          <div class="floating-field">
+            <input id="loginPassword" type="password" placeholder=" " />
+            <label>Password</label>
+            <button
+              type="button"
+              class="eye-btn"
+              onclick="togglePassword('loginPassword', this)"
+              aria-label="Toggle password visibility"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12Z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            </button>
+          </div>
 
-      <input id="registerPhone" placeholder="Phone number" />
+          <div class="auth-row">
+            <label class="remember-label">
+              <input id="rememberMe" type="checkbox" />
+              Remember me
+            </label>
+            <button type="button" class="link-btn" onclick="showForgot()">Forgot password?</button>
+          </div>
 
-      <button id="registerBtn" onclick="registerPatient()">
-        Register
-      </button>
+          <button id="loginBtn" class="btn btn-primary primary-auth-btn" onclick="login()">
+            Sign In
+          </button>
 
-      <div class="switch">
-        Already have an account?
-        <span onclick="showLogin()">Login</span>
+          <div class="auth-switch">
+            No patient account?
+            <button type="button" class="link-btn" onclick="showRegister()">Register</button>
+          </div>
+        </div>
+
+        <div id="registerSection" class="hidden">
+          <h2>Create account</h2>
+          <p class="subtle">Register as a patient.</p>
+
+          <div class="floating-field">
+            <input id="registerName" placeholder=" " />
+            <label>Full name</label>
+          </div>
+
+          <div class="floating-field">
+            <input id="registerEmail" type="email" placeholder=" " />
+            <label>Email</label>
+          </div>
+
+          <div class="floating-field">
+            <input id="registerPassword" type="password" placeholder=" " />
+            <label>Password</label>
+            <button
+              type="button"
+              class="eye-btn"
+              onclick="togglePassword('registerPassword', this)"
+              aria-label="Toggle password visibility"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12Z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            </button>
+          </div>
+
+          <div class="floating-field">
+            <input id="registerPhone" placeholder=" " />
+            <label>Phone number</label>
+          </div>
+
+          <button id="registerBtn" class="btn btn-primary primary-auth-btn" onclick="registerPatient()">
+            Register
+          </button>
+
+          <div class="auth-switch">
+            Already have an account?
+            <button type="button" class="link-btn" onclick="showLogin()">Login</button>
+          </div>
+        </div>
+
+        <div id="forgotSection" class="hidden">
+          <h2>Forgot password</h2>
+          <p class="subtle">Enter your email and we’ll send a password reset instruction.</p>
+
+          <div class="floating-field">
+            <input id="forgotEmail" type="email" placeholder=" " />
+            <label>Email</label>
+          </div>
+
+          <button id="forgotBtn" class="btn btn-primary primary-auth-btn" onclick="forgotPassword()">
+            Send Reset Email
+          </button>
+
+          <div class="auth-switch">
+            Remembered your password?
+            <button type="button" class="link-btn" onclick="showLogin()">Back to login</button>
+          </div>
+        </div>
       </div>
     </div>
-
-  </div>
+  </section>
 
   <script src="auth.js"></script>
-
-  <script>
-    function showRegister() {
-      document.getElementById("loginSection").style.display = "none";
-      document.getElementById("registerSection").style.display = "block";
-    }
-
-    function showLogin() {
-      document.getElementById("registerSection").style.display = "none";
-      document.getElementById("loginSection").style.display = "block";
-    }
-  </script>
 </body>
 </html>
