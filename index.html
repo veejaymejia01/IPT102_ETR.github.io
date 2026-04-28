@@ -16,12 +16,12 @@
       margin: 0;
     }
 
-    .card {
-      background: white;
+    .login-card {
+      background: #fff;
       padding: 30px;
-      border-radius: 12px;
-      width: 360px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      border-radius: 10px;
+      width: 350px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.08);
     }
 
     h2 {
@@ -31,23 +31,14 @@
     p {
       color: #666;
       margin-bottom: 20px;
-    }
-
-    .field {
-      margin-bottom: 15px;
-    }
-
-    label {
-      font-size: 13px;
-      display: block;
-      margin-bottom: 5px;
-      color: #333;
+      font-size: 14px;
     }
 
     input {
       width: 100%;
       padding: 12px;
-      border-radius: 8px;
+      margin-bottom: 15px;
+      border-radius: 6px;
       border: 1px solid #ccc;
       font-size: 14px;
     }
@@ -57,7 +48,7 @@
     }
 
     .password-wrapper input {
-      padding-right: 70px;
+      padding-right: 60px;
     }
 
     .password-toggle {
@@ -68,17 +59,18 @@
       border: none;
       background: transparent;
       color: #007bff;
-      font-weight: 600;
+      font-size: 13px;
       cursor: pointer;
+      font-weight: 600;
     }
 
     button {
       width: 100%;
       padding: 12px;
       background: #007bff;
-      color: white;
+      color: #fff;
       border: none;
-      border-radius: 8px;
+      border-radius: 6px;
       font-size: 15px;
       cursor: pointer;
     }
@@ -95,8 +87,8 @@
 
     .switch {
       margin-top: 15px;
-      font-size: 13px;
       text-align: center;
+      font-size: 13px;
     }
 
     .switch span {
@@ -108,31 +100,25 @@
 
 <body>
 
-  <div class="card">
+  <div class="login-card">
 
     <!-- LOGIN -->
     <div id="loginSection">
       <h2>Welcome back</h2>
-      <p>Sign in to your account</p>
+      <p>Sign in to your healthcare portal</p>
 
-      <div class="field">
-        <label>Email</label>
-        <input id="loginEmail" type="email" placeholder="Enter your email" />
-      </div>
+      <input id="loginEmail" type="email" placeholder="Email" />
 
-      <div class="field">
-        <label>Password</label>
-        <div class="password-wrapper">
-          <input id="loginPassword" type="password" placeholder="Enter your password" />
-          <button
-            type="button"
-            class="password-toggle"
-            id="togglePasswordText"
-            onclick="togglePassword('loginPassword','togglePasswordText')"
-          >
-            Show
-          </button>
-        </div>
+      <div class="password-wrapper">
+        <input id="loginPassword" type="password" placeholder="Password" />
+        <button
+          type="button"
+          class="password-toggle"
+          id="toggleLoginPassword"
+          onclick="togglePassword('loginPassword','toggleLoginPassword')"
+        >
+          Show
+        </button>
       </div>
 
       <button onclick="login()">Sign In</button>
@@ -150,35 +136,22 @@
       <h2>Create account</h2>
       <p>Register as a patient</p>
 
-      <div class="field">
-        <label>Name</label>
-        <input id="registerName" placeholder="Full name" />
+      <input id="registerName" placeholder="Full name" />
+      <input id="registerEmail" type="email" placeholder="Email" />
+
+      <div class="password-wrapper">
+        <input id="registerPassword" type="password" placeholder="Password" />
+        <button
+          type="button"
+          class="password-toggle"
+          id="toggleRegisterPassword"
+          onclick="togglePassword('registerPassword','toggleRegisterPassword')"
+        >
+          Show
+        </button>
       </div>
 
-      <div class="field">
-        <label>Email</label>
-        <input id="registerEmail" type="email" placeholder="Email" />
-      </div>
-
-      <div class="field">
-        <label>Password</label>
-        <div class="password-wrapper">
-          <input id="registerPassword" type="password" placeholder="Password" />
-          <button
-            type="button"
-            class="password-toggle"
-            id="toggleRegisterPassword"
-            onclick="togglePassword('registerPassword','toggleRegisterPassword')"
-          >
-            Show
-          </button>
-        </div>
-      </div>
-
-      <div class="field">
-        <label>Phone</label>
-        <input id="registerPhone" placeholder="Phone number" />
-      </div>
+      <input id="registerPhone" placeholder="Phone number" />
 
       <button onclick="registerPatient()">Register</button>
 
