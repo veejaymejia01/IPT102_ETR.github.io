@@ -1,8 +1,5 @@
 const API = "https://etr-backend.onrender.com/api";
 
-/* =========================
-   INIT (REMEMBER ME)
-========================= */
 document.addEventListener("DOMContentLoaded", () => {
   const savedEmail = localStorage.getItem("remembered_email");
 
@@ -15,9 +12,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
-/* =========================
-   API HELPER
-========================= */
 async function apiFetchPublic(url, options = {}) {
   const response = await fetch(API + url, {
     ...options,
@@ -36,9 +30,6 @@ async function apiFetchPublic(url, options = {}) {
   return data;
 }
 
-/* =========================
-   TOAST
-========================= */
 function showToast(message, type = "error") {
   const toast = document.getElementById("toast");
 
@@ -55,25 +46,19 @@ function showToast(message, type = "error") {
   }, 3000);
 }
 
-/* =========================
-   LOADING BUTTON
-========================= */
-function setButtonLoading(buttonId, isLoading, defaultText) {
+function setButtonLoading(buttonId, isLoading, text) {
   const button = document.getElementById(buttonId);
   if (!button) return;
 
   if (isLoading) {
     button.disabled = true;
-    button.innerHTML = `<span class="spinner"></span> Please wait...`;
+    button.innerHTML = `<span class="spinner"></span>Please wait...`;
   } else {
     button.disabled = false;
-    button.innerHTML = defaultText;
+    button.innerHTML = text;
   }
 }
 
-/* =========================
-   TOGGLE PASSWORD (FIXED)
-========================= */
 function togglePassword(inputId, iconId) {
   const input = document.getElementById(inputId);
   const icon = document.getElementById(iconId);
@@ -89,38 +74,31 @@ function togglePassword(inputId, iconId) {
   }
 }
 
-/* =========================
-   SECTION SWITCHING
-========================= */
-function hideAll() {
+function hideAllAuthSections() {
   document.getElementById("loginSection")?.classList.add("hidden");
   document.getElementById("registerSection")?.classList.add("hidden");
   document.getElementById("forgotSection")?.classList.add("hidden");
 }
 
 function showLogin() {
-  hideAll();
+  hideAllAuthSections();
   document.getElementById("loginSection")?.classList.remove("hidden");
 }
 
 function showRegister() {
-  hideAll();
+  hideAllAuthSections();
   document.getElementById("registerSection")?.classList.remove("hidden");
 }
 
 function showForgot() {
-  hideAll();
+  hideAllAuthSections();
   document.getElementById("forgotSection")?.classList.remove("hidden");
 
   const loginEmail = document.getElementById("loginEmail")?.value.trim();
-  if (loginEmail && document.getElementById("forgotEmail")) {
-    document.getElementById("forgotEmail").value = loginEmail;
-  }
+  const forgotEmail = document.getElementById("forgotEmail");
+  if (loginEmail && forgotEmail) forgotEmail.value = loginEmail;
 }
 
-/* =========================
-   LOGIN
-========================= */
 async function login() {
   const email = document.getElementById("loginEmail")?.value.trim();
   const password = document.getElementById("loginPassword")?.value.trim();
@@ -149,14 +127,13 @@ async function login() {
     localStorage.setItem("healthcare_token", data.token);
     localStorage.setItem("healthcare_user", JSON.stringify(user));
 
-    // ✅ FIXED REMEMBER ME
     if (rememberMe) {
       localStorage.setItem("remembered_email", email);
     } else {
       localStorage.removeItem("remembered_email");
     }
 
-    showToast("Login successful", "success");
+    showToast("Login successful.", "success");
 
     setTimeout(() => {
       if (user.role === "admin") {
@@ -166,20 +143,16 @@ async function login() {
       } else if (user.role === "patient") {
         window.location.href = "patient-dashboard.html";
       } else {
-        showToast("Unsupported role", "error");
+        showToast("Unsupported role.", "error");
         setButtonLoading("loginBtn", false, "Sign In");
       }
-    }, 600);
-
+    }, 650);
   } catch (error) {
-    showToast(error.message || "Login failed", "error");
+    showToast(error.message || "Login failed.", "error");
     setButtonLoading("loginBtn", false, "Sign In");
   }
 }
 
-/* =========================
-   REGISTER
-========================= */
 async function registerPatient() {
   const name = document.getElementById("registerName")?.value.trim();
   const email = document.getElementById("registerEmail")?.value.trim();
@@ -199,23 +172,20 @@ async function registerPatient() {
       body: JSON.stringify({ name, email, password, phone }),
     });
 
-    showToast("Registration successful", "success");
+    showToast("Registration successful. You can now log in.", "success");
 
     setTimeout(() => {
       showLogin();
-      document.getElementById("loginEmail").value = email;
-    }, 600);
-
+      const loginEmail = document.getElementById("loginEmail");
+      if (loginEmail) loginEmail.value = email;
+    }, 700);
   } catch (error) {
-    showToast(error.message || "Registration failed", "error");
+    showToast(error.message || "Registration failed.", "error");
   } finally {
     setButtonLoading("registerBtn", false, "Register");
   }
 }
 
-/* =========================
-   FORGOT PASSWORD
-========================= */
 async function forgotPassword() {
   const email = document.getElementById("forgotEmail")?.value.trim();
 
@@ -232,14 +202,13 @@ async function forgotPassword() {
       body: JSON.stringify({ email }),
     });
 
-    showToast("Reset email sent", "success");
+    showToast("Password reset instruction sent.", "success");
 
     setTimeout(() => {
       showLogin();
-    }, 800);
-
+    }, 900);
   } catch (error) {
-    showToast(error.message || "Failed to send email", "error");
+    showToast(error.message || "Failed to send reset email.", "error");
   } finally {
     setButtonLoading("forgotBtn", false, "Send Reset Email");
   }
