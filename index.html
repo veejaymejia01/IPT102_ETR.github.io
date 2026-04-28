@@ -194,20 +194,18 @@
           </div>
 
           <div class="floating-field">
-            <input id="loginPassword" type="password" placeholder=" " />
-            <label>Password</label>
-            <button
-              type="button"
-              class="eye-btn"
-              onclick="togglePassword('loginPassword', this)"
-              aria-label="Toggle password visibility"
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12Z"></path>
-                <circle cx="12" cy="12" r="3"></circle>
-              </svg>
-            </button>
-          </div>
+  <input id="loginPassword" type="password" placeholder=" " />
+  <label>Password</label>
+
+  <button
+    type="button"
+    class="eye-btn"
+    onclick="togglePassword('loginPassword', 'loginEye')"
+    aria-label="Toggle password"
+  >
+    <span id="loginEye">👁</span>
+  </button>
+</div>
 
           <div class="auth-row">
             <label class="remember-label">
@@ -221,7 +219,7 @@
             Sign In
           </button>
 
-          <div class="auth-switch">
+          <!-- <div class="auth-switch">
             No patient account?
             <button type="button" class="link-btn" onclick="showRegister()">Register</button>
           </div>
@@ -241,21 +239,19 @@
             <label>Email</label>
           </div>
 
-          <div class="floating-field">
-            <input id="registerPassword" type="password" placeholder=" " />
-            <label>Password</label>
-            <button
-              type="button"
-              class="eye-btn"
-              onclick="togglePassword('registerPassword', this)"
-              aria-label="Toggle password visibility"
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12Z"></path>
-                <circle cx="12" cy="12" r="3"></circle>
-              </svg>
-            </button>
-          </div>
+         <div class="floating-field">
+  <input id="registerPassword" type="password" placeholder=" " />
+  <label>Password</label>
+
+  <button
+    type="button"
+    class="eye-btn"
+    onclick="togglePassword('registerPassword', 'registerEye')"
+    aria-label="Toggle password"
+  >
+    <span id="registerEye">👁</span>
+  </button>
+</div>
 
           <div class="floating-field">
             <input id="registerPhone" placeholder=" " />
@@ -270,7 +266,7 @@
             Already have an account?
             <button type="button" class="link-btn" onclick="showLogin()">Login</button>
           </div>
-        </div>
+        </div> -->
 
         <div id="forgotSection" class="hidden">
           <h2>Forgot password</h2>
