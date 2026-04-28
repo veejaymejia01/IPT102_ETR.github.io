@@ -1,4 +1,46 @@
-const API = 'https://etr-backend.onrender.com/api';
+const API = "https://etr-backend.onrender.com/api";
+
+document.addEventListener("DOMContentLoaded", () => {
+  const savedEmail = localStorage.getItem("remembered_email");
+
+  if (savedEmail) {
+    const emailInput = document.getElementById("loginEmail");
+    const rememberMe = document.getElementById("rememberMe");
+
+    if (emailInput) emailInput.value = savedEmail;
+    if (rememberMe) rememberMe.checked = true;
+  }
+});
+
+function showToast(message, type = "error") {
+  const toast = document.getElementById("toast");
+
+  if (!toast) {
+    alert(message);
+    return;
+  }
+
+  toast.textContent = message;
+  toast.className = `toast ${type} show`;
+
+  setTimeout(() => {
+    toast.className = "toast";
+  }, 3000);
+}
+
+function setButtonLoading(buttonId, isLoading, defaultText) {
+  const button = document.getElementById(buttonId);
+
+  if (!button) return;
+
+  if (isLoading) {
+    button.disabled = true;
+    button.innerHTML = `<span class="spinner"></span>Please wait...`;
+  } else {
+    button.disabled = false;
+    button.innerHTML = defaultText;
+  }
+}
 
 async function apiFetchPublic(url, options = {}) {
   const r = await fetch(API + url, {
@@ -40,14 +82,14 @@ function togglePassword(inputId = "loginPassword", toggleId = "togglePasswordTex
 async function login() {
   const email = document.getElementById("loginEmail")?.value.trim();
   const password = document.getElementById("loginPassword")?.value.trim();
-  const box = document.getElementById("loginError");
-
-  if (box) box.innerText = "";
+  const rememberMe = document.getElementById("rememberMe")?.checked;
 
   if (!email || !password) {
-    if (box) box.innerText = "Enter email and password.";
+    showToast("Enter email and password.", "error");
     return;
   }
+
+  setButtonLoading("loginBtn", true, "Sign In");
 
   try {
     const data = await apiFetchPublic("/auth/login", {
@@ -65,17 +107,29 @@ async function login() {
     localStorage.setItem("healthcare_token", data.token);
     localStorage.setItem("healthcare_user", JSON.stringify(user));
 
-    if (user.role === "admin") {
-      window.location.href = "admin-dashboard.html";
-    } else if (user.role === "doctor") {
-      window.location.href = "doctor-dashboard.html";
-    } else if (user.role === "patient") {
-      window.location.href = "patient-dashboard.html";
-    } else if (box) {
-      box.innerText = "Unsupported role.";
+    if (rememberMe) {
+      localStorage.setItem("remembered_email", email);
+    } else {
+      localStorage.removeItem("remembered_email");
     }
+
+    showToast("Login successful.", "success");
+
+    setTimeout(() => {
+      if (user.role === "admin") {
+        window.location.href = "admin-dashboard.html";
+      } else if (user.role === "doctor") {
+        window.location.href = "doctor-dashboard.html";
+      } else if (user.role === "patient") {
+        window.location.href = "patient-dashboard.html";
+      } else {
+        showToast("Unsupported role.", "error");
+        setButtonLoading("loginBtn", false, "Sign In");
+      }
+    }, 600);
   } catch (e) {
-    if (box) box.innerText = e.message || "Login failed.";
+    showToast(e.message || "Login failed.", "error");
+    setButtonLoading("loginBtn", false, "Sign In");
   }
 }
 
@@ -84,14 +138,13 @@ async function registerPatient() {
   const email = document.getElementById("registerEmail")?.value.trim();
   const password = document.getElementById("registerPassword")?.value.trim();
   const phone = document.getElementById("registerPhone")?.value.trim();
-  const box = document.getElementById("registerError");
-
-  if (box) box.innerText = "";
 
   if (!name || !email || !password) {
-    if (box) box.innerText = "Name, email, and password are required.";
+    showToast("Name, email, and password are required.", "error");
     return;
   }
+
+  setButtonLoading("registerBtn", true, "Register");
 
   try {
     await apiFetchPublic("/auth/register-patient", {
@@ -99,8 +152,15 @@ async function registerPatient() {
       body: JSON.stringify({ name, email, password, phone }),
     });
 
-    window.location.href = "index.html";
+    showToast("Registration successful. You can now log in.", "success");
+
+    setTimeout(() => {
+      showLogin();
+      document.getElementById("loginEmail").value = email;
+    }, 700);
   } catch (e) {
-    if (box) box.innerText = e.message || "Registration failed.";
+    showToast(e.message || "Registration failed.", "error");
+  } finally {
+    setButtonLoading("registerBtn", false, "Register");
   }
 }
