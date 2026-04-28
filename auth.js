@@ -12,6 +12,24 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
+async function apiFetchPublic(url, options = {}) {
+  const response = await fetch(API + url, {
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...(options.headers || {}),
+    },
+  });
+
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    throw new Error(data.error || "Request failed");
+  }
+
+  return data;
+}
+
 function showToast(message, type = "error") {
   const toast = document.getElementById("toast");
 
@@ -25,12 +43,11 @@ function showToast(message, type = "error") {
 
   setTimeout(() => {
     toast.className = "toast";
-  }, 3000);
+  }, 3200);
 }
 
-function setButtonLoading(buttonId, isLoading, defaultText) {
+function setButtonLoading(buttonId, isLoading, text) {
   const button = document.getElementById(buttonId);
-
   if (!button) return;
 
   if (isLoading) {
@@ -38,44 +55,58 @@ function setButtonLoading(buttonId, isLoading, defaultText) {
     button.innerHTML = `<span class="spinner"></span>Please wait...`;
   } else {
     button.disabled = false;
-    button.innerHTML = defaultText;
+    button.innerHTML = text;
   }
 }
 
-async function apiFetchPublic(url, options = {}) {
-  const r = await fetch(API + url, {
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...(options.headers || {}),
-    },
-  });
-
-  let d = null;
-
-  try {
-    d = await r.json();
-  } catch {}
-
-  if (!r.ok) {
-    throw new Error(d?.error || "Request failed");
-  }
-
-  return d;
-}
-
-function togglePassword(inputId = "loginPassword", toggleId = "togglePasswordText") {
+function togglePassword(inputId, button) {
   const input = document.getElementById(inputId);
-  const toggle = document.getElementById(toggleId);
-
-  if (!input || !toggle) return;
+  if (!input || !button) return;
 
   if (input.type === "password") {
     input.type = "text";
-    toggle.textContent = "Hide";
+    button.innerHTML = `
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M17.94 17.94A10.94 10.94 0 0 1 12 20C5 20 1 12 1 12a21.8 21.8 0 0 1 5.06-5.94"></path>
+        <path d="M9.9 4.24A10.6 10.6 0 0 1 12 4c7 0 11 8 11 8a21.7 21.7 0 0 1-3.22 4.31"></path>
+        <path d="M1 1l22 22"></path>
+        <path d="M9.5 9.5a3.5 3.5 0 0 0 5 5"></path>
+      </svg>
+    `;
   } else {
     input.type = "password";
-    toggle.textContent = "Show";
+    button.innerHTML = `
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12Z"></path>
+        <circle cx="12" cy="12" r="3"></circle>
+      </svg>
+    `;
+  }
+}
+
+function hideAllAuthSections() {
+  document.getElementById("loginSection")?.classList.add("hidden");
+  document.getElementById("registerSection")?.classList.add("hidden");
+  document.getElementById("forgotSection")?.classList.add("hidden");
+}
+
+function showLogin() {
+  hideAllAuthSections();
+  document.getElementById("loginSection")?.classList.remove("hidden");
+}
+
+function showRegister() {
+  hideAllAuthSections();
+  document.getElementById("registerSection")?.classList.remove("hidden");
+}
+
+function showForgot() {
+  hideAllAuthSections();
+  document.getElementById("forgotSection")?.classList.remove("hidden");
+
+  const loginEmail = document.getElementById("loginEmail")?.value.trim();
+  if (loginEmail && document.getElementById("forgotEmail")) {
+    document.getElementById("forgotEmail").value = loginEmail;
   }
 }
 
@@ -126,9 +157,9 @@ async function login() {
         showToast("Unsupported role.", "error");
         setButtonLoading("loginBtn", false, "Sign In");
       }
-    }, 600);
-  } catch (e) {
-    showToast(e.message || "Login failed.", "error");
+    }, 650);
+  } catch (error) {
+    showToast(error.message || "Login failed.", "error");
     setButtonLoading("loginBtn", false, "Sign In");
   }
 }
@@ -156,11 +187,40 @@ async function registerPatient() {
 
     setTimeout(() => {
       showLogin();
-      document.getElementById("loginEmail").value = email;
+      const loginEmail = document.getElementById("loginEmail");
+      if (loginEmail) loginEmail.value = email;
     }, 700);
-  } catch (e) {
-    showToast(e.message || "Registration failed.", "error");
+  } catch (error) {
+    showToast(error.message || "Registration failed.", "error");
   } finally {
     setButtonLoading("registerBtn", false, "Register");
+  }
+}
+
+async function forgotPassword() {
+  const email = document.getElementById("forgotEmail")?.value.trim();
+
+  if (!email) {
+    showToast("Enter your email.", "error");
+    return;
+  }
+
+  setButtonLoading("forgotBtn", true, "Send Reset Email");
+
+  try {
+    await apiFetchPublic("/auth/forgot-password", {
+      method: "POST",
+      body: JSON.stringify({ email }),
+    });
+
+    showToast("Password reset instruction sent.", "success");
+
+    setTimeout(() => {
+      showLogin();
+    }, 900);
+  } catch (error) {
+    showToast(error.message || "Failed to send reset email.", "error");
+  } finally {
+    setButtonLoading("forgotBtn", false, "Send Reset Email");
   }
 }
