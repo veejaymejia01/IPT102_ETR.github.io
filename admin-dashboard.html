@@ -42,9 +42,18 @@
         </div>
 
         <div class="metrics">
-          <div class="metric-card"><small>Today's Appointments</small><strong id="todayCount">0</strong></div>
-          <div class="metric-card"><small>Selected Day</small><strong id="selectedCount">0</strong></div>
-          <div class="metric-card"><small>This Month</small><strong id="monthCount">0</strong></div>
+          <div class="metric-card">
+            <small>Today's Appointments</small>
+            <strong id="todayCount">0</strong>
+          </div>
+          <div class="metric-card">
+            <small>Selected Day</small>
+            <strong id="selectedCount">0</strong>
+          </div>
+          <div class="metric-card">
+            <small>This Month</small>
+            <strong id="monthCount">0</strong>
+          </div>
         </div>
 
         <div class="grid-2">
@@ -72,7 +81,7 @@
         <div class="page-hero">
           <div>
             <h2>Admin Patients</h2>
-            <p>Create, update, delete, and schedule patient visits.</p>
+            <p>Create, schedule, update, and delete patient visits.</p>
           </div>
           <span class="hero-badge">Professional Clinic Workflow</span>
         </div>
@@ -86,13 +95,27 @@
             <input id="addCondition" placeholder="Condition" />
             <textarea id="addDiagnosis" placeholder="Notes or medical history summary"></textarea>
             <button class="btn btn-primary" onclick="submitNewPatient()">Save Patient</button>
+
+            <hr style="margin: 22px 0; border: none; border-top: 1px solid #dbe4ef;" />
+
+            <h3>Schedule Patient</h3>
+            <select id="schedulePatient"></select>
+            <input id="scheduleDate" type="datetime-local" />
+            <button class="btn btn-primary" onclick="scheduleSelectedPatient()">
+              Schedule Patient
+            </button>
           </div>
 
           <div class="panel">
             <h3>Patients</h3>
             <table>
               <thead>
-                <tr><th>Name</th><th>Contact</th><th>Condition</th><th>Actions</th></tr>
+                <tr>
+                  <th>Name</th>
+                  <th>Contact</th>
+                  <th>Condition</th>
+                  <th>Actions</th>
+                </tr>
               </thead>
               <tbody id="patientTable"></tbody>
             </table>
@@ -120,9 +143,20 @@
 
           <div class="panel">
             <h3>Guidance</h3>
-            <div class="notice"><strong>Scheduling email</strong><br>Sent automatically when an appointment is created.</div><br>
-            <div class="notice"><strong>Manual notification</strong><br>Use this section for reminders, test results, or follow-up instructions.</div><br>
-            <div class="notice"><strong>Security</strong><br>Keep API keys in Render environment variables, not in GitHub Pages.</div>
+            <div class="notice">
+              <strong>Scheduling email</strong><br />
+              Sent automatically when an appointment is created.
+            </div>
+            <br />
+            <div class="notice">
+              <strong>Manual notification</strong><br />
+              Use this section for reminders, test results, or follow-up instructions.
+            </div>
+            <br />
+            <div class="notice">
+              <strong>Security</strong><br />
+              Keep API keys in Render environment variables, not in GitHub Pages.
+            </div>
           </div>
         </div>
       </section>
