@@ -1,10 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Healthcare Portal</title>
-  <link rel="stylesheet" href="style.css">
 
   <style>
     body {
@@ -17,16 +16,16 @@
       margin: 0;
     }
 
-    .login-card {
-      background: #fff;
+    .card {
+      background: white;
       padding: 30px;
       border-radius: 12px;
-      width: 350px;
+      width: 360px;
       box-shadow: 0 10px 25px rgba(0,0,0,0.1);
     }
 
     h2 {
-      margin-bottom: 10px;
+      margin-bottom: 5px;
     }
 
     p {
@@ -34,10 +33,20 @@
       margin-bottom: 20px;
     }
 
+    .field {
+      margin-bottom: 15px;
+    }
+
+    label {
+      font-size: 13px;
+      display: block;
+      margin-bottom: 5px;
+      color: #333;
+    }
+
     input {
       width: 100%;
       padding: 12px;
-      margin-bottom: 15px;
       border-radius: 8px;
       border: 1px solid #ccc;
       font-size: 14px;
@@ -47,26 +56,31 @@
       position: relative;
     }
 
-    .toggle-password {
+    .password-wrapper input {
+      padding-right: 70px;
+    }
+
+    .password-toggle {
       position: absolute;
       right: 10px;
       top: 50%;
       transform: translateY(-50%);
-      cursor: pointer;
-      font-size: 13px;
+      border: none;
+      background: transparent;
       color: #007bff;
-      user-select: none;
+      font-weight: 600;
+      cursor: pointer;
     }
 
     button {
       width: 100%;
       padding: 12px;
       background: #007bff;
-      color: #fff;
+      color: white;
       border: none;
       border-radius: 8px;
-      cursor: pointer;
       font-size: 15px;
+      cursor: pointer;
     }
 
     button:hover {
@@ -78,41 +92,119 @@
       font-size: 13px;
       margin-top: 10px;
     }
+
+    .switch {
+      margin-top: 15px;
+      font-size: 13px;
+      text-align: center;
+    }
+
+    .switch span {
+      color: #007bff;
+      cursor: pointer;
+    }
   </style>
 </head>
 
 <body>
 
-  <div class="login-card">
-    <h2>Welcome back</h2>
-    <p>Sign in to your healthcare portal</p>
+  <div class="card">
 
-    <form id="loginForm">
-      <input
-        type="email"
-        id="email"
-        placeholder="Email"
-        required
-      />
+    <!-- LOGIN -->
+    <div id="loginSection">
+      <h2>Welcome back</h2>
+      <p>Sign in to your account</p>
 
-      <div class="password-wrapper">
-        <input
-          type="password"
-          id="password"
-          placeholder="Password"
-          required
-        />
-        <span class="toggle-password" onclick="togglePassword()" id="toggleText">
-          Show
-        </span>
+      <div class="field">
+        <label>Email</label>
+        <input id="loginEmail" type="email" placeholder="Enter your email" />
       </div>
 
-      <button type="submit">Sign In</button>
-    </form>
+      <div class="field">
+        <label>Password</label>
+        <div class="password-wrapper">
+          <input id="loginPassword" type="password" placeholder="Enter your password" />
+          <button
+            type="button"
+            class="password-toggle"
+            id="togglePasswordText"
+            onclick="togglePassword('loginPassword','togglePasswordText')"
+          >
+            Show
+          </button>
+        </div>
+      </div>
 
-    <div class="error" id="errorMsg"></div>
+      <button onclick="login()">Sign In</button>
+
+      <div id="loginError" class="error"></div>
+
+      <div class="switch">
+        Don't have an account?
+        <span onclick="showRegister()">Register</span>
+      </div>
+    </div>
+
+    <!-- REGISTER -->
+    <div id="registerSection" style="display:none;">
+      <h2>Create account</h2>
+      <p>Register as a patient</p>
+
+      <div class="field">
+        <label>Name</label>
+        <input id="registerName" placeholder="Full name" />
+      </div>
+
+      <div class="field">
+        <label>Email</label>
+        <input id="registerEmail" type="email" placeholder="Email" />
+      </div>
+
+      <div class="field">
+        <label>Password</label>
+        <div class="password-wrapper">
+          <input id="registerPassword" type="password" placeholder="Password" />
+          <button
+            type="button"
+            class="password-toggle"
+            id="toggleRegisterPassword"
+            onclick="togglePassword('registerPassword','toggleRegisterPassword')"
+          >
+            Show
+          </button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Phone</label>
+        <input id="registerPhone" placeholder="Phone number" />
+      </div>
+
+      <button onclick="registerPatient()">Register</button>
+
+      <div id="registerError" class="error"></div>
+
+      <div class="switch">
+        Already have an account?
+        <span onclick="showLogin()">Login</span>
+      </div>
+    </div>
+
   </div>
 
   <script src="auth.js"></script>
+
+  <script>
+    function showRegister() {
+      document.getElementById("loginSection").style.display = "none";
+      document.getElementById("registerSection").style.display = "block";
+    }
+
+    function showLogin() {
+      document.getElementById("registerSection").style.display = "none";
+      document.getElementById("loginSection").style.display = "block";
+    }
+  </script>
+
 </body>
 </html>
