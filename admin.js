@@ -223,3 +223,53 @@ loadAll().catch((error) => {
   console.error(error);
   alert("Failed to load admin data. Check backend connection.");
 });
+async function scheduleSelectedPatient() {
+  const patientId = el("schedulePatient").value;
+  const appointmentDate = el("scheduleDate").value;
+
+  if (!patientId || !appointmentDate) {
+    alert("Select a patient and appointment date.");
+    return;
+  }
+
+  const selectedDate = new Date(appointmentDate);
+  const day = selectedDate.getDay();
+  const hour = selectedDate.getHours();
+  const minutes = selectedDate.getMinutes();
+
+  // Sunday = 0, Saturday = 6
+  if (day === 0 || day === 6) {
+    alert("Appointments are only allowed on weekdays, Monday to Friday.");
+    return;
+  }
+
+  // Allow 8:00 AM up to 6:00 PM
+  if (hour < 8 || hour > 18 || (hour === 18 && minutes > 0)) {
+    alert("Appointments are only allowed from 8:00 AM to 6:00 PM.");
+    return;
+  }
+
+  const patient = patients.find((item) => item.id === patientId);
+
+  if (!patient) {
+    alert("Patient not found.");
+    return;
+  }
+
+  await apiFetch("/appointments", {
+    method: "POST",
+    body: JSON.stringify({
+      patientName: patient.name,
+      appointmentDate,
+      status: "Scheduled",
+    }),
+  });
+
+  el("schedulePatient").value = "";
+  el("scheduleDate").value = "";
+
+  alert("Patient scheduled successfully.");
+
+  await loadAll();
+  showAdminPage("appointments", document.querySelector(".nav-btn"));
+}
