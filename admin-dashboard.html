@@ -68,7 +68,7 @@
         <div class="page-hero">
           <div>
             <h2>Admin Patients</h2>
-            <p>Click a patient to view details, schedule, or delete records.</p>
+            <p>View records, create patients, schedule visits, or delete records.</p>
           </div>
           <span class="hero-badge">Weekdays · 8 AM - 6 PM</span>
         </div>
@@ -99,17 +99,11 @@
 
               <div id="adminScheduleStatus" class="email-status"></div>
             </div>
-
-            <div id="patientDetails" class="panel hidden" style="margin-top: 16px;">
-              <h3>Patient Details</h3>
-              <div id="patientDetailsContent" class="notice">
-                Select a patient to view details.
-              </div>
-            </div>
           </div>
 
           <div class="panel">
             <h3>Patients</h3>
+
             <table>
               <thead>
                 <tr>
@@ -121,6 +115,11 @@
               </thead>
               <tbody id="patientTable"></tbody>
             </table>
+
+            <div id="patientDetails" class="patient-details-card hidden">
+              <h3>Patient Record</h3>
+              <div id="patientDetailsContent"></div>
+            </div>
           </div>
         </div>
       </section>
