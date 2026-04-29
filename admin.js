@@ -321,6 +321,12 @@ function renderPatients() {
               <td>
                 <button
                   class="btn btn-secondary"
+                  onclick="event.stopPropagation(); viewPatient('${patient.id}')"
+                >
+                  View
+                </button>
+                <button
+                  class="btn btn-secondary"
                   onclick="event.stopPropagation(); selectPatientForSchedule('${patient.id}')"
                 >
                   Schedule
@@ -373,12 +379,37 @@ function viewPatient(id, event = null) {
   box.classList.remove("hidden");
 
   content.innerHTML = `
-    <strong>Name:</strong> ${patient.name || "-"}<br><br>
-    <strong>Email:</strong> ${patient.email || "-"}<br>
-    <strong>Phone:</strong> ${patient.phone || "-"}<br><br>
-    <strong>Condition:</strong> ${patient.condition || "General"}<br>
-    <strong>Diagnosis:</strong> ${patient.diagnosis || "Pending assessment"}<br><br>
-    <strong>Patient ID:</strong> ${patient.id || "-"}
+    <div class="record-grid">
+      <div>
+        <span>Name</span>
+        <strong>${patient.name || "-"}</strong>
+      </div>
+
+      <div>
+        <span>Email</span>
+        <strong>${patient.email || "-"}</strong>
+      </div>
+
+      <div>
+        <span>Phone</span>
+        <strong>${patient.phone || "-"}</strong>
+      </div>
+
+      <div>
+        <span>Condition</span>
+        <strong>${patient.condition || "General"}</strong>
+      </div>
+
+      <div class="record-full">
+        <span>Diagnosis / Notes</span>
+        <strong>${patient.diagnosis || "Pending assessment"}</strong>
+      </div>
+
+      <div class="record-full">
+        <span>Patient ID</span>
+        <strong>${patient.id || "-"}</strong>
+      </div>
+    </div>
   `;
 }
 
