@@ -1,18 +1,154 @@
-const API="https://etr-backend.onrender.com/api";
-const token=localStorage.getItem("healthcare_token")||"";
-const currentUser=JSON.parse(localStorage.getItem("healthcare_user")||"null");
-function el(id){return document.getElementById(id)}
-function logout(){localStorage.removeItem("healthcare_token");localStorage.removeItem("healthcare_user");window.location.href="index.html"}
-async function apiFetch(url,options={}){const r=await fetch(API+url,{...options,headers:{"Content-Type":"application/json",Authorization:`Bearer ${token}`,...(options.headers||{})}});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||"Request failed");return d}
-function showSection(id,btn=null){document.querySelectorAll("main section").forEach(s=>s.classList.add("hidden"));const t=el(id);if(t)t.classList.remove("hidden");document.querySelectorAll(".nav-btn").forEach(n=>n.classList.remove("active"));if(btn)btn.classList.add("active")}
-function formatDate(date){return date.toISOString().split("T")[0]}
-function getDatePart(item){const raw=String(item.appointmentDate||"");return raw.includes("T")?raw.split("T")[0]:raw.split(" ")[0]}
-function getTimePart(item){const raw=String(item.appointmentDate||"");if(raw.includes("T"))return raw.split("T")[1].slice(0,5);if(raw.includes(" "))return raw.split(" ")[1]||"";return raw}
-function isWeekday(dateString){const d=new Date(dateString).getDay();return d>=1&&d<=5}
-function isBusinessHour(dateString){const d=new Date(dateString);const h=d.getHours();const m=d.getMinutes();return h>=8&&(h<18||(h===18&&m===0))}
-function validateScheduleDate(dateString){if(!dateString)return"Select appointment date and time.";if(!isWeekday(dateString))return"Appointments are only allowed Monday to Friday.";if(!isBusinessHour(dateString))return"Appointments are only allowed from 8:00 AM to 6:00 PM.";return""}
-const clinicTimeSlots=["08:00","09:00","10:00","11:00","13:00","14:00","15:00","16:00","17:00"];
-function to12Hour(time){const[h,m]=time.split(":").map(Number);const s=h>=12?"PM":"AM";const hr=h%12||12;return`${hr}:${String(m).padStart(2,"0")} ${s}`}
-function renderTimeSlots(containerId,dateInputId){const c=el(containerId),input=el(dateInputId);if(!c||!input)return;c.innerHTML=clinicTimeSlots.map(t=>`<button type="button" class="time-btn" onclick="applyTimeSlot('${dateInputId}','${t}','${containerId}')">${to12Hour(t)}</button>`).join("")}
-function applyTimeSlot(dateInputId,time,containerId){const input=el(dateInputId);if(!input)return;const date=input.value?input.value.split("T")[0]:formatDate(new Date());input.value=`${date}T${time}`;document.querySelectorAll(`#${containerId} .time-btn`).forEach(b=>b.classList.remove("active"));[...document.querySelectorAll(`#${containerId} .time-btn`)].find(b=>b.textContent.trim()===to12Hour(time))?.classList.add("active")}
-function renderCalendarBase(gridId,titleId,currentDate,selectedDate,appointments,onSelect){const grid=el(gridId);if(!grid)return;grid.innerHTML="";const y=currentDate.getFullYear(),m=currentDate.getMonth();if(el(titleId))el(titleId).textContent=currentDate.toLocaleString("default",{month:"long",year:"numeric"});["SUN","MON","TUE","WED","THU","FRI","SAT"].forEach(day=>{const d=document.createElement("div");d.className="day-name";d.textContent=day;grid.appendChild(d)});const first=new Date(y,m,1),start=new Date(first);start.setDate(start.getDate()-first.getDay());for(let i=0;i<42;i++){const d=new Date(start);d.setDate(start.getDate()+i);const key=formatDate(d);const cell=document.createElement("button");cell.className="day-cell";if(d.getMonth()!==m)cell.classList.add("muted");if(formatDate(d)===formatDate(selectedDate))cell.classList.add("selected");if(formatDate(d)===formatDate(new Date()))cell.classList.add("today");if(!isWeekday(key))cell.classList.add("weekend");const count=appointments.filter(a=>getDatePart(a)===key).length;cell.innerHTML=count?`${d.getDate()}<br><small>${count} patient${count>1?"s":""}</small>`:d.getDate();if(isWeekday(key))cell.onclick=()=>onSelect(d);grid.appendChild(cell)}}
+const API = "https://etr-backend.onrender.com/api";
+const token = localStorage.getItem("healthcare_token") || "";
+const currentUser = JSON.parse(
+  localStorage.getItem("healthcare_user") || "null",
+);
+function el(id) {
+  return document.getElementById(id);
+}
+function logout() {
+  localStorage.removeItem("healthcare_token");
+  localStorage.removeItem("healthcare_user");
+  window.location.href = "index.html";
+}
+async function apiFetch(url, options = {}) {
+  const r = await fetch(API + url, {
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+      ...(options.headers || {}),
+    },
+  });
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(d.error || "Request failed");
+  return d;
+}
+function showSection(id, btn = null) {
+  document
+    .querySelectorAll("main section")
+    .forEach((s) => s.classList.add("hidden"));
+  const t = el(id);
+  if (t) t.classList.remove("hidden");
+  document
+    .querySelectorAll(".nav-btn")
+    .forEach((n) => n.classList.remove("active"));
+  if (btn) btn.classList.add("active");
+}
+function formatDate(date) {
+  return date.toISOString().split("T")[0];
+}
+function getDatePart(item) {
+  const raw = String(item.appointmentDate || "");
+  return raw.includes("T") ? raw.split("T")[0] : raw.split(" ")[0];
+}
+function getTimePart(item) {
+  const raw = String(item.appointmentDate || "");
+  if (raw.includes("T")) return raw.split("T")[1].slice(0, 5);
+  if (raw.includes(" ")) return raw.split(" ")[1] || "";
+  return raw;
+}
+function isWeekday(dateString) {
+  const d = new Date(dateString).getDay();
+  return d >= 1 && d <= 5;
+}
+function isBusinessHour(dateString) {
+  const d = new Date(dateString);
+  const h = d.getHours();
+  const m = d.getMinutes();
+  return h >= 8 && (h < 18 || (h === 18 && m === 0));
+}
+function validateScheduleDate(dateString) {
+  if (!dateString) return "Select appointment date and time.";
+  if (!isWeekday(dateString))
+    return "Appointments are only allowed Monday to Friday.";
+  if (!isBusinessHour(dateString))
+    return "Appointments are only allowed from 8:00 AM to 6:00 PM.";
+  return "";
+}
+const clinicTimeSlots = [
+  "08:00",
+  "09:00",
+  "10:00",
+  "11:00",
+  "13:00",
+  "14:00",
+  "15:00",
+  "16:00",
+  "17:00",
+];
+function to12Hour(time) {
+  const [h, m] = time.split(":").map(Number);
+  const s = h >= 12 ? "PM" : "AM";
+  const hr = h % 12 || 12;
+  return `${hr}:${String(m).padStart(2, "0")} ${s}`;
+}
+function renderTimeSlots(containerId, dateInputId) {
+  const c = el(containerId),
+    input = el(dateInputId);
+  if (!c || !input) return;
+  c.innerHTML = clinicTimeSlots
+    .map(
+      (t) =>
+        `<button type="button" class="time-btn" onclick="applyTimeSlot('${dateInputId}','${t}','${containerId}')">${to12Hour(t)}</button>`,
+    )
+    .join("");
+}
+function applyTimeSlot(dateInputId, time, containerId) {
+  const input = el(dateInputId);
+  if (!input) return;
+  const date = input.value ? input.value.split("T")[0] : formatDate(new Date());
+  input.value = `${date}T${time}`;
+  document
+    .querySelectorAll(`#${containerId} .time-btn`)
+    .forEach((b) => b.classList.remove("active"));
+  [...document.querySelectorAll(`#${containerId} .time-btn`)]
+    .find((b) => b.textContent.trim() === to12Hour(time))
+    ?.classList.add("active");
+}
+function renderCalendarBase(
+  gridId,
+  titleId,
+  currentDate,
+  selectedDate,
+  appointments,
+  onSelect,
+) {
+  const grid = el(gridId);
+  if (!grid) return;
+  grid.innerHTML = "";
+  const y = currentDate.getFullYear(),
+    m = currentDate.getMonth();
+  if (el(titleId))
+    el(titleId).textContent = currentDate.toLocaleString("default", {
+      month: "long",
+      year: "numeric",
+    });
+  ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"].forEach((day) => {
+    const d = document.createElement("div");
+    d.className = "day-name";
+    d.textContent = day;
+    grid.appendChild(d);
+  });
+  const first = new Date(y, m, 1),
+    start = new Date(first);
+  start.setDate(start.getDate() - first.getDay());
+  for (let i = 0; i < 42; i++) {
+    const d = new Date(start);
+    d.setDate(start.getDate() + i);
+    const key = formatDate(d);
+    const cell = document.createElement("button");
+    cell.className = "day-cell";
+    if (d.getMonth() !== m) cell.classList.add("muted");
+    if (formatDate(d) === formatDate(selectedDate))
+      cell.classList.add("selected");
+    if (formatDate(d) === formatDate(new Date())) cell.classList.add("today");
+    if (!isWeekday(key)) cell.classList.add("weekend");
+    const count = appointments.filter((a) => getDatePart(a) === key).length;
+    cell.innerHTML = count
+      ? `${d.getDate()}<br><small>${count} patient${count > 1 ? "s" : ""}</small>`
+      : d.getDate();
+    if (isWeekday(key)) cell.onclick = () => onSelect(d);
+    grid.appendChild(cell);
+  }
+}
