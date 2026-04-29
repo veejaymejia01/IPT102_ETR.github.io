@@ -494,3 +494,43 @@ td {
     align-items: flex-start;
   }
 }
+.patient-details-card {
+  margin-top: 18px;
+  padding: 18px;
+  border-radius: 18px;
+  background: #f8fbff;
+  border: 1px solid #dbeafe;
+}
+
+.record-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.record-grid div {
+  padding: 14px;
+  border-radius: 14px;
+  background: white;
+  border: 1px solid #e5e7eb;
+}
+
+.record-grid span {
+  display: block;
+  font-size: 12px;
+  color: #64748b;
+  margin-bottom: 6px;
+}
+
+.record-grid strong {
+  color: #111827;
+  font-size: 14px;
+}
+
+.record-full {
+  grid-column: 1 / -1;
+}
+
+.patient-row.active {
+  background: #e0e7ff;
+}
