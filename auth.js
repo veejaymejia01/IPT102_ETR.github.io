@@ -1,4 +1,4 @@
-const API = "https://etr-backend.onrender.com/api";
+const API = "https://etr-backend.onrender.com";
 document.addEventListener("DOMContentLoaded", () => {
   const saved = localStorage.getItem("remembered_email");
   if (saved) {
