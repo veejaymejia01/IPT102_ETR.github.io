@@ -305,21 +305,28 @@ function renderNotifications() {
 }
 async function sendEmailNotification() {
   const patientId = el("notificationPatient").value,
-    subject =
-      el("notificationSubject").value.trim() || "Healthcare Notification",
+    subject = el("notificationSubject").value.trim() || "CareFlow Notification",
     message = el("notificationMessage").value.trim(),
     status = el("emailStatus");
+
   if (status) status.textContent = "";
+
   if (!patientId || !message)
-    return alert("Select patient and write a message.");
+    return alert("Select a patient and write a message.");
+
   const res = await apiFetch("/email/send", {
     method: "POST",
     body: JSON.stringify({ patientId, subject, message }),
   });
-  if (status)
+
+  if (status) {
     status.textContent = res.emailSent
-      ? "Email sent successfully."
-      : "Email request completed, but email provider did not send. Check RESEND_API_KEY or verified recipient/domain.";
+      ? "✅ Email sent successfully."
+      : "⚠️ Email request completed, but could not be sent. Check backend logs or Brevo credentials.";
+    status.style.color = res.emailSent ? "green" : "orange";
+  }
+
+  // Clear form
   el("notificationSubject").value = "";
   el("notificationMessage").value = "";
 }
