@@ -310,8 +310,7 @@ async function sendEmailNotification() {
 
   if (status) status.textContent = "";
 
-  if (!patientId || !message)
-    return alert("Select a patient and write a message.");
+  if (!patientId || !message) return alert("Select a patient and write a message.");
 
   const res = await apiFetch("/email/send", {
     method: "POST",
@@ -319,13 +318,12 @@ async function sendEmailNotification() {
   });
 
   if (status) {
-    status.textContent = res.emailSent
-      ? "✅ Email sent successfully."
-      : "⚠️ Email request completed, but could not be sent. Check backend logs or Brevo credentials.";
+    status.textContent = res.emailSent 
+      ? "✅ Email sent successfully." 
+      : "⚠️ Email could not be sent. Check backend logs.";
     status.style.color = res.emailSent ? "green" : "orange";
   }
 
-  // Clear form
   el("notificationSubject").value = "";
   el("notificationMessage").value = "";
 }
