@@ -3,10 +3,10 @@ const API = "https://etr-backend.onrender.com/api";
 document.addEventListener("DOMContentLoaded", () => {
   const saved = localStorage.getItem("remembered_email");
   if (saved) {
-    const e = document.getElementById("loginEmail"),
-      r = document.getElementById("rememberMe");
-    if (e) e.value = saved;
-    if (r) r.checked = true;
+    const emailInput = document.getElementById("loginEmail");
+    const rememberCheckbox = document.getElementById("rememberMe");
+    if (emailInput) emailInput.value = saved;
+    if (rememberCheckbox) rememberCheckbox.checked = true;
   }
 });
 async function apiFetchPublic(url, options = {}) {
@@ -71,31 +71,47 @@ function showForgot() {
 async function login() {
   const email = document.getElementById("loginEmail")?.value.trim();
   const password = document.getElementById("loginPassword")?.value.trim();
-  const remember = document.getElementById("rememberMe")?.checked;
-  if (!email || !password) return showToast("Enter email and password.");
+  const remember = document.getElementById("rememberMe")?.checked || false;
+  const errorBox = document.getElementById("loginError");
+
+  if (errorBox) errorBox.innerText = '';
+
+  if (!email || !password) {
+    if (errorBox) errorBox.innerText = 'Enter email and password.';
+    return;
+  }
+
   setButtonLoading("loginBtn", true, "Sign In");
+
   try {
     const data = await apiFetchPublic("/auth/login", {
       method: "POST",
       body: JSON.stringify({ email, password }),
     });
+
+    // Remember Me logic
+    if (remember) {
+      localStorage.setItem("remembered_email", email);
+    } else {
+      localStorage.removeItem("remembered_email");
+    }
+
     const user = {
       id: data.user?.id,
       email: data.user?.email || email,
       role: data.user?.role || "",
       name: data.user?.name || "User",
     };
+
     localStorage.setItem("healthcare_token", data.token);
     localStorage.setItem("healthcare_user", JSON.stringify(user));
-    remember
-      ? localStorage.setItem("remembered_email", email)
-      : localStorage.removeItem("remembered_email");
+
     showToast("Login successful.", "success");
+
     setTimeout(() => {
       if (user.role === "admin") location.href = "admin-dashboard.html";
       else if (user.role === "doctor") location.href = "doctor-dashboard.html";
-      else if (user.role === "patient")
-        location.href = "patient-dashboard.html";
+      else if (user.role === "patient") location.href = "patient-dashboard.html";
       else {
         showToast("Unsupported role.");
         setButtonLoading("loginBtn", false, "Sign In");
