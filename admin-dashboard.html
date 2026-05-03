@@ -1,136 +1,217 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Dashboard - CareFlow</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css' rel='stylesheet' />
-  <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="style.css">
 </head>
-<body class="bg-gray-50 font-sans">
-  <div class="flex h-screen">
-    <!-- Sidebar -->
-    <div class="w-64 bg-white shadow-xl p-6 flex flex-col">
-      <div class="flex items-center gap-3 mb-10">
-        <div class="w-10 h-10 bg-blue-600 rounded-2xl flex items-center justify-center text-white font-bold text-xl">CF</div>
-        <h1 class="text-2xl font-bold text-gray-800">CareFlow</h1>
-      </div>
-      <nav class="flex-1 space-y-1">
-        <a onclick="showSection('calendar')" class="flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-blue-50 cursor-pointer text-gray-700 hover:text-blue-600 font-medium">
-          <i class="fas fa-calendar-alt"></i> Calendar
-        </a>
-        <a onclick="showSection('specializations')" class="flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-blue-50 cursor-pointer text-gray-700 hover:text-blue-600 font-medium">
-          <i class="fas fa-tags"></i> Specializations
-        </a>
-        <a onclick="showSection('patients')" class="flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-blue-50 cursor-pointer text-gray-700 hover:text-blue-600 font-medium">
-          <i class="fas fa-users"></i> Patients
-        </a>
-      </nav>
-      <button onclick="logout()" class="mt-auto w-full py-3 bg-red-500 hover:bg-red-600 text-white rounded-2xl font-medium flex items-center justify-center gap-2">
-        <i class="fas fa-sign-out-alt"></i> Logout
-      </button>
-    </div>
 
-    <!-- Main Content -->
-    <div class="flex-1 p-8 overflow-auto">
-      <!-- Calendar -->
-      <div id="calendar" class="section">
-        <h1 class="text-3xl font-bold text-gray-800 mb-6">All Appointments</h1>
-        <div id="calendar-container" class="bg-white rounded-3xl shadow p-6"></div>
-      </div>
-
-      <!-- Specializations -->
-      <div id="specializations" class="section hidden">
-        <h1 class="text-3xl font-bold text-gray-800 mb-6">Appointments by Specialization</h1>
-        <div id="specializations-content" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
-      </div>
-
-      <!-- Patients -->
-      <div id="patients" class="section hidden">
-        <h1 class="text-3xl font-bold text-gray-800 mb-6">All Patients</h1>
-        <div id="patients-content" class="bg-white rounded-3xl shadow overflow-hidden"></div>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    const API = "https://etr-backend.onrender.com/api";
-    const token = localStorage.getItem("healthcare_token");
-
-    async function apiFetch(url, options = {}) {
-      const res = await fetch(API + url, {
-        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-        ...options
-      });
-      if (!res.ok) throw new Error(await res.text());
-      return res.json();
-    }
-
-    let calendar;
-
-    function showSection(section) {
-      document.querySelectorAll('.section').forEach(s => s.classList.add('hidden'));
-      document.getElementById(section).classList.remove('hidden');
-      if (section === 'calendar') loadCalendar();
-      if (section === 'specializations') loadSpecializations();
-      if (section === 'patients') loadPatients();
-    }
-
-    async function loadCalendar() {
-      const events = await apiFetch("/appointments");
-      if (calendar) calendar.destroy();
-      calendar = new FullCalendar.Calendar(document.getElementById("calendar-container"), {
-        initialView: "dayGridMonth",
-        events: events.map(a => ({
-          title: `${a.patient_name} - ${a.status}`,
-          start: a.appointment_date,
-          color: a.status === "Scheduled" ? "#3b82f6" : "#10b981"
-        })),
-        headerToolbar: { left: "prev,next today", center: "title", right: "dayGridMonth,timeGridWeek,timeGridDay" },
-        eventClick: function(info) {
-          alert(`Appointment: ${info.event.title}\nDate: ${info.event.start}`);
-        }
-      });
-      calendar.render();
-    }
-
-    async function loadSpecializations() {
-      const specs = await apiFetch("/specializations");
-      let html = "";
-      for (const spec of specs) {
-        html += `
-          <div class="bg-white p-6 rounded-3xl shadow hover:shadow-xl transition cursor-pointer" onclick="loadAppointmentsBySpec('${spec.id}')">
-            <h3 class="font-semibold text-xl">${spec.name}</h3>
-            <p class="text-gray-500 text-sm mt-1">${spec.description || ''}</p>
-          </div>`;
-      }
-      document.getElementById("specializations-content").innerHTML = html;
-    }
-
-    async function loadAppointmentsBySpec(specId) {
-      const data = await apiFetch(`/appointments/specialization/${specId}`);
-      alert(JSON.stringify(data, null, 2)); // Replace with nice modal in production
-    }
-
-    async function loadPatients() {
-      const data = await apiFetch("/patients");
-      let html = `<table class="w-full"><thead class="bg-gray-100"><tr><th class="text-left p-4">Name</th><th class="text-left p-4">Email</th><th class="text-left p-4">Phone</th></tr></thead><tbody>`;
-      for (const p of data) {
-        html += `<tr class="border-b hover:bg-gray-50"><td class="p-4">${p.name}</td><td class="p-4">${p.email || '-'}</td><td class="p-4">${p.phone || '-'}</td></tr>`;
-      }
-      html += `</tbody></table>`;
-      document.getElementById("patients-content").innerHTML = html;
-    }
-
-    function logout() {
-      localStorage.clear();
-      location.href = "index.html";
-    }
-
-    // Start with Calendar
-    window.onload = () => showSection('calendar');
-  </script>
+<body>
+    <section class="app-shell">
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <h1>Healthcare Portal</h1>
+                <p>Administrative control for appointments, patients, notifications, and billing.</p>
+            </div>
+            <div class="role-panel">
+                <div class="role-badge">Admin Access</div>
+                <p class="sidebar-note">Manage daily healthcare operations from one secure dashboard.</p>
+            </div>
+            <div class="nav-list"><button class="nav-btn active"
+                    onclick="showSection('dashboard',this)">Dashboard</button><button class="nav-btn"
+                    onclick="showSection('appointments',this)">Appointments</button><button class="nav-btn"
+                    onclick="showSection('patients',this)">Patients</button><button class="nav-btn"
+                    onclick="showSection('addPatientPage',this)">Add Patient</button><button class="nav-btn"
+                    onclick="showSection('notifications',this)">Notifications</button><button class="nav-btn"
+                    onclick="showSection('billing',this)">Billing</button></div>
+            <div class="nav-spacer"></div><button class="logout-btn" onclick="logout()">Logout</button>
+        </aside>
+        <main class="main">
+            <div class="topbar">
+                <div>
+                    <h2>Dashboard Overview</h2>
+                    <p id="welcomeText">Welcome</p>
+                </div>
+            </div>
+            <section id="dashboard">
+                <div class="metric-grid">
+                    <div class="metric-card">
+                        <div class="metric-label">Total Patients</div>
+                        <div class="metric-value" id="patientCount">0</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Appointments</div>
+                        <div class="metric-value" id="appointmentCount">0</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Invoices</div>
+                        <div class="metric-value" id="billCount">0</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Notifications</div>
+                        <div class="metric-value" id="notificationCount">0</div>
+                    </div>
+                </div>
+            </section>
+            <section id="appointments" class="hidden">
+                <div class="panel">
+                    <div class="panel-head">
+                        <div>
+                            <h3>Appointments</h3>
+                            <p>Create and review patient appointments.</p>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <div class="toolbar"><input id="appointmentPatient" placeholder="Patient name"><input
+                                id="appointmentDate" type="datetime-local"><button class="btn btn-primary inline-btn"
+                                onclick="addAppointment()">Add Appointment</button></div>
+                        <div class="table-wrap">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Patient</th>
+                                        <th>Date</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="appointmentTable"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <section id="patients" class="hidden">
+                <div class="panel">
+                    <div class="panel-head">
+                        <div>
+                            <h3>Patients</h3>
+                            <p>Search, review, edit, and manage patient records.</p>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <div class="patients-container">
+                            <div class="patients-header"><input id="patientSearch" class="search-input full"
+                                    placeholder="Search patients..." oninput="renderPatients()"><button
+                                    class="btn btn-primary inline-btn" onclick="showSection('addPatientPage')">+ Add
+                                    Patient</button></div>
+                            <div class="table-wrap">
+                                <table class="patients-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Phone</th>
+                                            <th>Condition</th>
+                                            <th>Diagnosis</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="patientTable"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel" style="margin-top:20px;">
+                    <div class="panel-head">
+                        <div>
+                            <h3>Patient Record</h3>
+                            <p>Edit patient details and medical information.</p>
+                        </div>
+                    </div>
+                    <div class="panel-body stack">
+                        <div id="recordDetails" class="patient-record-box">Click a patient to view record details.</div>
+                        <div class="toolbar wrap-3"><input id="editPatientName" placeholder="Patient name"><input
+                                id="editPatientEmail" placeholder="Email"><input id="editPatientPhone"
+                                placeholder="Phone"></div>
+                        <div class="toolbar wrap-3"><input id="editPatientCondition" placeholder="Condition"><input
+                                id="editPatientDiagnosis" placeholder="Diagnosis"><button
+                                class="btn btn-primary inline-btn" onclick="savePatientRecord()">Save Record</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <section id="addPatientPage" class="hidden">
+                <div class="panel narrow-panel">
+                    <div class="panel-head">
+                        <div>
+                            <h3>Add Patient</h3>
+                            <p>Create a new patient record.</p>
+                        </div>
+                    </div>
+                    <div class="panel-body stack">
+                        <div class="toolbar wrap-3"><input id="addName" placeholder="Full Name"><input id="addEmail"
+                                placeholder="Email"><input id="addPhone" placeholder="Phone"></div>
+                        <div class="toolbar wrap-3"><input id="addCondition" placeholder="Condition"><input
+                                id="addDiagnosis" placeholder="Diagnosis"></div>
+                        <div class="toolbar"><button class="btn btn-primary inline-btn"
+                                onclick="submitNewPatient()">Save Patient</button><button
+                                class="btn btn-secondary inline-btn" onclick="showSection('patients')">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <section id="notifications" class="hidden">
+                <div class="panel">
+                    <div class="panel-head">
+                        <div>
+                            <h3>Notifications</h3>
+                            <p>Send patient email notifications and review message history.</p>
+                        </div>
+                    </div>
+                    <div class="panel-body stack">
+                        <div class="toolbar wrap-3"><select id="notificationPatient"></select><input
+                                id="notificationSubject" placeholder="Email subject"><input id="notificationMessage"
+                                placeholder="Message to patient"></div>
+                        <div class="toolbar"><button class="btn btn-primary inline-btn"
+                                onclick="sendEmailNotification()">Send Email</button></div>
+                        <div class="table-wrap">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Patient</th>
+                                        <th>Type</th>
+                                        <th>Message</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="notificationTable"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <section id="billing" class="hidden">
+                <div class="panel">
+                    <div class="panel-head">
+                        <div>
+                            <h3>Billing</h3>
+                            <p>Issue billing records and review invoice history.</p>
+                        </div>
+                    </div>
+                    <div class="panel-body stack">
+                        <div class="toolbar wrap-4"><select id="billingPatient"></select><input id="billingInvoice"
+                                placeholder="Invoice"><input id="billingAmount" type="number"
+                                placeholder="Amount"><button class="btn btn-primary inline-btn" onclick="addBill()">Add
+                                Bill</button></div>
+                        <div class="table-wrap">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Invoice</th>
+                                        <th>Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="billingTable"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </section>
+    <script src="admin.js"></script>
 </body>
+
 </html>
