@@ -4,78 +4,107 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Dashboard - CareFlow</title>
-  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
-<body>
-  <div class="dashboard-container">
-    <nav class="sidebar">
-      <h2>CareFlow</h2>
-      <ul>
-        <li onclick="showSection('overview')">Overview</li>
-        <li onclick="showSection('specializations')">Specializations</li>
-        <li onclick="showSection('patients')">Patients</li>
-      </ul>
-      <button onclick="logout()">Logout</button>
-    </nav>
+<body class="bg-gray-50">
+  <div class="flex h-screen">
+    <!-- Sidebar -->
+    <div class="w-64 bg-white shadow-xl p-6 flex flex-col">
+      <div class="flex items-center gap-3 mb-10">
+        <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white font-bold">CF</div>
+        <h1 class="text-2xl font-bold text-gray-800">CareFlow</h1>
+      </div>
+      <nav class="flex-1 space-y-2">
+        <a onclick="showSection('overview')" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-blue-50 cursor-pointer text-gray-700 hover:text-blue-600">
+          <i class="fas fa-home"></i> Overview
+        </a>
+        <a onclick="showSection('specializations')" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-blue-50 cursor-pointer text-gray-700 hover:text-blue-600">
+          <i class="fas fa-tags"></i> Specializations
+        </a>
+        <a onclick="showSection('patients')" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-blue-50 cursor-pointer text-gray-700 hover:text-blue-600">
+          <i class="fas fa-users"></i> Patients
+        </a>
+      </nav>
+      <button onclick="logout()" class="mt-auto w-full py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl font-medium">Logout</button>
+    </div>
 
-    <main class="content">
+    <!-- Main Content -->
+    <div class="flex-1 p-8 overflow-auto">
       <!-- Overview -->
       <div id="overview" class="section">
-        <h1>Dashboard Overview</h1>
-        <div id="all-appointments"></div>
+        <h1 class="text-3xl font-bold text-gray-800 mb-8">Dashboard Overview</h1>
+        <div id="overview-content" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
       </div>
 
       <!-- Specializations -->
       <div id="specializations" class="section hidden">
-        <h1>Appointments by Specialization</h1>
-        <div id="specialization-list"></div>
+        <h1 class="text-3xl font-bold text-gray-800 mb-8">Appointments by Specialization</h1>
+        <div id="specializations-content" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
       </div>
 
       <!-- Patients -->
       <div id="patients" class="section hidden">
-        <h1>All Patients</h1>
-        <div id="patients-list"></div>
+        <h1 class="text-3xl font-bold text-gray-800 mb-8">All Patients</h1>
+        <div id="patients-content" class="bg-white rounded-2xl shadow"></div>
       </div>
-    </main>
+    </div>
   </div>
 
   <script>
     const API = "https://etr-backend.onrender.com/api";
+    const token = localStorage.getItem("healthcare_token");
+
+    async function apiFetch(url, options = {}) {
+      const res = await fetch(API + url, {
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        ...options
+      });
+      if (!res.ok) throw new Error(await res.text());
+      return res.json();
+    }
 
     function showSection(section) {
       document.querySelectorAll('.section').forEach(s => s.classList.add('hidden'));
       document.getElementById(section).classList.remove('hidden');
-      if (section === 'overview') loadAllAppointments();
+      if (section === 'overview') loadOverview();
       if (section === 'specializations') loadSpecializations();
       if (section === 'patients') loadPatients();
     }
 
-    async function loadAllAppointments() {
-      const res = await fetch(`${API}/appointments`, { headers: { Authorization: `Bearer ${localStorage.getItem('healthcare_token')}` } });
-      const data = await res.json();
-      document.getElementById('all-appointments').innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+    async function loadOverview() {
+      const data = await apiFetch("/appointments");
+      let html = `<div class="col-span-3 bg-white p-6 rounded-2xl shadow"><h2 class="text-xl font-semibold mb-4">All Appointments</h2><pre class="text-sm">${JSON.stringify(data, null, 2)}</pre></div>`;
+      document.getElementById("overview-content").innerHTML = html;
     }
 
     async function loadSpecializations() {
-      const res = await fetch(`${API}/specializations`);
-      const specs = await res.json();
-      let html = '';
+      const specs = await apiFetch("/specializations");
+      let html = "";
       for (const spec of specs) {
-        html += `<div class="spec-card"><h3>${spec.name}</h3><button onclick="loadAppointmentsBySpec('${spec.id}')">View Appointments</button></div>`;
+        html += `
+          <div class="bg-white p-6 rounded-2xl shadow hover:shadow-xl transition">
+            <h3 class="font-semibold text-lg">${spec.name}</h3>
+            <p class="text-gray-500 text-sm">${spec.description}</p>
+            <button onclick="loadAppointmentsBySpec('${spec.id}')" class="mt-4 text-blue-600 hover:text-blue-700 font-medium">View Appointments →</button>
+          </div>`;
       }
-      document.getElementById('specialization-list').innerHTML = html;
+      document.getElementById("specializations-content").innerHTML = html;
     }
 
     async function loadAppointmentsBySpec(specId) {
-      const res = await fetch(`${API}/appointments/specialization/${specId}`, { headers: { Authorization: `Bearer ${localStorage.getItem('healthcare_token')}` } });
-      const data = await res.json();
-      alert(JSON.stringify(data, null, 2));
+      const data = await apiFetch(`/appointments/specialization/${specId}`);
+      alert(JSON.stringify(data, null, 2)); // Replace with nice modal/table in production
     }
 
     async function loadPatients() {
-      const res = await fetch(`${API}/patients`, { headers: { Authorization: `Bearer ${localStorage.getItem('healthcare_token')}` } });
-      const data = await res.json();
-      document.getElementById('patients-list').innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+      const data = await apiFetch("/patients");
+      let html = `<table class="w-full"><thead><tr class="border-b"><th class="text-left py-4">Name</th><th class="text-left py-4">Email</th><th class="text-left py-4">Phone</th></tr></thead><tbody>`;
+      for (const p of data) {
+        html += `<tr class="border-b"><td class="py-4">${p.name}</td><td>${p.email}</td><td>${p.phone}</td></tr>`;
+      }
+      html += `</tbody></table>`;
+      document.getElementById("patients-content").innerHTML = html;
     }
 
     function logout() {
@@ -83,7 +112,7 @@
       location.href = "index.html";
     }
 
-    // Load Overview by default
+    // Start with Overview
     window.onload = () => showSection('overview');
   </script>
 </body>
