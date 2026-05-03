@@ -304,10 +304,10 @@ function renderNotifications() {
     patients.map((p) => `<option value="${p.id}">${p.name}</option>`).join("");
 }
 async function sendEmailNotification() {
-  const patientId = el("notificationPatient").value,
-    subject = el("notificationSubject").value.trim() || "CareFlow Notification",
-    message = el("notificationMessage").value.trim(),
-    status = el("emailStatus");
+  const patientId = el("notificationPatient").value;
+  const subject = el("notificationSubject").value.trim() || "CareFlow Notification";
+  const message = el("notificationMessage").value.trim();
+  const status = el("emailStatus");
 
   if (status) status.textContent = "";
 
