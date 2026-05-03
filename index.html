@@ -1,295 +1,138 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Healthcare Portal</title>
-  <link rel="stylesheet" href="style.css" />
-
-  <style>
-    .auth-card {
-      width: 100%;
-      max-width: 420px;
-      background: white;
-      padding: 34px;
-      border-radius: 22px;
-      box-shadow: 0 20px 50px rgba(15, 23, 42, 0.12);
-    }
-
-    .auth-card h2 {
-      margin: 0 0 6px;
-      font-size: 1.9rem;
-    }
-
-    .floating-field {
-      position: relative;
-      margin-bottom: 18px;
-    }
-
-    .floating-field input {
-      width: 100%;
-      padding: 18px 46px 10px 14px;
-      border: 1px solid #d1d5db;
-      border-radius: 12px;
-      font-size: 15px;
-      outline: none;
-      background: white;
-    }
-
-    .floating-field label {
-      position: absolute;
-      left: 14px;
-      top: 14px;
-      color: #64748b;
-      font-size: 14px;
-      pointer-events: none;
-      transition: 0.18s ease;
-      background: white;
-      padding: 0 4px;
-    }
-
-    .floating-field input:focus {
-      border-color: #0f766e;
-      box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.12);
-    }
-
-    .floating-field input:focus + label,
-    .floating-field input:not(:placeholder-shown) + label {
-      top: -8px;
-      font-size: 12px;
-      color: #0f766e;
-    }
-
-    .eye-btn {
-      position: absolute;
-      right: 12px;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 28px;
-      height: 28px;
-      border: none;
-      background: transparent;
-      color: #64748b;
-      cursor: pointer;
-      padding: 0;
-    }
-
-    .eye-btn svg {
-      width: 20px;
-      height: 20px;
-    }
-
-    .auth-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 18px;
-      font-size: 0.9rem;
-    }
-
-    .remember-label {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      color: #475569;
-    }
-
-    .remember-label input {
-      width: auto;
-      margin: 0;
-    }
-
-    .link-btn {
-      border: none;
-      background: transparent;
-      color: #0f766e;
-      font-weight: 700;
-      cursor: pointer;
-      padding: 0;
-      width: auto;
-    }
-
-    .primary-auth-btn {
-      width: 100%;
-      min-height: 46px;
-    }
-
-    .spinner {
-      display: inline-block;
-      width: 16px;
-      height: 16px;
-      border: 2px solid rgba(255,255,255,0.55);
-      border-top-color: white;
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-      vertical-align: middle;
-      margin-right: 8px;
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
-    .auth-switch {
-      margin-top: 18px;
-      text-align: center;
-      color: #64748b;
-      font-size: 0.92rem;
-    }
-
-    .toast {
-      position: fixed;
-      top: 22px;
-      right: 22px;
-      background: #0f172a;
-      color: white;
-      padding: 14px 18px;
-      border-radius: 12px;
-      box-shadow: 0 16px 40px rgba(15,23,42,0.18);
-      opacity: 0;
-      transform: translateY(-12px);
-      pointer-events: none;
-      transition: 0.22s ease;
-      z-index: 9999;
-      font-size: 14px;
-    }
-
-    .toast.show {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    .toast.success {
-      background: #15803d;
-    }
-
-    .toast.error {
-      background: #dc2626;
-    }
-  </style>
-</head>
-
-<body class="login-body">
-  <div id="toast" class="toast"></div>
-
-  <section class="login-screen">
-    <div class="login-side">
-      <div class="brand-chip">● Healthcare Management System</div>
-      <h1 class="hero-title">Professional scheduling and patient management.</h1>
-      <p class="hero-text">
-        Access appointments, records, notifications, and billing through a modern healthcare portal designed for clarity and trust.
-      </p>
-    </div>
-
-    <div class="login-panel-wrap">
-      <div class="auth-card">
-        <div id="loginSection">
-          <h2>Welcome back</h2>
-          <p class="subtle">Sign in to your healthcare portal.</p>
-
-          <div class="floating-field">
-            <input id="loginEmail" type="email" placeholder=" " />
-            <label>Email</label>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CareFlow Login</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body class="login-body">
+    <div id="toast" class="toast"></div>
+    <section class="login-screen">
+      <div class="login-side">
+        <div class="brand-chip">● CareFlow Appointment System</div>
+        <h1 class="hero-title">Professional clinic appointment workflow.</h1>
+        <p class="hero-text">
+          Login to access the correct dashboard. Admins manage clinic
+          operations, doctors review schedules, and patients book their own
+          appointments.
+        </p>
+      </div>
+      <div class="login-panel-wrap">
+        <div class="auth-card">
+          <div id="loginSection">
+            <h2>Welcome back</h2>
+            <p class="subtle">Sign in to continue.</p>
+            <div class="floating-field">
+              <input id="loginEmail" type="email" placeholder=" " /><label
+                >Email</label
+              >
+            </div>
+            <div class="floating-field">
+              <input id="loginPassword" type="password" placeholder=" " /><label
+                >Password</label
+              ><button
+                type="button"
+                class="eye-btn"
+                onclick="togglePassword('loginPassword', 'loginEye')"
+              >
+                <span id="loginEye">👁</span>
+              </button>
+            </div>
+            <div class="auth-row">
+              <label class="remember-label"
+                ><input id="rememberMe" type="checkbox" />Remember me</label
+              ><button type="button" class="link-btn" onclick="showForgot()">
+                Forgot password?
+              </button>
+            </div>
+            <button
+              id="loginBtn"
+              class="btn btn-primary primary-auth-btn"
+              onclick="login()"
+            >
+              Sign In
+            </button>
+            <div class="auth-switch">
+              No patient account?
+              <button type="button" class="link-btn" onclick="showRegister()">
+                Register
+              </button>
+            </div>
           </div>
-
-          <div class="floating-field">
-  <input id="loginPassword" type="password" placeholder=" " />
-  <label>Password</label>
-
-  <button
-    type="button"
-    class="eye-btn"
-    onclick="togglePassword('loginPassword', 'loginEye')"
-    aria-label="Toggle password"
-  >
-    <span id="loginEye">👁</span>
-  </button>
-</div>
-
-          <div class="auth-row">
-            <label class="remember-label">
-              <input id="rememberMe" type="checkbox" />
-              Remember me
-            </label>
-            <button type="button" class="link-btn" onclick="showForgot()">Forgot password?</button>
+          <div id="registerSection" class="hidden">
+            <h2>Create account</h2>
+            <p class="subtle">Register as a patient.</p>
+            <div class="floating-field">
+              <input id="registerName" placeholder=" " /><label
+                >Full name</label
+              >
+            </div>
+            <div class="floating-field">
+              <input id="registerEmail" type="email" placeholder=" " /><label
+                >Email</label
+              >
+            </div>
+            <div class="floating-field">
+              <input
+                id="registerPassword"
+                type="password"
+                placeholder=" "
+              /><label>Password</label
+              ><button
+                type="button"
+                class="eye-btn"
+                onclick="togglePassword('registerPassword', 'registerEye')"
+              >
+                <span id="registerEye">👁</span>
+              </button>
+            </div>
+            <div class="floating-field">
+              <input id="registerPhone" placeholder=" " /><label
+                >Phone number</label
+              >
+            </div>
+            <button
+              id="registerBtn"
+              class="btn btn-primary primary-auth-btn"
+              onclick="registerPatient()"
+            >
+              Register
+            </button>
+            <div class="auth-switch">
+              Already have an account?
+              <button type="button" class="link-btn" onclick="showLogin()">
+                Login
+              </button>
+            </div>
           </div>
-
-          <button id="loginBtn" class="btn btn-primary primary-auth-btn" onclick="login()">
-            Sign In
-          </button>
-
-          <!-- <div class="auth-switch">
-            No patient account?
-            <button type="button" class="link-btn" onclick="showRegister()">Register</button>
-          </div>
-        </div>
-
-        <div id="registerSection" class="hidden">
-          <h2>Create account</h2>
-          <p class="subtle">Register as a patient.</p>
-
-          <div class="floating-field">
-            <input id="registerName" placeholder=" " />
-            <label>Full name</label>
-          </div>
-
-          <div class="floating-field">
-            <input id="registerEmail" type="email" placeholder=" " />
-            <label>Email</label>
-          </div>
-
-         <div class="floating-field">
-  <input id="registerPassword" type="password" placeholder=" " />
-  <label>Password</label>
-
-  <button
-    type="button"
-    class="eye-btn"
-    onclick="togglePassword('registerPassword', 'registerEye')"
-    aria-label="Toggle password"
-  >
-    <span id="registerEye">👁</span>
-  </button>
-</div>
-
-          <div class="floating-field">
-            <input id="registerPhone" placeholder=" " />
-            <label>Phone number</label>
-          </div>
-
-          <button id="registerBtn" class="btn btn-primary primary-auth-btn" onclick="registerPatient()">
-            Register
-          </button>
-
-          <div class="auth-switch">
-            Already have an account?
-            <button type="button" class="link-btn" onclick="showLogin()">Login</button>
-          </div>
-        </div> -->
-
-        <div id="forgotSection" class="hidden">
-          <h2>Forgot password</h2>
-          <p class="subtle">Enter your email and we’ll send a password reset instruction.</p>
-
-          <div class="floating-field">
-            <input id="forgotEmail" type="email" placeholder=" " />
-            <label>Email</label>
-          </div>
-
-          <button id="forgotBtn" class="btn btn-primary primary-auth-btn" onclick="forgotPassword()">
-            Send Reset Email
-          </button>
-
-          <div class="auth-switch">
-            Remembered your password?
-            <button type="button" class="link-btn" onclick="showLogin()">Back to login</button>
+          <div id="forgotSection" class="hidden">
+            <h2>Forgot password</h2>
+            <p class="subtle">
+              Enter your email and we will send reset instructions.
+            </p>
+            <div class="floating-field">
+              <input id="forgotEmail" type="email" placeholder=" " /><label
+                >Email</label
+              >
+            </div>
+            <button
+              id="forgotBtn"
+              class="btn btn-primary primary-auth-btn"
+              onclick="forgotPassword()"
+            >
+              Send Reset Email
+            </button>
+            <div class="auth-switch">
+              Remembered your password?
+              <button type="button" class="link-btn" onclick="showLogin()">
+                Back to login
+              </button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  </section>
-
-  <script src="auth.js"></script>
-</body>
+    </section>
+    <script src="auth.js"></script>
+  </body>
 </html>

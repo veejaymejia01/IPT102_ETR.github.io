@@ -1,37 +1,10 @@
 const API = "https://etr-backend.onrender.com/api";
-
 const token = localStorage.getItem("healthcare_token") || "";
 const currentUser = JSON.parse(
   localStorage.getItem("healthcare_user") || "null",
 );
-let patients = [],
-  appointments = [],
-  selectedDate = new Date().toISOString().split("T")[0],
-  calendar = null;
-if (!currentUser || currentUser.role !== "doctor" || !token)
-  window.location.href = "index.html";
 function el(id) {
   return document.getElementById(id);
-}
-function setActiveNav(btn) {
-  document
-    .querySelectorAll(".nav-btn")
-    .forEach((n) => n.classList.remove("active"));
-  if (btn) btn.classList.add("active");
-}
-function showSection(id, btn = null) {
-  document
-    .querySelectorAll("main section")
-    .forEach((s) => s.classList.add("hidden"));
-  const t = el(id);
-  if (t) t.classList.remove("hidden");
-  setActiveNav(btn);
-  if (id === "dashboard") renderTodayAppointments();
-  if (id === "appointments") {
-    renderSelectedDayAppointments();
-    if (calendar) setTimeout(() => calendar.updateSize(), 50);
-  }
-  if (id === "patients") renderPatients();
 }
 function logout() {
   localStorage.removeItem("healthcare_token");
@@ -47,238 +20,314 @@ async function apiFetch(url, options = {}) {
       ...(options.headers || {}),
     },
   });
-  let d = null;
-  try {
-    d = await r.json();
-  } catch {}
-  if (!r.ok) throw new Error(d?.error || "Request failed");
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(d.error || "Request failed");
   return d;
 }
-async function loadAll() {
-  patients = await apiFetch("/patients");
-  appointments = await apiFetch("/appointments");
-  renderAll();
+function showSection(id, btn = null) {
+  document
+    .querySelectorAll("main section")
+    .forEach((s) => s.classList.add("hidden"));
+  const t = el(id);
+  if (t) t.classList.remove("hidden");
+  document
+    .querySelectorAll(".nav-btn")
+    .forEach((n) => n.classList.remove("active"));
+  if (btn) btn.classList.add("active");
 }
-function renderAll() {
-  if (el("welcomeText"))
-    el("welcomeText").innerText = `Welcome, ${currentUser.email}`;
-  renderTodayAppointments();
-  renderPatients();
-  initCalendar();
-  renderSelectedDayAppointments();
-  setTimeout(() => highlightSelectedDate(), 100);
-}
-function getTodayDateString() {
-  return new Date().toISOString().split("T")[0];
+function formatDate(date) {
+  return date.toISOString().split("T")[0];
 }
 function getDatePart(item) {
   const raw = String(item.appointmentDate || "");
-  if (!raw) return "";
   return raw.includes("T") ? raw.split("T")[0] : raw.split(" ")[0];
 }
 function getTimePart(item) {
   const raw = String(item.appointmentDate || "");
-  if (!raw) return "";
   if (raw.includes("T")) return raw.split("T")[1].slice(0, 5);
   if (raw.includes(" ")) return raw.split(" ")[1] || "";
   return raw;
 }
-function getHour(item) {
-  const m = getTimePart(item).match(/(\d{2}):(\d{2})/);
-  return m ? Number(m[1]) : null;
+function isWeekday(dateString) {
+  const d = new Date(dateString).getDay();
+  return d >= 1 && d <= 5;
 }
-function renderSlot(containerId, items, showDoneButton = false) {
-  const c = el(containerId);
-  if (!c) return;
-  if (!items.length) {
-    c.innerHTML = '<div class="sub-text">No appointments</div>';
-    return;
-  }
-  c.innerHTML = items
+function isBusinessHour(dateString) {
+  const d = new Date(dateString);
+  const h = d.getHours();
+  const m = d.getMinutes();
+  return h >= 8 && (h < 18 || (h === 18 && m === 0));
+}
+function validateScheduleDate(dateString) {
+  if (!dateString) return "Select appointment date and time.";
+  if (!isWeekday(dateString))
+    return "Appointments are only allowed Monday to Friday.";
+  if (!isBusinessHour(dateString))
+    return "Appointments are only allowed from 8:00 AM to 6:00 PM.";
+  return "";
+}
+const clinicTimeSlots = [
+  "08:00",
+  "09:00",
+  "10:00",
+  "11:00",
+  "13:00",
+  "14:00",
+  "15:00",
+  "16:00",
+  "17:00",
+];
+function to12Hour(time) {
+  const [h, m] = time.split(":").map(Number);
+  const s = h >= 12 ? "PM" : "AM";
+  const hr = h % 12 || 12;
+  return `${hr}:${String(m).padStart(2, "0")} ${s}`;
+}
+function renderTimeSlots(containerId, dateInputId) {
+  const c = el(containerId),
+    input = el(dateInputId);
+  if (!c || !input) return;
+  c.innerHTML = clinicTimeSlots
     .map(
-      (i) =>
-        `<div class="appt-item"><div class="appt-time">${getTimePart(i)}</div><div class="appt-main"><strong>${i.patientName}</strong><div class="appt-meta">${i.status || "Scheduled"}</div></div><div>${showDoneButton && i.status !== "Done" ? `<button class="btn btn-primary inline-btn" onclick="markAppointmentDone('${i.id}')">Done</button>` : `<span class="status ${String(i.status || "").toLowerCase() === "done" ? "done" : "scheduled"}">${i.status || "Scheduled"}</span>`}</div></div>`,
+      (t) =>
+        `<button type="button" class="time-btn" onclick="applyTimeSlot('${dateInputId}','${t}','${containerId}')">${to12Hour(t)}</button>`,
     )
     .join("");
 }
-function renderTodayAppointments() {
-  const today = getTodayDateString();
-  const todayAppointments = appointments.filter(
-    (a) => getDatePart(a) === today,
-  );
-  renderSlot(
-    "todayMorningAppointmentList",
-    todayAppointments.filter((a) => {
-      const h = getHour(a);
-      return h !== null && h < 12;
-    }),
-    false,
-  );
-  renderSlot(
-    "todayAfternoonAppointmentList",
-    todayAppointments.filter((a) => {
-      const h = getHour(a);
-      return h !== null && h >= 12;
-    }),
-    false,
-  );
-}
-function renderPatientScheduleList(containerId, items) {
-  const c = el(containerId);
-  if (!c) return;
-  if (!items.length) {
-    c.innerHTML = '<div class="sub-text">No patients scheduled</div>';
-    return;
-  }
-  c.innerHTML = items
-    .map(
-      (i) =>
-        `<div class="appt-item"><div class="appt-time">${getTimePart(i)}</div><div class="appt-main"><strong>${i.patientName}</strong><div class="appt-meta">${i.status || "Scheduled"}</div></div><div>${i.status !== "Done" ? `<button class="btn btn-primary inline-btn" onclick="markAppointmentDone('${i.id}')">Done</button>` : `<span class="status done">Done</span>`}</div></div>`,
-    )
-    .join("");
-}
-function renderSelectedDayAppointments() {
-  const s = String(el("appointmentSearch")?.value || "").toLowerCase();
-  const selectedAppointments = appointments.filter((a) => {
-    const sameDay = getDatePart(a) === selectedDate;
-    const patient = String(a.patientName || "").toLowerCase();
-    const date = String(a.appointmentDate || "").toLowerCase();
-    const status = String(a.status || "").toLowerCase();
-    return (
-      sameDay && (patient.includes(s) || date.includes(s) || status.includes(s))
-    );
-  });
-  if (el("selectedDateTitle"))
-    el("selectedDateTitle").innerText = `Patient Schedule for ${selectedDate}`;
-  renderPatientScheduleList(
-    "selectedMorningAppointmentList",
-    selectedAppointments.filter((a) => {
-      const h = getHour(a);
-      return h !== null && h < 12;
-    }),
-  );
-  renderPatientScheduleList(
-    "selectedAfternoonAppointmentList",
-    selectedAppointments.filter((a) => {
-      const h = getHour(a);
-      return h !== null && h >= 12;
-    }),
-  );
-  if (el("appointmentTable"))
-    el("appointmentTable").innerHTML = selectedAppointments
-      .map(
-        (a) =>
-          `<tr><td>${a.patientName}</td><td>${getTimePart(a)}</td><td>${a.status || "Scheduled"}</td></tr>`,
-      )
-      .join("");
-}
-function buildCalendarEvents() {
-  const g = {};
-  appointments.forEach((a) => {
-    const d = getDatePart(a);
-    if (!g[d]) g[d] = 0;
-    g[d] += 1;
-  });
-  return Object.keys(g).map((date) => ({
-    title: `${g[date]} patient${g[date] > 1 ? "s" : ""}`,
-    date,
-  }));
-}
-function highlightSelectedDate() {
-  const today = getTodayDateString();
+function applyTimeSlot(dateInputId, time, containerId) {
+  const input = el(dateInputId);
+  if (!input) return;
+  const date = input.value ? input.value.split("T")[0] : formatDate(new Date());
+  input.value = `${date}T${time}`;
   document
-    .querySelectorAll(".fc-daygrid-day")
-    .forEach((day) =>
-      day.classList.remove("selected-day", "today-day", "past-day"),
-    );
-  document.querySelectorAll(".fc-daygrid-day").forEach((day) => {
-    const d = day.getAttribute("data-date");
-    if (!d) return;
-    if (d < today) {
-      day.classList.add("past-day");
-      return;
-    }
-    if (d === today) day.classList.add("today-day");
-    if (d === selectedDate) day.classList.add("selected-day");
-  });
+    .querySelectorAll(`#${containerId} .time-btn`)
+    .forEach((b) => b.classList.remove("active"));
+  [...document.querySelectorAll(`#${containerId} .time-btn`)]
+    .find((b) => b.textContent.trim() === to12Hour(time))
+    ?.classList.add("active");
 }
-function initCalendar() {
-  const calendarEl = el("calendar");
-  if (!calendarEl || typeof FullCalendar === "undefined") return;
-  if (calendar) calendar.destroy();
-  calendar = new FullCalendar.Calendar(calendarEl, {
-    initialView: "dayGridMonth",
-    height: "auto",
-    headerToolbar: {
-      left: "prev,next today",
-      center: "title",
-      right: "dayGridMonth",
-    },
-    events: buildCalendarEvents(),
-    dateClick(info) {
-      selectedDate = info.dateStr;
-      renderSelectedDayAppointments();
-      setTimeout(() => highlightSelectedDate(), 0);
-    },
-    datesSet() {
-      setTimeout(() => highlightSelectedDate(), 0);
-    },
-    dayCellDidMount() {
-      setTimeout(() => highlightSelectedDate(), 0);
-    },
+function renderCalendarBase(
+  gridId,
+  titleId,
+  currentDate,
+  selectedDate,
+  appointments,
+  onSelect,
+) {
+  const grid = el(gridId);
+  if (!grid) return;
+  grid.innerHTML = "";
+  const y = currentDate.getFullYear(),
+    m = currentDate.getMonth();
+  if (el(titleId))
+    el(titleId).textContent = currentDate.toLocaleString("default", {
+      month: "long",
+      year: "numeric",
+    });
+  ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"].forEach((day) => {
+    const d = document.createElement("div");
+    d.className = "day-name";
+    d.textContent = day;
+    grid.appendChild(d);
   });
-  calendar.render();
-}
-function goToTodaySchedule() {
-  selectedDate = getTodayDateString();
-  renderSelectedDayAppointments();
-  if (calendar) {
-    calendar.today();
-    setTimeout(() => highlightSelectedDate(), 0);
+  const first = new Date(y, m, 1),
+    start = new Date(first);
+  start.setDate(start.getDate() - first.getDay());
+  for (let i = 0; i < 42; i++) {
+    const d = new Date(start);
+    d.setDate(start.getDate() + i);
+    const key = formatDate(d);
+    const cell = document.createElement("button");
+    cell.className = "day-cell";
+    if (d.getMonth() !== m) cell.classList.add("muted");
+    if (formatDate(d) === formatDate(selectedDate))
+      cell.classList.add("selected");
+    if (formatDate(d) === formatDate(new Date())) cell.classList.add("today");
+    if (!isWeekday(key)) cell.classList.add("weekend");
+    const count = appointments.filter((a) => getDatePart(a) === key).length;
+    cell.innerHTML = count
+      ? `${d.getDate()}<br><small>${count} patient${count > 1 ? "s" : ""}</small>`
+      : d.getDate();
+    if (isWeekday(key)) cell.onclick = () => onSelect(d);
+    grid.appendChild(cell);
   }
 }
-function getStatus(p) {
-  if (!p.diagnosis) return { label: "Pending", class: "pending" };
-  const x = String(p.diagnosis).toLowerCase();
-  if (
-    x.includes("critical") ||
-    x.includes("pneumonia") ||
-    x.includes("emergency")
-  )
-    return { label: "Critical", class: "critical" };
-  if (x.includes("follow") || x.includes("check") || x.includes("hypertension"))
-    return { label: "Follow-up", class: "warning" };
-  return { label: "Stable", class: "stable" };
+
+if (!currentUser || currentUser.role !== "doctor" || !token)
+  location.href = "index.html";
+let patients = [],
+  appointments = [],
+  currentDate = new Date(),
+  selectedDate = new Date();
+function showDoctorPage(id, btn) {
+  showSection(id, btn);
+  if (id === "appointments") renderAppointmentsPage();
+  if (id === "patients") {
+    renderPatients();
+    renderTimeSlots("adminTimeSlots", "scheduleDate");
+  }
+  if (id === "notifications") renderNotifications();
 }
-function openPatient(id) {
-  window.location.href = `patient-record.html?id=${id}&from=doctor`;
+async function loadAll() {
+  patients = await apiFetch("/patients");
+  appointments = await apiFetch("/appointments");
+  renderAppointmentsPage();
+  renderPatients();
+  renderNotifications();
+  renderTimeSlots("adminTimeSlots", "scheduleDate");
+}
+function renderAppointmentsPage() {
+  renderCalendar();
+  renderSelectedAppointments();
+  const today = formatDate(new Date()),
+    selected = formatDate(selectedDate),
+    monthKey = selected.slice(0, 7);
+  el("todayCount").textContent = appointments.filter(
+    (a) => getDatePart(a) === today,
+  ).length;
+  el("selectedCount").textContent = appointments.filter(
+    (a) => getDatePart(a) === selected,
+  ).length;
+  el("monthCount").textContent = appointments.filter(
+    (a) => getDatePart(a).slice(0, 7) === monthKey,
+  ).length;
+}
+function renderCalendar() {
+  renderCalendarBase(
+    "calendarGrid",
+    "calendarTitle",
+    currentDate,
+    selectedDate,
+    appointments,
+    (d) => {
+      selectedDate = d;
+      renderAppointmentsPage();
+    },
+  );
+}
+function renderSelectedAppointments() {
+  const selected = formatDate(selectedDate),
+    list = appointments.filter((a) => getDatePart(a) === selected);
+  el("selectedDateTitle").textContent = selectedDate.toLocaleDateString(
+    "default",
+    { weekday: "long", month: "long", day: "numeric", year: "numeric" },
+  );
+  el("selectedAppointments").innerHTML = list.length
+    ? list
+        .map(
+          (a) =>
+            `<div class="notice"><strong>${a.patientName}</strong><br/>${getTimePart(a)} · ${a.status}</div>`,
+        )
+        .join("")
+    : `<div class="notice">No appointments scheduled for this day.</div>`;
+}
+function changeMonth(offset) {
+  currentDate.setMonth(currentDate.getMonth() + offset);
+  renderCalendar();
 }
 function renderPatients() {
-  const t = el("patientTable");
-  if (!t) return;
-  const s = String(el("patientSearch")?.value || "").toLowerCase();
-  const f = patients.filter((p) =>
-    [p.name, p.email, p.phone, p.condition, p.diagnosis].some((v) =>
-      String(v || "")
-        .toLowerCase()
-        .includes(s),
-    ),
-  );
-  t.innerHTML = f
-    .map((p) => {
-      const st = getStatus(p);
-      return `<tr class="patient-row"><td><strong>${p.name || ""}</strong><br><span class="sub-text">${p.email || "No email"}</span></td><td>${p.phone || "N/A"}</td><td>${p.condition || "General"}</td><td><span class="badge ${st.class}">${st.label}</span><br><span class="sub-text">${p.diagnosis || "Pending assessment"}</span></td><td><button class="btn btn-secondary small-btn" onclick="openPatient('${p.id}')">Edit</button></td></tr>`;
-    })
-    .join("");
+  const table = el("patientTable");
+  table.innerHTML = patients.length
+    ? patients
+        .map(
+          (p) =>
+            `<tr><td>${p.name || ""}</td><td>${p.email || ""}<br/>${p.phone || ""}</td><td>${p.condition || "General"}</td><td><button class="btn btn-secondary" onclick="selectPatientForSchedule('${p.id}')">Schedule</button> <button class="btn btn-danger" onclick="deletePatient_DoctorDisabled('${p.id}')">Delete</button></td></tr>`,
+        )
+        .join("")
+    : `<tr><td colspan="4">No patients yet.</td></tr>`;
+  const s = el("schedulePatient");
+  if (s)
+    s.innerHTML =
+      `<option value="">Select patient</option>` +
+      patients
+        .map((p) => `<option value="${p.id}">${p.name}</option>`)
+        .join("");
 }
-async function markAppointmentDone(id) {
-  await apiFetch(`/appointments/${id}/status`, {
-    method: "PATCH",
-    body: JSON.stringify({ status: "Done" }),
-  });
+function selectPatientForSchedule(id) {
+  const s = el("schedulePatient");
+  if (s) s.value = id;
+  el("scheduleDate")?.focus();
+}
+async function submitNewPatient_DoctorDisabled() {
+  const body = {
+    name: el("addName").value.trim(),
+    email: el("addEmail").value.trim(),
+    phone: el("addPhone").value.trim(),
+    condition: el("addCondition").value.trim() || "General",
+    diagnosis: el("addDiagnosis").value.trim() || "Pending assessment",
+  };
+  if (!body.name) return alert("Patient name is required.");
+  await apiFetch("/patients", { method: "POST", body: JSON.stringify(body) });
+  ["addName", "addEmail", "addPhone", "addCondition", "addDiagnosis"].forEach(
+    (id) => (el(id).value = ""),
+  );
   await loadAll();
+}
+async function scheduleSelectedPatient() {
+  const patientId = el("schedulePatient").value,
+    appointmentDate = el("scheduleDate").value,
+    status = el("adminScheduleStatus");
+  if (status) status.textContent = "";
+  const err = validateScheduleDate(appointmentDate);
+  if (err) return alert(err);
+  const patient = patients.find((p) => p.id === patientId);
+  if (!patient) return alert("Select a patient.");
+  const res = await apiFetch("/appointments", {
+    method: "POST",
+    body: JSON.stringify({
+      patientId: patient.id,
+      patientName: patient.name,
+      appointmentDate,
+      status: "Scheduled",
+    }),
+  });
+  el("schedulePatient").value = "";
+  el("scheduleDate").value = "";
+  if (status)
+    status.textContent = res.emailSent
+      ? "Patient scheduled and email confirmation sent."
+      : "Patient scheduled. Email was not sent. Check backend email setup.";
+  await loadAll();
+  showDoctorPage("appointments", document.querySelector(".nav-btn"));
+}
+async function deletePatient_DoctorDisabled(id) {
+  if (!confirm("Delete this patient?")) return;
+  await apiFetch(`/patients/${id}`, { method: "DELETE" });
+  await loadAll();
+}
+function renderNotifications() {
+  const s = el("notificationPatient");
+  if (!s) return;
+  s.innerHTML =
+    `<option value="">Select patient</option>` +
+    patients.map((p) => `<option value="${p.id}">${p.name}</option>`).join("");
+}
+async function sendEmailNotification() {
+  const patientId = el("notificationPatient").value,
+    subject = el("notificationSubject").value.trim() || "CareFlow Notification",
+    message = el("notificationMessage").value.trim(),
+    status = el("emailStatus");
+
+  if (status) status.textContent = "";
+
+  if (!patientId || !message) return alert("Select a patient and write a message.");
+
+  const res = await apiFetch("/email/send", {
+    method: "POST",
+    body: JSON.stringify({ patientId, subject, message }),
+  });
+
+  if (status) {
+    status.textContent = res.emailSent 
+      ? "✅ Email sent successfully." 
+      : "⚠️ Email could not be sent. Check backend logs.";
+    status.style.color = res.emailSent ? "green" : "orange";
+  }
+
+  el("notificationSubject").value = "";
+  el("notificationMessage").value = "";
 }
 loadAll().catch((e) => {
   console.error(e);
-  alert("Failed to load doctor data. Check backend connection.");
+  alert("Failed to load admin data. Check backend connection.");
 });
