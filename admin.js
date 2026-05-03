@@ -403,3 +403,14 @@ loadAll().catch((e) => {
   console.error(e);
   alert("Failed to load admin data. Check backend connection.");
 });
+function loadPatientsForDropdown(selectId) {
+  const select = el(selectId);
+  if (!select) return;
+  select.innerHTML = '<option value="">Select patient</option>';
+  patients.forEach(p => {
+    const opt = document.createElement("option");
+    opt.value = p.id;
+    opt.textContent = p.name;
+    select.appendChild(opt);
+  });
+}
