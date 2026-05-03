@@ -336,51 +336,63 @@ function renderNotifications() {
 
 // Send Notification
 async function sendEmailNotification() {
-  const patientId = el("notificationPatient").value;
-  const subject = el("notificationSubject").value.trim() || "CareFlow Notification";
-  const message = el("notificationMessage").value.trim();
-  const status = el("emailStatus");
+  const patientId = el("notificationPatient").value,
+    subject = el("notificationSubject").value.trim() || "CareFlow Notification",
+    message = el("notificationMessage").value.trim(),
+    status = el("emailStatus");
+
   if (status) status.textContent = "";
+
   if (!patientId || !message) return alert("Select a patient and write a message.");
+
   const res = await apiFetch("/email/send", {
     method: "POST",
     body: JSON.stringify({ patientId, subject, message }),
   });
+
   if (status) {
     status.textContent = res.emailSent
       ? "✅ Email sent successfully."
       : "⚠️ Email could not be sent. Check backend logs.";
     status.style.color = res.emailSent ? "green" : "orange";
   }
+
   el("notificationSubject").value = "";
   el("notificationMessage").value = "";
   loadEmailHistory();
 }
 
 // Email History
-function loadEmailHistory() {
+async function loadEmailHistory() {
   const tbody = document.getElementById("emailHistoryTable");
   if (!tbody) return;
 
-  const history = [
-    { date: "2026-05-03 00:22", patient: "Vee", subject: "Appointment Reminder", status: "Sent" },
-    { date: "2026-05-02 23:45", patient: "Jay", subject: "Test", status: "Failed" },
-  ];
+  try {
+    const history = await apiFetch("/email/history");
 
-  tbody.innerHTML = "";
-  history.forEach(item => {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${item.date}</td>
-      <td>${item.patient}</td>
-      <td>${item.subject}</td>
-      <td style="color:${item.status === "Sent" ? "green" : "red"}; text-align:center;">${item.status}</td>
-      <td style="text-align:center;">
-        <button onclick="deleteEmailLog(this)" style="background:none;border:none;color:red;cursor:pointer;">Delete</button>
-      </td>
-    `;
-    tbody.appendChild(tr);
-  });
+    tbody.innerHTML = "";
+    if (history.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:20px;">No emails sent yet.</td></tr>`;
+      return;
+    }
+
+    history.forEach(item => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${item.date || 'N/A'}</td>
+        <td>${item.patient || 'N/A'}</td>
+        <td>${item.subject || 'Notification'}</td>
+        <td style="color:${(item.status === "Sent" || item.status === "Scheduled") ? "green" : "red"}; text-align:center;">${item.status || 'Sent'}</td>
+        <td style="text-align:center;">
+          <button onclick="deleteEmailLog(this)" style="background:none;border:none;color:red;cursor:pointer;">Delete</button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  } catch (e) {
+    console.error("Failed to load history", e);
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:orange;">Failed to load history.</td></tr>`;
+  }
 }
 
 function deleteEmailLog(btn) {
