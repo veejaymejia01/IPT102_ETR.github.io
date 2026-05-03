@@ -6,62 +6,54 @@
   <title>Doctor Dashboard - CareFlow</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css' rel='stylesheet' />
+  <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'></script>
 </head>
-<body class="bg-gray-50">
+<body class="bg-gray-50 font-sans">
   <div class="flex h-screen">
     <!-- Sidebar -->
     <div class="w-64 bg-white shadow-xl p-6 flex flex-col">
       <div class="flex items-center gap-3 mb-10">
-        <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white font-bold">CF</div>
+        <div class="w-10 h-10 bg-blue-600 rounded-2xl flex items-center justify-center text-white font-bold text-xl">CF</div>
         <h1 class="text-2xl font-bold text-gray-800">CareFlow</h1>
       </div>
-      <nav class="flex-1 space-y-2">
-        <a onclick="showSection('schedule')" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-blue-50 cursor-pointer text-gray-700 hover:text-blue-600">
-          <i class="fas fa-calendar"></i> My Schedule
+      <nav class="flex-1 space-y-1">
+        <a onclick="showSection('calendar')" class="flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-blue-50 cursor-pointer text-gray-700 hover:text-blue-600 font-medium">
+          <i class="fas fa-calendar-alt"></i> My Calendar
         </a>
-        <a onclick="showSection('book')" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-blue-50 cursor-pointer text-gray-700 hover:text-blue-600">
+        <a onclick="showSection('book')" class="flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-blue-50 cursor-pointer text-gray-700 hover:text-blue-600 font-medium">
           <i class="fas fa-plus"></i> Book Appointment
         </a>
-        <a onclick="showSection('patients')" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-blue-50 cursor-pointer text-gray-700 hover:text-blue-600">
+        <a onclick="showSection('patients')" class="flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-blue-50 cursor-pointer text-gray-700 hover:text-blue-600 font-medium">
           <i class="fas fa-users"></i> My Patients
         </a>
-        <a onclick="showSection('email')" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-blue-50 cursor-pointer text-gray-700 hover:text-blue-600">
-          <i class="fas fa-envelope"></i> Send Email
-        </a>
       </nav>
-      <button onclick="logout()" class="mt-auto w-full py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl font-medium">Logout</button>
+      <button onclick="logout()" class="mt-auto w-full py-3 bg-red-500 hover:bg-red-600 text-white rounded-2xl font-medium flex items-center justify-center gap-2">
+        <i class="fas fa-sign-out-alt"></i> Logout
+      </button>
     </div>
 
-    <!-- Main Content -->
     <div class="flex-1 p-8 overflow-auto">
-      <div id="schedule" class="section">
-        <h1 class="text-3xl font-bold text-gray-800 mb-8">My Schedule</h1>
-        <div id="schedule-content" class="bg-white rounded-3xl shadow p-6"></div>
+      <div id="calendar" class="section">
+        <h1 class="text-3xl font-bold text-gray-800 mb-6">My Calendar</h1>
+        <div id="calendar-container" class="bg-white rounded-3xl shadow p-6"></div>
       </div>
 
       <div id="book" class="section hidden">
-        <h1 class="text-3xl font-bold text-gray-800 mb-8">Book New Appointment</h1>
-        <div class="bg-white rounded-3xl shadow p-8 max-w-md">
-          <input id="patientName" class="w-full mb-4 p-4 border rounded-2xl" placeholder="Patient Name">
-          <input id="appointmentDate" type="datetime-local" class="w-full mb-4 p-4 border rounded-2xl">
+        <h1 class="text-3xl font-bold text-gray-800 mb-6">Book New Appointment</h1>
+        <div class="max-w-md bg-white rounded-3xl shadow p-8">
+          <input id="patientName" class="w-full mb-4 p-4 border rounded-2xl" placeholder="Patient Name" required>
+          <input id="appointmentDate" type="datetime-local" class="w-full mb-4 p-4 border rounded-2xl" required>
           <button onclick="bookAppointment()" class="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-semibold">Book Appointment</button>
         </div>
       </div>
 
       <div id="patients" class="section hidden">
-        <h1 class="text-3xl font-bold text-gray-800 mb-8">My Patients</h1>
-        <button onclick="addPatient()" class="mb-6 px-6 py-3 bg-blue-600 text-white rounded-2xl hover:bg-blue-700">+ Add Patient</button>
+        <h1 class="text-3xl font-bold text-gray-800 mb-6">My Patients</h1>
+        <button onclick="addPatient()" class="mb-6 px-6 py-3 bg-blue-600 text-white rounded-2xl hover:bg-blue-700 flex items-center gap-2">
+          <i class="fas fa-plus"></i> Add Patient
+        </button>
         <div id="patients-content" class="bg-white rounded-3xl shadow"></div>
-      </div>
-
-      <div id="email" class="section hidden">
-        <h1 class="text-3xl font-bold text-gray-800 mb-8">Send Email</h1>
-        <div class="bg-white rounded-3xl shadow p-8 max-w-md">
-          <select id="emailPatient" class="w-full mb-4 p-4 border rounded-2xl"></select>
-          <input id="emailSubject" placeholder="Subject" class="w-full mb-4 p-4 border rounded-2xl">
-          <textarea id="emailMessage" placeholder="Message" class="w-full h-32 p-4 border rounded-2xl"></textarea>
-          <button onclick="sendEmail()" class="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-semibold mt-4">Send Email</button>
-        </div>
       </div>
     </div>
   </div>
@@ -79,16 +71,27 @@
       return res.json();
     }
 
+    let calendar;
+
     function showSection(section) {
       document.querySelectorAll('.section').forEach(s => s.classList.add('hidden'));
       document.getElementById(section).classList.remove('hidden');
-      if (section === 'schedule') loadSchedule();
-      if (section === 'patients') loadPatients();
+      if (section === 'calendar') loadCalendar();
     }
 
-    async function loadSchedule() {
-      const data = await apiFetch("/appointments");
-      document.getElementById("schedule-content").innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+    async function loadCalendar() {
+      const events = await apiFetch("/appointments");
+      if (calendar) calendar.destroy();
+      calendar = new FullCalendar.Calendar(document.getElementById("calendar-container"), {
+        initialView: "dayGridMonth",
+        events: events.map(a => ({
+          title: a.patient_name,
+          start: a.appointment_date,
+          color: "#10b981"
+        })),
+        headerToolbar: { left: "prev,next today", center: "title", right: "dayGridMonth,timeGridWeek" }
+      });
+      calendar.render();
     }
 
     async function bookAppointment() {
@@ -96,29 +99,15 @@
       const appointmentDate = document.getElementById("appointmentDate").value;
       if (!patientName || !appointmentDate) return alert("Please fill all fields");
       await apiFetch("/appointments", { method: "POST", body: JSON.stringify({ patientName, appointmentDate }) });
-      alert("Appointment booked!");
-      loadSchedule();
-    }
-
-    async function loadPatients() {
-      const data = await apiFetch("/patients");
-      let html = `<table class="w-full"><thead><tr><th class="text-left py-4">Name</th><th class="text-left py-4">Email</th><th>Actions</th></tr></thead><tbody>`;
-      for (const p of data) {
-        html += `<tr><td class="py-4">${p.name}</td><td>${p.email}</td><td><button onclick="alert('Edit ${p.name}')" class="text-blue-600">Edit</button></td></tr>`;
-      }
-      html += `</tbody></table>`;
-      document.getElementById("patients-content").innerHTML = html;
+      alert("Appointment booked successfully!");
+      loadCalendar();
     }
 
     async function addPatient() {
-      const name = prompt("Patient Name");
+      const name = prompt("Enter patient name");
       if (!name) return;
       await apiFetch("/patients", { method: "POST", body: JSON.stringify({ name }) });
-      loadPatients();
-    }
-
-    async function sendEmail() {
-      alert("Email sent (implement full logic as needed)");
+      alert("Patient added!");
     }
 
     function logout() {
@@ -126,7 +115,7 @@
       location.href = "index.html";
     }
 
-    window.onload = () => showSection('schedule');
+    window.onload = () => showSection("calendar");
   </script>
 </body>
 </html>
