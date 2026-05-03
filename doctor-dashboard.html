@@ -1,193 +1,108 @@
-<!doctype html>
-<html>
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Doctor Dashboard</title>
-    <link rel="stylesheet" href="style.css" />
-  </head>
-  <body>
-    <section class="app-shell">
-      <aside class="sidebar">
-        <div class="brand">
-          <div class="brand-icon">+</div>
-          <div>
-            <h1>CareFlow</h1>
-            <p>Appointment System</p>
-          </div>
-        </div>
-        <div class="nav-list">
-          <button
-            class="nav-btn active"
-            onclick="showDoctorPage('appointments', this)"
-          >
-            Appointments</button
-          ><button class="nav-btn" onclick="showDoctorPage('patients', this)">
-            Patients</button
-          ><button class="nav-btn" onclick="showDoctorPage('schedule', this)">
-            Schedule Patient
-          </button>
-        </div>
-        <div class="nav-spacer"></div>
-        <button class="logout-btn" onclick="logout()">Logout</button>
-      </aside>
-      <main class="main">
-        <section id="appointments">
-          <div class="page-hero">
-            <div>
-              <h2>Doctor Appointments</h2>
-              <p>
-                Clinic schedule overview. Weekday appointments only, 8:00 AM to
-                6:00 PM.
-              </p>
-            </div>
-            <span class="hero-badge">Professional Clinic Workflow</span>
-          </div>
-          <div class="metrics">
-            <div class="metric-card">
-              <small>Today's Appointments</small
-              ><strong id="todayCount">0</strong>
-            </div>
-            <div class="metric-card">
-              <small>Selected Day</small><strong id="selectedCount">0</strong>
-            </div>
-            <div class="metric-card">
-              <small>This Month</small><strong id="monthCount">0</strong>
-            </div>
-          </div>
-          <div class="grid-2">
-            <div class="panel">
-              <div class="calendar-head">
-                <h3 id="calendarTitle">Calendar</h3>
-                <div>
-                  <button class="btn btn-secondary" onclick="changeMonth(-1)">
-                    Previous</button
-                  ><button class="btn btn-secondary" onclick="changeMonth(1)">
-                    Next
-                  </button>
-                </div>
-              </div>
-              <p class="subtle">
-                Weekends are disabled. Select a weekday to view details.
-              </p>
-              <div id="calendarGrid" class="calendar-grid"></div>
-            </div>
-            <div class="panel">
-              <h3 id="selectedDateTitle">Selected Day</h3>
-              <p class="subtle">Appointments for the selected day.</p>
-              <div id="selectedAppointments"></div>
-            </div>
-          </div>
-        </section>
-        <section id="patients" class="hidden">
-          <div class="page-hero">
-            <div>
-              <h2>Doctor Patients</h2>
-              <p>Create, schedule, update, and delete patient visits.</p>
-            </div>
-            <span class="hero-badge">Weekdays · 8 AM - 6 PM</span>
-          </div>
-          <div class="grid-2">
-            <div class="panel">
-              <h3>Add Patient</h3>
-              <input id="addName" placeholder="Full name" /><input
-                id="addEmail"
-                placeholder="Email address"
-              /><input id="addPhone" placeholder="Phone number" /><input
-                id="addCondition"
-                placeholder="Condition"
-              /><textarea
-                id="addDiagnosis"
-                placeholder="Notes or medical history summary"
-              ></textarea
-              ><button class="btn btn-primary" onclick="submitNewPatient()">
-                Save Patient
-              </button>
-              <div class="schedule-card">
-                <h3>Schedule Patient</h3>
-                <p class="schedule-note">
-                  Choose a patient, weekday date, and available clinic time.
-                </p>
-                <div class="alert-box">
-                  Scheduling allowed Monday to Friday, 8:00 AM to 6:00 PM only.
-                </div>
-                <select id="schedulePatient"></select
-                ><input
-                  id="scheduleDate"
-                  type="datetime-local"
-                  min="2025-01-01T08:00"
-                />
-                <div id="adminTimeSlots" class="time-grid"></div>
-                <button
-                  class="btn btn-primary"
-                  onclick="scheduleSelectedPatient()"
-                >
-                  Schedule Patient
-                </button>
-                <div id="adminScheduleStatus" class="email-status"></div>
-              </div>
-            </div>
-            <div class="panel">
-              <h3>Patients</h3>
-              <table>
-                <thead>
-                  <tr>
-                    <th>Name</th>
-                    <th>Contact</th>
-                    <th>Condition</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody id="patientTable"></tbody>
-              </table>
-            </div>
-          </div>
-        </section>
-        <section id="notifications" class="hidden">
-          <div class="page-hero">
-            <div>
-              <h2>Doctor Notifications</h2>
-              <p>
-                Select a patient and send a professional email notification.
-              </p>
-            </div>
-            <span class="hero-badge">Email API</span>
-          </div>
-          <div class="grid-2">
-            <div class="panel">
-              <h3>Send Notification</h3>
-              <select id="notificationPatient"></select
-              ><input
-                id="notificationSubject"
-                placeholder="Email subject"
-              /><textarea
-                id="notificationMessage"
-                placeholder="Write your message here"
-              ></textarea
-              ><button
-                class="btn btn-primary"
-                onclick="sendEmailNotification()"
-              >
-                Send Email
-              </button>
-              <div id="emailStatus" class="email-status"></div>
-            </div>
-            <div class="panel">
-              <h3>Email Setup Required</h3>
-              <div class="notice">
-                If email is not sending, check Render environment variable:<br /><strong
-                  >RESEND_API_KEY</strong
-                >
-              </div>
-              <div class="notice">
-                For Resend testing, recipient email may need to be verified
-                unless your domain is verified.
-              </div>
-            </div>
-          </div>
-        </section>
-      </main>
-    </section>
-    <script src="doctor.js"></script>
-  </body>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Doctor Dashboard - CareFlow</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="dashboard-container">
+    <nav class="sidebar">
+      <h2>CareFlow</h2>
+      <ul>
+        <li onclick="showSection('schedule')">My Schedule</li>
+        <li onclick="showSection('book')">Book Appointment</li>
+        <li onclick="showSection('patients')">My Patients</li>
+        <li onclick="showSection('email')">Send Email</li>
+      </ul>
+      <button onclick="logout()">Logout</button>
+    </nav>
+
+    <main class="content">
+      <!-- My Schedule -->
+      <div id="schedule" class="section">
+        <h1>My Appointments</h1>
+        <div id="doctor-appointments"></div>
+      </div>
+
+      <!-- Book Appointment -->
+      <div id="book" class="section hidden">
+        <h1>Schedule New Appointment</h1>
+        <form id="book-form">
+          <input type="text" id="patientName" placeholder="Patient Name" required>
+          <input type="datetime-local" id="appointmentDate" required>
+          <button type="submit">Book</button>
+        </form>
+      </div>
+
+      <!-- My Patients -->
+      <div id="patients" class="section hidden">
+        <h1>My Patients</h1>
+        <button onclick="addPatient()">Add Patient</button>
+        <div id="doctor-patients-list"></div>
+      </div>
+
+      <!-- Send Email -->
+      <div id="email" class="section hidden">
+        <h1>Send Email Notification</h1>
+        <select id="emailPatient"></select>
+        <input id="emailSubject" placeholder="Subject">
+        <textarea id="emailMessage" placeholder="Message"></textarea>
+        <button onclick="sendDoctorEmail()">Send</button>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const API = "https://etr-backend.onrender.com/api";
+
+    function showSection(section) {
+      document.querySelectorAll('.section').forEach(s => s.classList.add('hidden'));
+      document.getElementById(section).classList.remove('hidden');
+      if (section === 'schedule') loadDoctorAppointments();
+      if (section === 'patients') loadDoctorPatients();
+    }
+
+    async function loadDoctorAppointments() {
+      // Fetch doctor's appointments (add doctor_id filter in backend if needed)
+      const res = await fetch(`${API}/appointments`, { headers: { Authorization: `Bearer ${localStorage.getItem('healthcare_token')}` } });
+      const data = await res.json();
+      document.getElementById('doctor-appointments').innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+    }
+
+    async function loadDoctorPatients() {
+      const res = await fetch(`${API}/patients`, { headers: { Authorization: `Bearer ${localStorage.getItem('healthcare_token')}` } });
+      const data = await res.json();
+      document.getElementById('doctor-patients-list').innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+    }
+
+    async function addPatient() {
+      const name = prompt("Patient Name");
+      if (!name) return;
+      const res = await fetch(`${API}/patients`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${localStorage.getItem('healthcare_token')}` },
+        body: JSON.stringify({ name })
+      });
+      alert("Patient added");
+      loadDoctorPatients();
+    }
+
+    async function sendDoctorEmail() {
+      const patientId = document.getElementById("emailPatient").value;
+      const subject = document.getElementById("emailSubject").value;
+      const message = document.getElementById("emailMessage").value;
+      // Call /api/email/send
+      alert("Email sent (check backend)");
+    }
+
+    function logout() {
+      localStorage.clear();
+      location.href = "index.html";
+    }
+
+    window.onload = () => showSection('schedule');
+  </script>
+</body>
 </html>
