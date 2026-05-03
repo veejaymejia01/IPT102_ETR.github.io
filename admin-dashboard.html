@@ -6,47 +6,51 @@
   <title>Admin Dashboard - CareFlow</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css' rel='stylesheet' />
+  <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'></script>
 </head>
-<body class="bg-gray-50">
+<body class="bg-gray-50 font-sans">
   <div class="flex h-screen">
     <!-- Sidebar -->
     <div class="w-64 bg-white shadow-xl p-6 flex flex-col">
       <div class="flex items-center gap-3 mb-10">
-        <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white font-bold">CF</div>
+        <div class="w-10 h-10 bg-blue-600 rounded-2xl flex items-center justify-center text-white font-bold text-xl">CF</div>
         <h1 class="text-2xl font-bold text-gray-800">CareFlow</h1>
       </div>
-      <nav class="flex-1 space-y-2">
-        <a onclick="showSection('overview')" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-blue-50 cursor-pointer text-gray-700 hover:text-blue-600">
-          <i class="fas fa-home"></i> Overview
+      <nav class="flex-1 space-y-1">
+        <a onclick="showSection('calendar')" class="flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-blue-50 cursor-pointer text-gray-700 hover:text-blue-600 font-medium">
+          <i class="fas fa-calendar-alt"></i> Calendar
         </a>
-        <a onclick="showSection('specializations')" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-blue-50 cursor-pointer text-gray-700 hover:text-blue-600">
+        <a onclick="showSection('specializations')" class="flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-blue-50 cursor-pointer text-gray-700 hover:text-blue-600 font-medium">
           <i class="fas fa-tags"></i> Specializations
         </a>
-        <a onclick="showSection('patients')" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-blue-50 cursor-pointer text-gray-700 hover:text-blue-600">
+        <a onclick="showSection('patients')" class="flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-blue-50 cursor-pointer text-gray-700 hover:text-blue-600 font-medium">
           <i class="fas fa-users"></i> Patients
         </a>
       </nav>
-      <button onclick="logout()" class="mt-auto w-full py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl font-medium">Logout</button>
+      <button onclick="logout()" class="mt-auto w-full py-3 bg-red-500 hover:bg-red-600 text-white rounded-2xl font-medium flex items-center justify-center gap-2">
+        <i class="fas fa-sign-out-alt"></i> Logout
+      </button>
     </div>
 
     <!-- Main Content -->
     <div class="flex-1 p-8 overflow-auto">
-      <!-- Overview -->
-      <div id="overview" class="section">
-        <h1 class="text-3xl font-bold text-gray-800 mb-8">Dashboard Overview</h1>
-        <div id="overview-content" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
+      <!-- Calendar -->
+      <div id="calendar" class="section">
+        <h1 class="text-3xl font-bold text-gray-800 mb-6">All Appointments</h1>
+        <div id="calendar-container" class="bg-white rounded-3xl shadow p-6"></div>
       </div>
 
       <!-- Specializations -->
       <div id="specializations" class="section hidden">
-        <h1 class="text-3xl font-bold text-gray-800 mb-8">Appointments by Specialization</h1>
+        <h1 class="text-3xl font-bold text-gray-800 mb-6">Appointments by Specialization</h1>
         <div id="specializations-content" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
       </div>
 
       <!-- Patients -->
       <div id="patients" class="section hidden">
-        <h1 class="text-3xl font-bold text-gray-800 mb-8">All Patients</h1>
-        <div id="patients-content" class="bg-white rounded-2xl shadow"></div>
+        <h1 class="text-3xl font-bold text-gray-800 mb-6">All Patients</h1>
+        <div id="patients-content" class="bg-white rounded-3xl shadow overflow-hidden"></div>
       </div>
     </div>
   </div>
@@ -64,18 +68,32 @@
       return res.json();
     }
 
+    let calendar;
+
     function showSection(section) {
       document.querySelectorAll('.section').forEach(s => s.classList.add('hidden'));
       document.getElementById(section).classList.remove('hidden');
-      if (section === 'overview') loadOverview();
+      if (section === 'calendar') loadCalendar();
       if (section === 'specializations') loadSpecializations();
       if (section === 'patients') loadPatients();
     }
 
-    async function loadOverview() {
-      const data = await apiFetch("/appointments");
-      let html = `<div class="col-span-3 bg-white p-6 rounded-2xl shadow"><h2 class="text-xl font-semibold mb-4">All Appointments</h2><pre class="text-sm">${JSON.stringify(data, null, 2)}</pre></div>`;
-      document.getElementById("overview-content").innerHTML = html;
+    async function loadCalendar() {
+      const events = await apiFetch("/appointments");
+      if (calendar) calendar.destroy();
+      calendar = new FullCalendar.Calendar(document.getElementById("calendar-container"), {
+        initialView: "dayGridMonth",
+        events: events.map(a => ({
+          title: `${a.patient_name} - ${a.status}`,
+          start: a.appointment_date,
+          color: a.status === "Scheduled" ? "#3b82f6" : "#10b981"
+        })),
+        headerToolbar: { left: "prev,next today", center: "title", right: "dayGridMonth,timeGridWeek,timeGridDay" },
+        eventClick: function(info) {
+          alert(`Appointment: ${info.event.title}\nDate: ${info.event.start}`);
+        }
+      });
+      calendar.render();
     }
 
     async function loadSpecializations() {
@@ -83,10 +101,9 @@
       let html = "";
       for (const spec of specs) {
         html += `
-          <div class="bg-white p-6 rounded-2xl shadow hover:shadow-xl transition">
-            <h3 class="font-semibold text-lg">${spec.name}</h3>
-            <p class="text-gray-500 text-sm">${spec.description}</p>
-            <button onclick="loadAppointmentsBySpec('${spec.id}')" class="mt-4 text-blue-600 hover:text-blue-700 font-medium">View Appointments →</button>
+          <div class="bg-white p-6 rounded-3xl shadow hover:shadow-xl transition cursor-pointer" onclick="loadAppointmentsBySpec('${spec.id}')">
+            <h3 class="font-semibold text-xl">${spec.name}</h3>
+            <p class="text-gray-500 text-sm mt-1">${spec.description || ''}</p>
           </div>`;
       }
       document.getElementById("specializations-content").innerHTML = html;
@@ -94,14 +111,14 @@
 
     async function loadAppointmentsBySpec(specId) {
       const data = await apiFetch(`/appointments/specialization/${specId}`);
-      alert(JSON.stringify(data, null, 2)); // Replace with nice modal/table in production
+      alert(JSON.stringify(data, null, 2)); // Replace with nice modal in production
     }
 
     async function loadPatients() {
       const data = await apiFetch("/patients");
-      let html = `<table class="w-full"><thead><tr class="border-b"><th class="text-left py-4">Name</th><th class="text-left py-4">Email</th><th class="text-left py-4">Phone</th></tr></thead><tbody>`;
+      let html = `<table class="w-full"><thead class="bg-gray-100"><tr><th class="text-left p-4">Name</th><th class="text-left p-4">Email</th><th class="text-left p-4">Phone</th></tr></thead><tbody>`;
       for (const p of data) {
-        html += `<tr class="border-b"><td class="py-4">${p.name}</td><td>${p.email}</td><td>${p.phone}</td></tr>`;
+        html += `<tr class="border-b hover:bg-gray-50"><td class="p-4">${p.name}</td><td class="p-4">${p.email || '-'}</td><td class="p-4">${p.phone || '-'}</td></tr>`;
       }
       html += `</tbody></table>`;
       document.getElementById("patients-content").innerHTML = html;
@@ -112,8 +129,8 @@
       location.href = "index.html";
     }
 
-    // Start with Overview
-    window.onload = () => showSection('overview');
+    // Start with Calendar
+    window.onload = () => showSection('calendar');
   </script>
 </body>
 </html>
