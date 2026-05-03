@@ -4,97 +4,121 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Doctor Dashboard - CareFlow</title>
-  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
-<body>
-  <div class="dashboard-container">
-    <nav class="sidebar">
-      <h2>CareFlow</h2>
-      <ul>
-        <li onclick="showSection('schedule')">My Schedule</li>
-        <li onclick="showSection('book')">Book Appointment</li>
-        <li onclick="showSection('patients')">My Patients</li>
-        <li onclick="showSection('email')">Send Email</li>
-      </ul>
-      <button onclick="logout()">Logout</button>
-    </nav>
+<body class="bg-gray-50">
+  <div class="flex h-screen">
+    <!-- Sidebar -->
+    <div class="w-64 bg-white shadow-xl p-6 flex flex-col">
+      <div class="flex items-center gap-3 mb-10">
+        <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white font-bold">CF</div>
+        <h1 class="text-2xl font-bold text-gray-800">CareFlow</h1>
+      </div>
+      <nav class="flex-1 space-y-2">
+        <a onclick="showSection('schedule')" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-blue-50 cursor-pointer text-gray-700 hover:text-blue-600">
+          <i class="fas fa-calendar"></i> My Schedule
+        </a>
+        <a onclick="showSection('book')" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-blue-50 cursor-pointer text-gray-700 hover:text-blue-600">
+          <i class="fas fa-plus"></i> Book Appointment
+        </a>
+        <a onclick="showSection('patients')" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-blue-50 cursor-pointer text-gray-700 hover:text-blue-600">
+          <i class="fas fa-users"></i> My Patients
+        </a>
+        <a onclick="showSection('email')" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-blue-50 cursor-pointer text-gray-700 hover:text-blue-600">
+          <i class="fas fa-envelope"></i> Send Email
+        </a>
+      </nav>
+      <button onclick="logout()" class="mt-auto w-full py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl font-medium">Logout</button>
+    </div>
 
-    <main class="content">
-      <!-- My Schedule -->
+    <!-- Main Content -->
+    <div class="flex-1 p-8 overflow-auto">
       <div id="schedule" class="section">
-        <h1>My Appointments</h1>
-        <div id="doctor-appointments"></div>
+        <h1 class="text-3xl font-bold text-gray-800 mb-8">My Schedule</h1>
+        <div id="schedule-content" class="bg-white rounded-3xl shadow p-6"></div>
       </div>
 
-      <!-- Book Appointment -->
       <div id="book" class="section hidden">
-        <h1>Schedule New Appointment</h1>
-        <form id="book-form">
-          <input type="text" id="patientName" placeholder="Patient Name" required>
-          <input type="datetime-local" id="appointmentDate" required>
-          <button type="submit">Book</button>
-        </form>
+        <h1 class="text-3xl font-bold text-gray-800 mb-8">Book New Appointment</h1>
+        <div class="bg-white rounded-3xl shadow p-8 max-w-md">
+          <input id="patientName" class="w-full mb-4 p-4 border rounded-2xl" placeholder="Patient Name">
+          <input id="appointmentDate" type="datetime-local" class="w-full mb-4 p-4 border rounded-2xl">
+          <button onclick="bookAppointment()" class="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-semibold">Book Appointment</button>
+        </div>
       </div>
 
-      <!-- My Patients -->
       <div id="patients" class="section hidden">
-        <h1>My Patients</h1>
-        <button onclick="addPatient()">Add Patient</button>
-        <div id="doctor-patients-list"></div>
+        <h1 class="text-3xl font-bold text-gray-800 mb-8">My Patients</h1>
+        <button onclick="addPatient()" class="mb-6 px-6 py-3 bg-blue-600 text-white rounded-2xl hover:bg-blue-700">+ Add Patient</button>
+        <div id="patients-content" class="bg-white rounded-3xl shadow"></div>
       </div>
 
-      <!-- Send Email -->
       <div id="email" class="section hidden">
-        <h1>Send Email Notification</h1>
-        <select id="emailPatient"></select>
-        <input id="emailSubject" placeholder="Subject">
-        <textarea id="emailMessage" placeholder="Message"></textarea>
-        <button onclick="sendDoctorEmail()">Send</button>
+        <h1 class="text-3xl font-bold text-gray-800 mb-8">Send Email</h1>
+        <div class="bg-white rounded-3xl shadow p-8 max-w-md">
+          <select id="emailPatient" class="w-full mb-4 p-4 border rounded-2xl"></select>
+          <input id="emailSubject" placeholder="Subject" class="w-full mb-4 p-4 border rounded-2xl">
+          <textarea id="emailMessage" placeholder="Message" class="w-full h-32 p-4 border rounded-2xl"></textarea>
+          <button onclick="sendEmail()" class="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-semibold mt-4">Send Email</button>
+        </div>
       </div>
-    </main>
+    </div>
   </div>
 
   <script>
     const API = "https://etr-backend.onrender.com/api";
+    const token = localStorage.getItem("healthcare_token");
+
+    async function apiFetch(url, options = {}) {
+      const res = await fetch(API + url, {
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        ...options
+      });
+      if (!res.ok) throw new Error(await res.text());
+      return res.json();
+    }
 
     function showSection(section) {
       document.querySelectorAll('.section').forEach(s => s.classList.add('hidden'));
       document.getElementById(section).classList.remove('hidden');
-      if (section === 'schedule') loadDoctorAppointments();
-      if (section === 'patients') loadDoctorPatients();
+      if (section === 'schedule') loadSchedule();
+      if (section === 'patients') loadPatients();
     }
 
-    async function loadDoctorAppointments() {
-      // Fetch doctor's appointments (add doctor_id filter in backend if needed)
-      const res = await fetch(`${API}/appointments`, { headers: { Authorization: `Bearer ${localStorage.getItem('healthcare_token')}` } });
-      const data = await res.json();
-      document.getElementById('doctor-appointments').innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+    async function loadSchedule() {
+      const data = await apiFetch("/appointments");
+      document.getElementById("schedule-content").innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
     }
 
-    async function loadDoctorPatients() {
-      const res = await fetch(`${API}/patients`, { headers: { Authorization: `Bearer ${localStorage.getItem('healthcare_token')}` } });
-      const data = await res.json();
-      document.getElementById('doctor-patients-list').innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+    async function bookAppointment() {
+      const patientName = document.getElementById("patientName").value;
+      const appointmentDate = document.getElementById("appointmentDate").value;
+      if (!patientName || !appointmentDate) return alert("Please fill all fields");
+      await apiFetch("/appointments", { method: "POST", body: JSON.stringify({ patientName, appointmentDate }) });
+      alert("Appointment booked!");
+      loadSchedule();
+    }
+
+    async function loadPatients() {
+      const data = await apiFetch("/patients");
+      let html = `<table class="w-full"><thead><tr><th class="text-left py-4">Name</th><th class="text-left py-4">Email</th><th>Actions</th></tr></thead><tbody>`;
+      for (const p of data) {
+        html += `<tr><td class="py-4">${p.name}</td><td>${p.email}</td><td><button onclick="alert('Edit ${p.name}')" class="text-blue-600">Edit</button></td></tr>`;
+      }
+      html += `</tbody></table>`;
+      document.getElementById("patients-content").innerHTML = html;
     }
 
     async function addPatient() {
       const name = prompt("Patient Name");
       if (!name) return;
-      const res = await fetch(`${API}/patients`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${localStorage.getItem('healthcare_token')}` },
-        body: JSON.stringify({ name })
-      });
-      alert("Patient added");
-      loadDoctorPatients();
+      await apiFetch("/patients", { method: "POST", body: JSON.stringify({ name }) });
+      loadPatients();
     }
 
-    async function sendDoctorEmail() {
-      const patientId = document.getElementById("emailPatient").value;
-      const subject = document.getElementById("emailSubject").value;
-      const message = document.getElementById("emailMessage").value;
-      // Call /api/email/send
-      alert("Email sent (check backend)");
+    async function sendEmail() {
+      alert("Email sent (implement full logic as needed)");
     }
 
     function logout() {
