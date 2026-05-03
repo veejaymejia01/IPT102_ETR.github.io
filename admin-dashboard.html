@@ -98,32 +98,33 @@
             </div>
           </div>
         </section>
-        <section id="notifications" class="hidden">
-          <div class="page-hero">
-            <div>
-              <h2>Admin Notifications</h2>
-              <p>Select a patient and send a professional email notification.</p>
-            </div>
-            <span class="hero-badge">Email API</span>
-          </div>
-          <div class="grid-2">
-            <div class="panel">
-              <h3>Send Notification</h3>
-              <select id="notificationPatient"></select>
-              <input id="notificationSubject" placeholder="Email subject" />
-              <textarea id="notificationMessage" placeholder="Write your message here"></textarea>
-              <button class="btn btn-primary" onclick="sendEmailNotification()">Send Email</button>
-              <div id="emailStatus" class="email-status"></div>
-            </div>
-            <div class="panel">
-              <h3>Email Status</h3>
-              <div class="notice" style="background:#f0fdf4; border:1px solid #16a34a; color:#166534; padding:12px; border-radius:8px;">
-                Emails are sent using Brevo.<br>
-                Check Render logs if you see any issues.
-              </div>
-            </div>
-          </div>
-        </section>
+<section id="notifications" class="hidden">
+  <div class="page-hero">
+    <div>
+      <h2>Admin Notifications</h2>
+      <p>Select a patient and send a professional email notification.</p>
+    </div>
+    <span class="hero-badge">Email API</span>
+  </div>
+  <div class="grid-2">
+    <div class="panel">
+      <h3>Send Notification</h3>
+      <select id="notificationPatient"></select>
+      <input id="notificationSubject" placeholder="Email subject" />
+      <textarea id="notificationMessage" placeholder="Write your message here"></textarea>
+      <button class="btn btn-primary" onclick="sendEmailNotification()">
+        Send Email
+      </button>
+      <div id="emailStatus" class="email-status"></div>
+    </div>
+    <div class="panel">
+      <h3>Emails sent</h3>
+      <div class="notice" style="background:#f0fdf4; border:1px solid #16a34a; color:#166534; padding:12px; border-radius:8px;">
+        Emails are sent using Brevo. Check backend logs if any issue occurs.
+      </div>
+    </div>
+  </div>
+</section>
       </main>
     </section>
     <script src="admin.js"></script>
