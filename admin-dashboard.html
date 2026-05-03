@@ -117,11 +117,26 @@
       </button>
       <div id="emailStatus" class="email-status"></div>
     </div>
+
     <div class="panel">
-      <h3>Emails sent</h3>
-      <div class="notice" style="background:#f0fdf4; border:1px solid #16a34a; color:#166534; padding:12px; border-radius:8px;">
-        Emails are sent using Brevo. Check backend logs if any issue occurs.
+      <h3>Emails Sent (History)</h3>
+      <div class="notice" style="background:#f0fdf4; border:1px solid #16a34a; color:#166534; padding:12px; border-radius:8px; margin-bottom:12px;">
+        Emails are sent using Brevo. Check backend logs for full details.
       </div>
+      <table style="width:100%; border-collapse:collapse;">
+        <thead>
+          <tr style="background:#f1f5f9;">
+            <th style="padding:8px; text-align:left;">Date</th>
+            <th style="padding:8px; text-align:left;">Patient</th>
+            <th style="padding:8px; text-align:left;">Subject</th>
+            <th style="padding:8px; text-align:center;">Status</th>
+            <th style="padding:8px; text-align:center;">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="emailHistoryTable">
+          <!-- History rows will be added by JS -->
+        </tbody>
+      </table>
     </div>
   </div>
 </section>
