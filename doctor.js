@@ -3,71 +3,64 @@ const token = localStorage.getItem("healthcare_token");
 
 async function apiFetch(url, options = {}) {
   const res = await fetch(API + url, {
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
     ...options
   });
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
 
-// My Appointments
-async function loadMyAppointments() {
-  const data = await apiFetch("/appointments");
-  document.getElementById("my-appointments-content").innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+let calendar;
+
+// Show section
+function showSection(section) {
+  document.querySelectorAll('.section').forEach(s => s.classList.add('hidden'));
+  document.getElementById(section).classList.remove('hidden');
+  if (section === 'calendar') loadCalendar();
+}
+
+// Calendar
+async function loadCalendar() {
+  const events = await apiFetch("/appointments");
+  if (calendar) calendar.destroy();
+  calendar = new FullCalendar.Calendar(document.getElementById("calendar-container"), {
+    initialView: "dayGridMonth",
+    events: events.map(a => ({
+      title: a.patient_name,
+      start: a.appointment_date,
+      color: "#10b981"
+    })),
+    headerToolbar: { left: "prev,next today", center: "title", right: "dayGridMonth,timeGridWeek" }
+  });
+  calendar.render();
 }
 
 // Book Appointment
 async function bookAppointment() {
   const patientName = document.getElementById("patientName").value;
   const appointmentDate = document.getElementById("appointmentDate").value;
-  const specialization_id = document.getElementById("specializationSelect").value;
-
-  if (!patientName || !appointmentDate) return alert("Fill all fields");
-
-  const res = await apiFetch("/appointments", {
-    method: "POST",
-    body: JSON.stringify({ patientName, appointmentDate, specialization_id })
-  });
+  if (!patientName || !appointmentDate) return alert("Please fill all fields");
+  await apiFetch("/appointments", { method: "POST", body: JSON.stringify({ patientName, appointmentDate }) });
   alert("Appointment booked!");
-  loadMyAppointments();
+  loadCalendar();
 }
 
-// My Patients (CRUD)
-async function loadMyPatients() {
+// Patients
+async function loadPatients() {
   const data = await apiFetch("/patients");
-  let html = "<table><tr><th>Name</th><th>Email</th><th>Actions</th></tr>";
+  let html = `<table class="w-full"><thead class="bg-gray-100"><tr><th class="text-left p-4">Name</th><th class="text-left p-4">Email</th><th>Actions</th></tr></thead><tbody>`;
   for (const p of data) {
-    html += `<tr><td>${p.name}</td><td>${p.email}</td>
-      <td><button onclick="editPatient('${p.id}')">Edit</button>
-      <button onclick="deletePatient('${p.id}')">Delete</button></td></tr>`;
+    html += `<tr class="border-b"><td class="p-4">${p.name}</td><td class="p-4">${p.email || '-'}</td><td><button onclick="alert('Edit ${p.name}')" class="text-blue-600">Edit</button></td></tr>`;
   }
-  html += "</table>";
-  document.getElementById("my-patients-content").innerHTML = html;
+  html += `</tbody></table>`;
+  document.getElementById("patients-content").innerHTML = html;
 }
 
 async function addPatient() {
   const name = prompt("Patient Name");
   if (!name) return;
   await apiFetch("/patients", { method: "POST", body: JSON.stringify({ name }) });
-  loadMyPatients();
-}
-
-async function deletePatient(id) {
-  if (!confirm("Delete patient?")) return;
-  await apiFetch(`/patients/${id}`, { method: "DELETE" });
-  loadMyPatients();
-}
-
-// Send Email
-async function sendEmail() {
-  const patientId = document.getElementById("emailPatientSelect").value;
-  const subject = document.getElementById("emailSubject").value;
-  const message = document.getElementById("emailMessage").value;
-  await apiFetch("/email/send", {
-    method: "POST",
-    body: JSON.stringify({ patientId, subject, message })
-  });
-  alert("Email request sent!");
+  loadPatients();
 }
 
 function logout() {
@@ -76,7 +69,4 @@ function logout() {
 }
 
 // Init
-document.addEventListener("DOMContentLoaded", () => {
-  loadMyAppointments();
-  loadMyPatients();
-});
+window.onload = () => showSection('calendar');
