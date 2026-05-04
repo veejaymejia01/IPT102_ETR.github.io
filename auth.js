@@ -1,4 +1,3 @@
-<!-- IPT102_ETR.github.io-main/auth.js -->
 const API = "https://etr-backend.onrender.com/api";
 
 // ==================== UTILITIES ====================
@@ -37,14 +36,15 @@ function setButtonLoading(id, loading, defaultText) {
   }
 }
 
-// ==================== REMEMBER ME (FIXED) ====================
+// ==================== REMEMBER ME ====================
 function loadRememberedEmail() {
-  const savedEmail = localStorage.getItem("remembered_email");
-  const emailInput = el("loginEmail");
-  const rememberCheckbox = el("rememberMe");
-
-  if (emailInput && savedEmail) emailInput.value = savedEmail;
-  if (rememberCheckbox) rememberCheckbox.checked = !!savedEmail;
+  const saved = localStorage.getItem("remembered_email");
+  if (saved) {
+    const emailInput = el("loginEmail");
+    const rememberCheckbox = el("rememberMe");
+    if (emailInput) emailInput.value = saved;
+    if (rememberCheckbox) rememberCheckbox.checked = true;
+  }
 }
 
 // ==================== LOGIN ====================
@@ -64,29 +64,29 @@ async function login() {
   setButtonLoading("loginBtn", true, "Sign In");
 
   try {
-    const response = await fetch(API + "/auth/login", {
+    const data = await fetch(API + "/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
-    });
-    const data = await response.json();
+    }).then(r => r.json());
 
     if (!data.token) throw new Error(data.error || "Login failed");
 
-    // Remember Me - Fixed
+    // Remember Me
     if (remember) {
       localStorage.setItem("remembered_email", email);
     } else {
       localStorage.removeItem("remembered_email");
     }
 
+    // Save session
     localStorage.setItem("healthcare_token", data.token);
     localStorage.setItem("healthcare_user", JSON.stringify(data.user));
 
     showToast("Login successful!", "success");
 
     setTimeout(() => {
-      const role = data.user?.role;
+      const role = data.user.role;
       if (role === "admin") location.href = "admin-dashboard.html";
       else if (role === "doctor") location.href = "doctor-dashboard.html";
       else if (role === "patient") location.href = "patient-dashboard.html";
@@ -202,6 +202,7 @@ function togglePassword(inputId, iconId) {
 document.addEventListener("DOMContentLoaded", () => {
   loadRememberedEmail();
 
+  // Allow Enter key on password field
   const passwordField = el("loginPassword");
   if (passwordField) {
     passwordField.addEventListener("keypress", (e) => {
