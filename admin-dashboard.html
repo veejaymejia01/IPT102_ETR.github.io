@@ -20,36 +20,27 @@
       </div>
       
       <div class="nav-list">
-        <button class="nav-btn active" onclick="showAdminPage('appointments', this)">Appointments</button>
-        <button class="nav-btn" onclick="showAdminPage('patients', this)">Patients</button>
-        <button class="nav-btn" onclick="showAdminPage('notifications', this)">Notifications</button>
+        <button class="nav-btn active" onclick="showAdminPage('appointments', this)">📅 Appointments</button>
+        <button class="nav-btn" onclick="showAdminPage('patients', this)">👥 Patients</button>
+        <button class="nav-btn" onclick="showAdminPage('notifications', this)">📧 Notifications</button>
       </div>
       
-      <button onclick="logout()" class="logout-btn">Logout</button>
+      <button onclick="logout()" class="logout-btn">🚪 Logout</button>
     </div>
 
     <div class="main">
 
-      <!-- Appointments Section -->
+      <!-- ==================== APPOINTMENTS SECTION ==================== -->
       <section id="appointments">
         <div class="page-hero">
           <h2>Admin Appointments</h2>
-          <p>Clinic schedule overview • Weekday appointments only (8:00 AM - 6:00 PM)</p>
+          <p>Clinic schedule overview • Weekday appointments only</p>
         </div>
 
         <div class="metrics">
-          <div class="metric-card">
-            <small>Today's Appointments</small>
-            <strong id="todayCount">0</strong>
-          </div>
-          <div class="metric-card">
-            <small>Selected Day</small>
-            <strong id="selectedCount">0</strong>
-          </div>
-          <div class="metric-card">
-            <small>This Month</small>
-            <strong id="monthCount">0</strong>
-          </div>
+          <div class="metric-card"><small>Today</small><strong id="todayCount">0</strong></div>
+          <div class="metric-card"><small>Selected Day</small><strong id="selectedCount">0</strong></div>
+          <div class="metric-card"><small>This Month</small><strong id="monthCount">0</strong></div>
         </div>
 
         <div class="grid-2">
@@ -57,51 +48,41 @@
             <div class="calendar-head">
               <h3 id="calendarTitle">Calendar</h3>
               <div>
-                <button onclick="changeMonth(-1)">Previous</button>
-                <button onclick="changeMonth(1)">Next</button>
+                <button onclick="changeMonth(-1)">← Previous</button>
+                <button onclick="changeMonth(1)">Next →</button>
               </div>
             </div>
             <div id="calendarGrid" class="calendar-grid"></div>
-            <small>Weekends disabled • Click a weekday to view appointments</small>
           </div>
 
           <div class="panel">
-            <h3 id="selectedDateTitle">Selected Day</h3>
+            <h3 id="selectedDateTitle">Selected Day Appointments</h3>
             <div id="selectedAppointments"></div>
           </div>
         </div>
       </section>
 
-      <!-- Patients Section -->
+      <!-- ==================== PATIENTS SECTION ==================== -->
       <section id="patients" class="hidden">
         <div class="page-hero">
-          <h2>Admin Patients</h2>
-          <p>Create, schedule and manage patients</p>
+          <h2>Patients Management</h2>
         </div>
 
         <div class="panel">
-          <h3>Add New Patient</h3>
-          <input type="text" id="addName" placeholder="Full Name" required>
-          <input type="email" id="addEmail" placeholder="Email">
-          <input type="tel" id="addPhone" placeholder="Phone">
-          <button onclick="submitNewPatient()" class="btn btn-primary">Save Patient</button>
-        </div>
-
-        <div class="panel">
-          <h3>Schedule Patient</h3>
+          <h3>Schedule New Appointment</h3>
           
           <label>Patient</label>
-          <select id="schedulePatient" style="width:100%; padding:10px; margin-bottom:10px;"></select>
+          <select id="schedulePatient" style="width:100%; padding:10px; margin-bottom:8px;"></select>
 
           <label>Specialization</label>
           <select id="adminSpecializationSelect" onchange="loadDoctorsBySpecialization()" 
-                  style="width:100%; padding:10px; margin-bottom:10px;"></select>
+                  style="width:100%; padding:10px; margin-bottom:8px;"></select>
 
           <label>Doctor</label>
-          <select id="adminDoctorSelect" style="width:100%; padding:10px; margin-bottom:10px;"></select>
+          <select id="adminDoctorSelect" style="width:100%; padding:10px; margin-bottom:8px;"></select>
 
           <label>Date & Time</label>
-          <input type="datetime-local" id="scheduleDate" style="width:100%; padding:10px; margin-bottom:10px;">
+          <input type="datetime-local" id="scheduleDate" style="width:100%; padding:10px; margin-bottom:8px;">
           
           <div id="adminTimeSlots" class="time-grid"></div>
 
@@ -117,18 +98,17 @@
         </div>
       </section>
 
-      <!-- Notifications Section -->
+      <!-- ==================== NOTIFICATIONS SECTION ==================== -->
       <section id="notifications" class="hidden">
         <div class="page-hero">
-          <h2>Notifications</h2>
-          <p>Send email notifications to patients</p>
+          <h2>Send Notifications</h2>
         </div>
 
         <div class="panel">
-          <h3>Send Notification</h3>
+          <h3>Send Email Notification</h3>
           <select id="notificationPatient" style="width:100%; padding:10px; margin-bottom:10px;"></select>
-          <input type="text" id="notificationSubject" placeholder="Subject" style="width:100%; padding:10px; margin-bottom:10px;">
-          <textarea id="notificationMessage" placeholder="Message" rows="4" style="width:100%; padding:10px;"></textarea>
+          <input type="text" id="notificationSubject" placeholder="Subject (optional)" style="width:100%; padding:10px; margin-bottom:10px;">
+          <textarea id="notificationMessage" placeholder="Write your message here..." rows="5" style="width:100%; padding:10px;"></textarea>
           <button onclick="sendEmailNotification()" class="btn btn-primary">Send Email</button>
           <p id="emailStatus" class="email-status"></p>
         </div>
