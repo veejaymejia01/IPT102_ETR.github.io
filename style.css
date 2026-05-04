@@ -19,75 +19,144 @@ body {
   font-family: Arial, sans-serif;
   background: linear-gradient(135deg, #f8fbff, #dbeafe);
   color: #111827;
-  line-height: 1.5;
 }
 
-.hidden {
-  display: none !important;
-}
-
-/* ==================== MOBILE RESPONSIVE ==================== */
+/* ==================== LAYOUT ==================== */
 .app-shell {
   min-height: 100vh;
   display: grid;
   grid-template-columns: 260px 1fr;
 }
 
+.sidebar {
+  background: var(--side);
+  color: white;
+  padding: 24px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  transition: all 0.3s ease;
+}
+
+.main {
+  padding: 24px;
+}
+
+/* Mobile Menu Toggle Button */
+.mobile-menu-btn {
+  display: none;
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 1100;
+  background: var(--blue);
+  color: white;
+  border: none;
+  width: 50px;
+  height: 50px;
+  border-radius: 12px;
+  font-size: 24px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+/* Mobile Responsive */
 @media (max-width: 900px) {
   .app-shell {
     grid-template-columns: 1fr;
   }
+  
   .sidebar {
     position: fixed;
     top: 0;
-    left: 0;
-    width: 100%;
-    height: 60px;
-    flex-direction: row;
-    padding: 10px 16px;
+    left: -280px;
+    width: 260px;
+    height: 100vh;
     z-index: 1000;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    box-shadow: 4px 0 20px rgba(0,0,0,0.25);
   }
-  .nav-list {
-    flex-direction: row;
-    gap: 8px;
-    margin-left: auto;
+  
+  .sidebar.show {
+    left: 0;
   }
-  .nav-btn {
-    padding: 8px 14px;
-    font-size: 0.9rem;
+  
+  .mobile-menu-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
+  
   .main {
     padding: 16px;
-    margin-top: 60px;
+    margin-top: 0;
   }
+  
   .grid-2 {
     grid-template-columns: 1fr;
   }
+  
   .metrics {
     grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
   }
 }
 
-/* Login Screen */
-.login-screen {
-  min-height: 100vh;
-  display: grid;
-  grid-template-columns: 1.05fr 0.95fr;
+/* ==================== OTHER STYLES ==================== */
+.hidden { display: none !important; }
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.brand-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, var(--cyan), var(--blue));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  font-weight: 800;
 }
 
-@media (max-width: 900px) {
-  .login-screen {
-    grid-template-columns: 1fr;
-  }
-  .login-side {
-    padding: 40px 24px;
-  }
+.nav-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.nav-btn {
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.08);
+  color: white;
+  text-align: left;
+  font-weight: 800;
+  cursor: pointer;
+}
+.nav-btn.active,
+.nav-btn:hover {
+  background: linear-gradient(135deg, #1d4ed8, var(--blue));
 }
 
-/* General Responsive */
+.logout-btn {
+  margin-top: auto;
+  padding: 12px 16px;
+  border: none;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.14);
+  color: white;
+  font-weight: 800;
+  cursor: pointer;
+}
+
 .panel {
-  padding: 20px;
+  background: var(--panel);
+  border-radius: 22px;
+  padding: 22px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
 }
 
 input, select, textarea {
@@ -99,18 +168,9 @@ input, select, textarea {
   font: inherit;
 }
 
-textarea {
-  min-height: 110px;
-}
-
-.table-container {
-  overflow-x: auto;
-}
-
 table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 600px;
 }
 
 th, td {
@@ -122,13 +182,7 @@ th, td {
 .calendar-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 6px;
-  margin-top: 12px;
-}
-
-.day-cell {
-  min-height: 70px;
-  font-size: 0.95rem;
+  gap: 8px;
 }
 
 .time-grid {
@@ -137,36 +191,34 @@ th, td {
   gap: 8px;
 }
 
+.notice {
+  padding: 16px;
+  border: 1px dashed #cbd5e1;
+  border-radius: 14px;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+
 /* Toast */
 .toast {
   position: fixed;
-  top: 16px;
+  top: 20px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 9999;
   max-width: 90%;
 }
 
-/* Make sure buttons are touch friendly */
-.btn {
-  min-height: 48px;
-  padding: 12px 20px;
-}
-
-/* Small screens adjustments */
-@media (max-width: 600px) {
-  .page-hero {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
+/* Extra small screens */
+@media (max-width: 480px) {
+  .panel {
+    padding: 16px;
   }
-  
-  .hero-badge {
-    font-size: 0.75rem;
-    padding: 6px 10px;
+  .calendar-grid {
+    gap: 6px;
   }
-  
-  .panel h3 {
-    font-size: 1.3rem;
+  .day-cell {
+    min-height: 60px;
+    font-size: 0.9rem;
   }
 }
