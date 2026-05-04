@@ -1,117 +1,123 @@
-<!doctype html>
-<html>
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Patient Dashboard</title>
-    <link rel="stylesheet" href="style.css" />
-  </head>
-  <body>
-    <section class="app-shell">
-      <aside class="sidebar">
-        <div class="brand">
-          <div class="brand-icon">+</div>
-          <div>
-            <h1>CareFlow</h1>
-            <p>Appointment System</p>
-          </div>
-        </div>
-        <div class="nav-list">
-          <button
-            class="nav-btn active"
-            onclick="showPatientPage('dashboard', this)"
-          >
-            Dashboard</button
-          ><button class="nav-btn" onclick="showPatientPage('book', this)">
-            Book Appointment</button
-          ><button
-            class="nav-btn"
-            onclick="showPatientPage('appointments', this)"
-          >
-            My Appointments</button
-          ><button class="nav-btn" onclick="showPatientPage('profile', this)">
-            My Profile
-          </button>
-        </div>
-        <div class="nav-spacer"></div>
-        <button class="logout-btn" onclick="logout()">Logout</button>
-      </aside>
-      <main class="main">
-        <section id="dashboard">
-          <div class="page-hero">
-            <div>
-              <h2>Patient Dashboard</h2>
-              <p>View your appointments and clinic profile.</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Record</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Mobile Menu Toggle */
+        .mobile-menu-btn {
+            display: none;
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            z-index: 1100;
+            background: #2563eb;
+            color: white;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        @media (max-width: 900px) {
+            .mobile-menu-btn {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            .sidebar {
+                position: fixed;
+                top: 0;
+                left: -280px;
+                width: 260px;
+                height: 100vh;
+                z-index: 1000;
+                transition: left 0.3s ease;
+            }
+            .sidebar.show {
+                left: 0;
+            }
+            .main {
+                margin-left: 0 !important;
+                padding-top: 70px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Mobile Menu Button -->
+    <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button>
+
+    <div class="app-shell">
+        <!-- Sidebar (same as admin/doctor) -->
+        <aside class="sidebar">
+            <div class="brand">
+                <div class="brand-icon">+</div>
+                <div>
+                    <h1>CareFlow</h1>
+                    <p>Appointment System</p>
+                </div>
             </div>
-            <span class="hero-badge">Patient Portal</span>
-          </div>
-          <div class="panel">
-            <h3>Next Appointment</h3>
-            <div id="nextAppointmentBox" class="notice">
-              No upcoming appointment.
+            <div class="nav-list">
+                <button class="nav-btn" onclick="location.href='patient-dashboard.html'">Dashboard</button>
+                <button class="nav-btn active" onclick="location.href='patient-record.html'">My Record</button>
+                <button class="nav-btn" onclick="location.href='patient-appointments.html'">My Appointments</button>
             </div>
-          </div>
-        </section>
-        <section id="book" class="hidden">
-          <div class="page-hero">
-            <div>
-              <h2>Book Appointment</h2>
-              <p>Choose a weekday appointment from 8:00 AM to 6:00 PM.</p>
+            <div class="nav-spacer"></div>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main">
+            <div class="topbar">
+                <div>
+                    <h2>Patient Record</h2>
+                    <p>Edit patient information.</p>
+                </div>
             </div>
-            <span class="hero-badge">Weekdays · 8 AM - 6 PM</span>
-          </div>
-          <div class="panel">
-            <h3>Request Schedule</h3>
-            <div class="alert-box">
-              Appointments are available Monday to Friday, 8:00 AM to 6:00 PM
-              only.
+            <div class="panel">
+                <div class="panel-body stack">
+                    <input id="editPatientName" placeholder="Patient name">
+                    <input id="editPatientEmail" placeholder="Email">
+                    <input id="editPatientPhone" placeholder="Phone">
+                    <input id="editPatientCondition" placeholder="Condition">
+                    <input id="editPatientDiagnosis" placeholder="Diagnosis">
+                    <div class="toolbar">
+                        <button class="btn btn-primary inline-btn" onclick="savePatient()">Save</button>
+                        <button class="btn btn-secondary inline-btn" onclick="goBack()">Back</button>
+                    </div>
+                </div>
             </div>
-            <input
-              id="appointmentDate"
-              type="datetime-local"
-              min="2025-01-01T08:00"
-            />
-            <div id="patientTimeSlots" class="time-grid"></div>
-            <button class="btn btn-primary" onclick="bookAppointment()">
-              Book Appointment
-            </button>
-            <div id="patientScheduleStatus" class="email-status"></div>
-          </div>
-        </section>
-        <section id="appointments" class="hidden">
-          <div class="page-hero">
-            <div>
-              <h2>My Appointments</h2>
-              <p>Review your scheduled appointments.</p>
-            </div>
-            <span class="hero-badge">Patient Portal</span>
-          </div>
-          <div class="panel">
-            <table>
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody id="appointmentTable"></tbody>
-            </table>
-          </div>
-        </section>
-        <section id="profile" class="hidden">
-          <div class="page-hero">
-            <div>
-              <h2>My Profile</h2>
-              <p>Your clinic profile details.</p>
-            </div>
-            <span class="hero-badge">Patient Portal</span>
-          </div>
-          <div class="panel">
-            <div id="profileBox" class="notice">Loading profile...</div>
-          </div>
-        </section>
-      </main>
-    </section>
-    <script src="patient.js"></script>
-  </body>
+        </main>
+    </div>
+
+    <script src="patient-record.js"></script>
+    <script>
+        // Mobile Sidebar Toggle
+        function toggleSidebar() {
+            document.querySelector('.sidebar').classList.toggle('show');
+        }
+
+        // Optional: Close sidebar when clicking outside
+        document.addEventListener('click', function(e) {
+            const sidebar = document.querySelector('.sidebar');
+            const menuBtn = document.querySelector('.mobile-menu-btn');
+            if (!sidebar.contains(e.target) && !menuBtn.contains(e.target)) {
+                sidebar.classList.remove('show');
+            }
+        });
+
+        // Logout function (if not already in patient-record.js)
+        function logout() {
+            localStorage.removeItem("healthcare_token");
+            localStorage.removeItem("healthcare_user");
+            window.location.href = "index.html";
+        }
+    </script>
+</body>
 </html>
