@@ -24,7 +24,9 @@
         <div class="nav-spacer"></div>
         <button class="logout-btn" onclick="logout()">Logout</button>
       </aside>
+
       <main class="main">
+        <!-- Appointments Section -->
         <section id="appointments">
           <div class="page-hero">
             <div>
@@ -63,6 +65,8 @@
             </div>
           </div>
         </section>
+
+        <!-- Patients Section with Scheduling -->
         <section id="patients" class="hidden">
           <div class="page-hero">
             <div>
@@ -80,10 +84,21 @@
               <input id="addCondition" placeholder="Condition" />
               <textarea id="addDiagnosis" placeholder="Notes or medical history summary"></textarea>
               <button class="btn btn-primary" onclick="submitNewPatient()">Save Patient</button>
-              <!-- Schedule section remains the same -->
+
+              <!-- Scheduling Section -->
+              <div class="schedule-card" style="margin-top:20px;">
+                <h3>Schedule Patient</h3>
+                <p class="schedule-note">Choose a patient, weekday date, and available clinic time.</p>
+                <select id="schedulePatient"></select>
+                <input id="scheduleDate" type="datetime-local" min="2025-01-01T08:00" />
+                <div id="adminTimeSlots" class="time-grid"></div>
+                <button class="btn btn-primary" onclick="scheduleSelectedPatient()">Schedule Patient</button>
+                <div id="adminScheduleStatus" class="email-status"></div>
+              </div>
             </div>
+
             <div class="panel">
-              <h3>Patients</h3>
+              <h3>Patients List</h3>
               <table>
                 <thead>
                   <tr>
@@ -98,50 +113,49 @@
             </div>
           </div>
         </section>
-<section id="notifications" class="hidden">
-  <div class="page-hero">
-    <div>
-      <h2>Admin Notifications</h2>
-      <p>Select a patient and send a professional email notification.</p>
-    </div>
-    <span class="hero-badge">Email API</span>
-  </div>
-  <div class="grid-2">
-    <div class="panel">
-      <h3>Send Notification</h3>
-      <select id="notificationPatient"></select>
-      <input id="notificationSubject" placeholder="Email subject" />
-      <textarea id="notificationMessage" placeholder="Write your message here"></textarea>
-      <button class="btn btn-primary" onclick="sendEmailNotification()">
-        Send Email
-      </button>
-      <div id="emailStatus" class="email-status"></div>
-    </div>
 
-    <div class="panel">
-      <h3>Emails Sent (History)</h3>
-      <div class="notice" style="background:#f0fdf4; border:1px solid #16a34a; color:#166534; padding:12px; border-radius:8px; margin-bottom:12px;">
-        Emails are sent using Brevo. Check backend logs for full details.
-      </div>
-      <table style="width:100%; border-collapse:collapse;">
-        <thead>
-          <tr style="background:#f1f5f9;">
-            <th style="padding:8px; text-align:left;">Date</th>
-            <th style="padding:8px; text-align:left;">Patient</th>
-            <th style="padding:8px; text-align:left;">Subject</th>
-            <th style="padding:8px; text-align:center;">Status</th>
-            <th style="padding:8px; text-align:center;">Actions</th>
-          </tr>
-        </thead>
-        <tbody id="emailHistoryTable">
-          <!-- History rows will be added by JS -->
-        </tbody>
-      </table>
-    </div>
-  </div>
-</section>
+        <!-- Notifications Section -->
+        <section id="notifications" class="hidden">
+          <div class="page-hero">
+            <div>
+              <h2>Admin Notifications</h2>
+              <p>Select a patient and send a professional email notification.</p>
+            </div>
+            <span class="hero-badge">Email API</span>
+          </div>
+          <div class="grid-2">
+            <div class="panel">
+              <h3>Send Notification</h3>
+              <select id="notificationPatient"></select>
+              <input id="notificationSubject" placeholder="Email subject" />
+              <textarea id="notificationMessage" placeholder="Write your message here"></textarea>
+              <button class="btn btn-primary" onclick="sendEmailNotification()">Send Email</button>
+              <div id="emailStatus" class="email-status"></div>
+            </div>
+
+            <div class="panel">
+              <h3>Emails Sent (History)</h3>
+              <div class="notice" style="background:#f0fdf4; border:1px solid #16a34a; color:#166534; padding:12px; border-radius:8px; margin-bottom:12px;">
+                Emails are sent using Brevo. Check backend logs for full details.
+              </div>
+              <table style="width:100%; border-collapse:collapse;">
+                <thead>
+                  <tr style="background:#f1f5f9;">
+                    <th style="padding:8px; text-align:left;">Date</th>
+                    <th style="padding:8px; text-align:left;">Patient</th>
+                    <th style="padding:8px; text-align:left;">Subject</th>
+                    <th style="padding:8px; text-align:center;">Status</th>
+                    <th style="padding:8px; text-align:center;">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="emailHistoryTable"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
       </main>
     </section>
+
     <script src="admin.js"></script>
   </body>
 </html>
