@@ -1,103 +1,85 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Patient Dashboard</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CareFlow - Patient Dashboard</title>
+  <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
-    <section class="app-shell">
-        <aside class="sidebar">
-        <div class="brand">
-          <div class="brand-icon">+</div>
+  <div class="app-shell">
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="brand">
+        <div class="brand-icon">●</div>
+        <div>
+          <h1>CareFlow</h1>
+          <p>Patient Portal</p>
+        </div>
+      </div>
+      <div class="nav-list">
+        <button class="nav-btn active" onclick="showPatientPage('dashboard', this)">Dashboard</button>
+        <button class="nav-btn" onclick="showPatientPage('book', this)">Book Appointment</button>
+        <button class="nav-btn" onclick="showPatientPage('appointments', this)">My Appointments</button>
+        <button class="nav-btn" onclick="showPatientPage('profile', this)">My Profile</button>
+      </div>
+      <button onclick="logout()" class="logout-btn">Logout</button>
+    </div>
+
+    <div class="main">
+      <!-- Dashboard -->
+      <section id="dashboard">
+        <div class="page-hero">
           <div>
-            <h1>CareFlow</h1>
-            <p>Appointment System</p>
+            <h2>Welcome, <span id="patientName">Patient</span></h2>
+            <p>Manage your appointments easily</p>
           </div>
         </div>
-            <div class="nav-list"><button class="nav-btn active"
-                    onclick="showSection('dashboard',this)">Dashboard</button><button class="nav-btn"
-                    onclick="showSection('book',this)">Book Appointment</button><button class="nav-btn"
-                    onclick="showSection('appointments',this)">My Appointments</button><button class="nav-btn"
-                    onclick="showSection('profile',this)">My Profile</button></div>
-            <div class="nav-spacer"></div><button class="logout-btn" onclick="logout()">Logout</button>
-        </aside>
-        <main class="main">
-            <div class="topbar">
-                <div>
-                    <h2>Patient Dashboard</h2>
-                    <p id="welcomeText">Welcome</p>
-                </div>
-            </div>
-            <section id="dashboard">
-                <div class="content-grid">
-                    <div class="panel">
-                        <div class="panel-head">
-                            <div>
-                                <h3>Overview</h3>
-                                <p>Your upcoming appointments and booking access.</p>
-                            </div>
-                        </div>
-                        <div class="panel-body">
-                            <div id="nextAppointmentBox" class="patient-record-box">No upcoming appointment.</div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-            <section id="book" class="hidden">
-                <div class="panel">
-                    <div class="panel-head">
-                        <div>
-                            <h3>Book Appointment</h3>
-                            <p>Select your preferred date and time.</p>
-                        </div>
-                    </div>
-                    <div class="panel-body stack"><input id="appointmentDate" type="datetime-local"><button
-                            class="btn btn-primary inline-btn" onclick="bookAppointment()">Book</button></div>
-                </div>
-            </section>
-            <section id="appointments" class="hidden">
-                <div class="panel">
-                    <div class="panel-head">
-                        <div>
-                            <h3>My Appointments</h3>
-                            <p>View your scheduled appointments.</p>
-                        </div>
-                    </div>
-                    <div class="panel-body">
-                        <div class="table-wrap">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Date</th>
-                                        <th>Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="appointmentTable"></tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </section>
-            <section id="profile" class="hidden">
-                <div class="panel">
-                    <div class="panel-head">
-                        <div>
-                            <h3>My Profile</h3>
-                            <p>Your patient information linked to your account.</p>
-                        </div>
-                    </div>
-                    <div class="panel-body">
-                        <div id="profileBox" class="patient-record-box">Loading profile...</div>
-                    </div>
-                </div>
-            </section>
-        </main>
-    </section>
-    <script src="patient.js"></script>
-</body>
+        <div id="nextAppointmentBox" class="panel">Loading...</div>
+      </section>
 
+      <!-- Book Appointment -->
+      <section id="book" class="hidden">
+        <div class="panel">
+          <h3>Book New Appointment</h3>
+
+          <label>Specialization</label>
+          <select id="specializationSelect" onchange="loadDoctorsBySpecialization()" class="full-width">
+            <option value="">Select Specialization</option>
+          </select>
+
+          <label>Doctor</label>
+          <select id="doctorSelect" class="full-width">
+            <option value="">Select Doctor</option>
+          </select>
+
+          <label>Date & Time</label>
+          <input type="datetime-local" id="appointmentDate" class="full-width">
+
+          <div id="patientTimeSlots" class="time-grid"></div>
+
+          <button onclick="bookAppointment()" class="btn btn-primary">Book Appointment</button>
+          <p id="patientScheduleStatus" class="email-status"></p>
+        </div>
+      </section>
+
+      <!-- My Appointments -->
+      <section id="appointments" class="hidden">
+        <div class="panel">
+          <h3>My Appointments</h3>
+          <table id="appointmentTable">
+            <tr><th>Date</th><th>Doctor</th><th>Status</th></tr>
+          </table>
+        </div>
+      </section>
+
+      <!-- Profile -->
+      <section id="profile" class="hidden">
+        <div class="panel" id="profileBox">Loading profile...</div>
+      </section>
+    </div>
+  </div>
+
+  <script src="patient.js"></script>
+</body>
 </html>
