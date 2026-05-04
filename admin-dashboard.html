@@ -187,15 +187,12 @@
             <h3>Send New Notification</h3>
             <div class="form-group">
               <select id="notificationPatient"></select>
-              <label>Select Patient</label>
             </div>
             <div class="form-group">
               <input id="notificationSubject" placeholder=" " value="Appointment Update" />
-              <label>Subject</label>
             </div>
             <div class="form-group">
               <textarea id="notificationMessage" rows="5" placeholder="Write message..."></textarea>
-              <label>Message</label>
             </div>
             <button class="btn btn-primary" onclick="sendEmailNotification()" style="width:100%">Send Email</button>
             <div id="emailStatus" class="email-status"></div>
