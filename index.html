@@ -1,138 +1,109 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>CareFlow Login</title>
-    <link rel="stylesheet" href="style.css" />
-  </head>
-  <body class="login-body">
-    <div id="toast" class="toast"></div>
-    <section class="login-screen">
-      <div class="login-side">
-        <div class="brand-chip">● CareFlow Appointment System</div>
-        <h1 class="hero-title">Professional clinic appointment workflow.</h1>
-        <!-- <p class="hero-text">
-          Login to access the correct dashboard. Admins manage clinic
-          operations, doctors review schedules, and patients book their own
-          appointments.
-        </p> -->
-      </div>
-      <div class="login-panel-wrap">
-        <div class="auth-card">
-          <div id="loginSection">
-            <h2>Welcome back</h2>
-            <p class="subtle">Sign in to continue.</p>
-            <div class="floating-field">
-              <input id="loginEmail" type="email" placeholder=" " /><label
-                >Email</label
-              >
-            </div>
-            <div class="floating-field">
-              <input id="loginPassword" type="password" placeholder=" " /><label
-                >Password</label
-              ><button
-                type="button"
-                class="eye-btn"
-                onclick="togglePassword('loginPassword', 'loginEye')"
-              >
-                <span id="loginEye">👁</span>
-              </button>
-            </div>
-            <div class="auth-row">
-              <label class="remember-label"
-                ><input id="rememberMe" type="checkbox" />Remember me</label
-              ><button type="button" class="link-btn" onclick="showForgot()">
-                Forgot password?
-              </button>
-            </div>
-            <button
-              id="loginBtn"
-              class="btn btn-primary primary-auth-btn"
-              onclick="login()"
-            >
-              Sign In
-            </button>
-            <div class="auth-switch">
-              No patient account?
-              <button type="button" class="link-btn" onclick="showRegister()">
-                Register
-              </button>
-            </div>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CareFlow - Login</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="login-screen">
+
+    <!-- Left Side -->
+    <div class="login-side">
+      <div class="brand-chip">● CareFlow</div>
+      <h1 class="hero-title">Professional<br>Appointment System</h1>
+      <p class="hero-text">Manage appointments, patients, and notifications with ease.</p>
+    </div>
+
+    <!-- Right Side - Auth Forms -->
+    <div class="login-panel-wrap">
+      <div class="auth-card">
+
+        <!-- LOGIN SECTION -->
+        <div id="loginSection">
+          <h2>Welcome back</h2>
+          <p class="subtle">Sign in to continue</p>
+
+          <div class="floating-field">
+            <input type="email" id="loginEmail" placeholder=" ">
+            <label>Email</label>
           </div>
-          <div id="registerSection" class="hidden">
-            <h2>Create account</h2>
-            <p class="subtle">Register as a patient.</p>
-            <div class="floating-field">
-              <input id="registerName" placeholder=" " /><label
-                >Full name</label
-              >
-            </div>
-            <div class="floating-field">
-              <input id="registerEmail" type="email" placeholder=" " /><label
-                >Email</label
-              >
-            </div>
-            <div class="floating-field">
-              <input
-                id="registerPassword"
-                type="password"
-                placeholder=" "
-              /><label>Password</label
-              ><button
-                type="button"
-                class="eye-btn"
-                onclick="togglePassword('registerPassword', 'registerEye')"
-              >
-                <span id="registerEye">👁</span>
-              </button>
-            </div>
-            <div class="floating-field">
-              <input id="registerPhone" placeholder=" " /><label
-                >Phone number</label
-              >
-            </div>
-            <button
-              id="registerBtn"
-              class="btn btn-primary primary-auth-btn"
-              onclick="registerPatient()"
-            >
-              Register
-            </button>
-            <div class="auth-switch">
-              Already have an account?
-              <button type="button" class="link-btn" onclick="showLogin()">
-                Login
-              </button>
-            </div>
+
+          <div class="floating-field">
+            <input type="password" id="loginPassword" placeholder=" ">
+            <label>Password</label>
+            <button type="button" class="eye-btn" id="togglePassword">👁</button>
           </div>
-          <div id="forgotSection" class="hidden">
-            <h2>Forgot password</h2>
-            <p class="subtle">
-              Enter your email and we will send reset instructions.
-            </p>
-            <div class="floating-field">
-              <input id="forgotEmail" type="email" placeholder=" " /><label
-                >Email</label
-              >
-            </div>
-            <button
-              id="forgotBtn"
-              class="btn btn-primary primary-auth-btn"
-              onclick="forgotPassword()"
-            >
-              Send Reset Email
-            </button>
-            <div class="auth-switch">
-              Remembered your password?
-              <button type="button" class="link-btn" onclick="showLogin()">
-                Back to login
-              </button>
-            </div>
+
+          <div class="auth-row">
+            <label class="remember-label">
+              <input type="checkbox" id="rememberMe">
+              Remember me
+            </label>
+            <button onclick="showForgot()" class="link-btn">Forgot password?</button>
+          </div>
+
+          <button onclick="login()" id="loginBtn" class="btn btn-primary primary-auth-btn">Sign In</button>
+
+          <div class="auth-switch">
+            No account? 
+            <button onclick="showRegister()" class="link-btn">Register as Patient</button>
           </div>
         </div>
+
+        <!-- REGISTER SECTION -->
+        <div id="registerSection" class="hidden">
+          <h2>Create account</h2>
+          <p class="subtle">Register as a patient</p>
+
+          <div class="floating-field">
+            <input type="text" id="registerName" placeholder=" ">
+            <label>Full Name</label>
+          </div>
+          <div class="floating-field">
+            <input type="email" id="registerEmail" placeholder=" ">
+            <label>Email</label>
+          </div>
+          <div class="floating-field">
+            <input type="password" id="registerPassword" placeholder=" ">
+            <label>Password</label>
+          </div>
+          <div class="floating-field">
+            <input type="tel" id="registerPhone" placeholder=" ">
+            <label>Phone Number</label>
+          </div>
+
+          <button onclick="registerPatient()" id="registerBtn" class="btn btn-primary primary-auth-btn">Register</button>
+
+          <div class="auth-switch">
+            Already have an account? 
+            <button onclick="showLogin()" class="link-btn">Sign in</button>
+          </div>
+        </div>
+
+        <!-- FORGOT PASSWORD -->
+        <div id="forgotSection" class="hidden">
+          <h2>Forgot Password</h2>
+          <p class="subtle">Enter your email to receive reset instructions</p>
+
+          <div class="floating-field">
+            <input type="email" id="forgotEmail" placeholder=" ">
+            <label>Email</label>
+          </div>
+
+          <button onclick="forgotPassword()" id="forgotBtn" class="btn btn-primary primary-auth-btn">Send Reset Email</button>
+
+          <div class="auth-switch">
+            <button onclick="showLogin()" class="link-btn">Back to Login</button>
+          </div>
+        </div>
+
       </div>
-    </section>
-    <script src="auth.js"></script>
-  </body>
+    </div>
+  </div>
+
+  <script src="auth.js"></script>
+</body>
 </html>
