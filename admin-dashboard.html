@@ -1,161 +1,149 @@
-<!doctype html>
-<html>
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Admin Dashboard</title>
-    <link rel="stylesheet" href="style.css" />
-  </head>
-  <body>
-    <section class="app-shell">
-      <aside class="sidebar">
-        <div class="brand">
-          <div class="brand-icon">+</div>
-          <div>
-            <h1>CareFlow</h1>
-            <p>Appointment System</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CareFlow - Admin Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-shell">
+    
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="brand">
+        <div class="brand-icon">●</div>
+        <div>
+          <h1>CareFlow</h1>
+          <p>Admin Portal</p>
+        </div>
+      </div>
+      
+      <div class="nav-list">
+        <button class="nav-btn active" onclick="showAdminPage('appointments', this)">Appointments</button>
+        <button class="nav-btn" onclick="showAdminPage('patients', this)">Patients</button>
+        <button class="nav-btn" onclick="showAdminPage('notifications', this)">Notifications</button>
+      </div>
+      
+      <button onclick="logout()" class="logout-btn">Logout</button>
+    </div>
+
+    <div class="main">
+
+      <!-- Appointments Section -->
+      <section id="appointments">
+        <div class="page-hero">
+          <h2>Admin Appointments</h2>
+          <p>Clinic schedule overview • Weekday appointments only (8:00 AM - 6:00 PM)</p>
+        </div>
+
+        <div class="metrics">
+          <div class="metric-card">
+            <small>Today's Appointments</small>
+            <strong id="todayCount">0</strong>
+          </div>
+          <div class="metric-card">
+            <small>Selected Day</small>
+            <strong id="selectedCount">0</strong>
+          </div>
+          <div class="metric-card">
+            <small>This Month</small>
+            <strong id="monthCount">0</strong>
           </div>
         </div>
-        <div class="nav-list">
-          <button class="nav-btn active" onclick="showAdminPage('appointments', this)">Appointments</button>
-          <button class="nav-btn" onclick="showAdminPage('patients', this)">Patients</button>
-          <button class="nav-btn" onclick="showAdminPage('notifications', this)">Notifications</button>
+
+        <div class="grid-2">
+          <div class="panel">
+            <div class="calendar-head">
+              <h3 id="calendarTitle">Calendar</h3>
+              <div>
+                <button onclick="changeMonth(-1)">Previous</button>
+                <button onclick="changeMonth(1)">Next</button>
+              </div>
+            </div>
+            <div id="calendarGrid" class="calendar-grid"></div>
+            <small>Weekends disabled • Click a weekday to view appointments</small>
+          </div>
+
+          <div class="panel">
+            <h3 id="selectedDateTitle">Selected Day</h3>
+            <div id="selectedAppointments"></div>
+          </div>
         </div>
-        <div class="nav-spacer"></div>
-        <button class="logout-btn" onclick="logout()">Logout</button>
-      </aside>
+      </section>
 
-      <main class="main">
-        <!-- Appointments Section -->
-        <section id="appointments">
-          <div class="page-hero">
-            <div>
-              <h2>Admin Appointments</h2>
-              <p>Clinic schedule overview. Weekday appointments only, 8:00 AM to 6:00 PM.</p>
-            </div>
-            <span class="hero-badge">Professional Clinic Workflow</span>
-          </div>
-          <div class="metrics">
-            <div class="metric-card">
-              <small>Today's Appointments</small><strong id="todayCount">0</strong>
-            </div>
-            <div class="metric-card">
-              <small>Selected Day</small><strong id="selectedCount">0</strong>
-            </div>
-            <div class="metric-card">
-              <small>This Month</small><strong id="monthCount">0</strong>
-            </div>
-          </div>
-          <div class="grid-2">
-            <div class="panel">
-              <div class="calendar-head">
-                <h3 id="calendarTitle">Calendar</h3>
-                <div>
-                  <button class="btn btn-secondary" onclick="changeMonth(-1)">Previous</button>
-                  <button class="btn btn-secondary" onclick="changeMonth(1)">Next</button>
-                </div>
-              </div>
-              <p class="subtle">Weekends are disabled. Select a weekday to view details.</p>
-              <div id="calendarGrid" class="calendar-grid"></div>
-            </div>
-            <div class="panel">
-              <h3 id="selectedDateTitle">Selected Day</h3>
-              <p class="subtle">Appointments for the selected day.</p>
-              <div id="selectedAppointments"></div>
-            </div>
-          </div>
-        </section>
+      <!-- Patients Section -->
+      <section id="patients" class="hidden">
+        <div class="page-hero">
+          <h2>Admin Patients</h2>
+          <p>Create, schedule and manage patients</p>
+        </div>
 
-        <!-- Patients Section with Scheduling -->
-        <section id="patients" class="hidden">
-          <div class="page-hero">
-            <div>
-              <h2>Admin Patients</h2>
-              <p>Create, schedule, update, and delete patient visits.</p>
-            </div>
-            <span class="hero-badge">Weekdays · 8 AM - 6 PM</span>
-          </div>
-          <div class="grid-2">
-            <div class="panel">
-              <h3>Add Patient</h3>
-              <input id="addName" placeholder="Full name" />
-              <input id="addEmail" placeholder="Email address" />
-              <input id="addPhone" placeholder="Phone number" />
-              <input id="addCondition" placeholder="Condition" />
-              <textarea id="addDiagnosis" placeholder="Notes or medical history summary"></textarea>
-              <button class="btn btn-primary" onclick="submitNewPatient()">Save Patient</button>
+        <div class="panel">
+          <h3>Add New Patient</h3>
+          <input type="text" id="addName" placeholder="Full Name" required>
+          <input type="email" id="addEmail" placeholder="Email">
+          <input type="tel" id="addPhone" placeholder="Phone">
+          <button onclick="submitNewPatient()" class="btn btn-primary">Save Patient</button>
+        </div>
 
-              <!-- Scheduling Section -->
-              <div class="schedule-card" style="margin-top:20px;">
-                <h3>Schedule Patient</h3>
-                <p class="schedule-note">Choose a patient, weekday date, and available clinic time.</p>
-                <select id="schedulePatient"></select>
-                <input id="scheduleDate" type="datetime-local" min="2025-01-01T08:00" />
-                <div id="adminTimeSlots" class="time-grid"></div>
-                <button class="btn btn-primary" onclick="scheduleSelectedPatient()">Schedule Patient</button>
-                <div id="adminScheduleStatus" class="email-status"></div>
-              </div>
-            </div>
+        <div class="panel">
+          <h3>Schedule Patient</h3>
+          
+          <label>Patient</label>
+          <select id="schedulePatient" style="width:100%; padding:10px; margin-bottom:10px;"></select>
 
-            <div class="panel">
-              <h3>Patients List</h3>
-              <table>
-                <thead>
-                  <tr>
-                    <th>Name</th>
-                    <th>Contact</th>
-                    <th>Condition</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody id="patientTable"></tbody>
-              </table>
-            </div>
-          </div>
-        </section>
+          <label>Specialization</label>
+          <select id="adminSpecializationSelect" onchange="loadDoctorsBySpecialization()" 
+                  style="width:100%; padding:10px; margin-bottom:10px;"></select>
 
-        <!-- Notifications Section -->
-        <section id="notifications" class="hidden">
-          <div class="page-hero">
-            <div>
-              <h2>Admin Notifications</h2>
-              <p>Select a patient and send a professional email notification.</p>
-            </div>
-            <span class="hero-badge">Email API</span>
-          </div>
-          <div class="grid-2">
-            <div class="panel">
-              <h3>Send Notification</h3>
-              <select id="notificationPatient"></select>
-              <input id="notificationSubject" placeholder="Email subject" />
-              <textarea id="notificationMessage" placeholder="Write your message here"></textarea>
-              <button class="btn btn-primary" onclick="sendEmailNotification()">Send Email</button>
-              <div id="emailStatus" class="email-status"></div>
-            </div>
+          <label>Doctor</label>
+          <select id="adminDoctorSelect" style="width:100%; padding:10px; margin-bottom:10px;"></select>
 
-            <div class="panel">
-              <h3>Emails Sent (History)</h3>
-              <div class="notice" style="background:#f0fdf4; border:1px solid #16a34a; color:#166534; padding:12px; border-radius:8px; margin-bottom:12px;">
-                Emails are sent using Brevo. Check backend logs for full details.
-              </div>
-              <table style="width:100%; border-collapse:collapse;">
-                <thead>
-                  <tr style="background:#f1f5f9;">
-                    <th style="padding:8px; text-align:left;">Date</th>
-                    <th style="padding:8px; text-align:left;">Patient</th>
-                    <th style="padding:8px; text-align:left;">Subject</th>
-                    <th style="padding:8px; text-align:center;">Status</th>
-                    <th style="padding:8px; text-align:center;">Actions</th>
-                  </tr>
-                </thead>
-                <tbody id="emailHistoryTable"></tbody>
-              </table>
-            </div>
-          </div>
-        </section>
-      </main>
-    </section>
+          <label>Date & Time</label>
+          <input type="datetime-local" id="scheduleDate" style="width:100%; padding:10px; margin-bottom:10px;">
+          
+          <div id="adminTimeSlots" class="time-grid"></div>
 
-    <script src="admin.js"></script>
-  </body>
+          <button onclick="scheduleSelectedPatient()" class="btn btn-primary">Schedule Appointment</button>
+          <p id="adminScheduleStatus" class="email-status"></p>
+        </div>
+
+        <div class="panel">
+          <h3>Patients List</h3>
+          <table id="patientTable">
+            <tr><th>Name</th><th>Contact</th><th>Condition</th><th>Actions</th></tr>
+          </table>
+        </div>
+      </section>
+
+      <!-- Notifications Section -->
+      <section id="notifications" class="hidden">
+        <div class="page-hero">
+          <h2>Notifications</h2>
+          <p>Send email notifications to patients</p>
+        </div>
+
+        <div class="panel">
+          <h3>Send Notification</h3>
+          <select id="notificationPatient" style="width:100%; padding:10px; margin-bottom:10px;"></select>
+          <input type="text" id="notificationSubject" placeholder="Subject" style="width:100%; padding:10px; margin-bottom:10px;">
+          <textarea id="notificationMessage" placeholder="Message" rows="4" style="width:100%; padding:10px;"></textarea>
+          <button onclick="sendEmailNotification()" class="btn btn-primary">Send Email</button>
+          <p id="emailStatus" class="email-status"></p>
+        </div>
+
+        <div class="panel">
+          <h3>Email History</h3>
+          <table id="emailHistoryTable">
+            <tr><th>Date</th><th>Patient</th><th>Subject</th><th>Status</th></tr>
+          </table>
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+  <script src="admin.js"></script>
+</body>
 </html>
