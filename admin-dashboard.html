@@ -6,33 +6,44 @@
   <title>Admin Dashboard - CareFlow</title>
   <link rel="stylesheet" href="style.css" />
   <style>
-    /* Additional Admin-specific enhancements */
-    .form-group { margin-bottom: 18px; position: relative; }
-    .form-group label {
-      position: absolute; top: 12px; left: 14px; font-size: 13px; color: #64748b;
-      transition: all 0.2s; pointer-events: none;
-    }
-    .form-group input, .form-group select, .form-group textarea {
-      width: 100%; padding: 14px 14px 10px; border: 1px solid #cbd5e1;
-      border-radius: 12px; font-size: 15px; transition: all 0.2s;
-    }
-    .form-group input:focus, .form-group select:focus {
-      border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
-    }
-    .form-group input:focus + label, .form-group select:focus + label,
-    .form-group input:not(:placeholder-shown) + label {
-      top: -8px; font-size: 12px; background: white; padding: 0 6px; color: #2563eb;
-    }
     .schedule-card {
-      background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 16px;
-      padding: 20px; margin-top: 24px;
+      background: #f0f9ff;
+      border: 2px solid #bae6fd;
+      border-radius: 16px;
+      padding: 24px;
     }
-    .status-badge {
-      padding: 4px 12px; border-radius: 999px; font-size: 13px; font-weight: 600;
+    .schedule-card h3 {
+      color: #0369a1;
+      margin-top: 0;
+    }
+    .form-group {
+      margin-bottom: 18px;
+      position: relative;
+    }
+    .form-group label {
+      position: absolute;
+      top: 12px;
+      left: 14px;
+      font-size: 13px;
+      color: #64748b;
+      transition: all 0.2s;
+      pointer-events: none;
+      background: white;
+      padding: 0 4px;
+    }
+    .form-group input:focus + label,
+    .form-group select:focus + label,
+    .form-group input:not(:placeholder-shown) + label {
+      top: -8px;
+      font-size: 12px;
+      color: #2563eb;
     }
     .search-input {
-      width: 100%; padding: 12px 16px; border: 1px solid #cbd5e1;
-      border-radius: 12px; margin-bottom: 16px;
+      width: 100%;
+      padding: 12px 16px;
+      border: 1px solid #cbd5e1;
+      border-radius: 12px;
+      margin-bottom: 16px;
     }
   </style>
 </head>
@@ -65,17 +76,10 @@
           </div>
         </div>
         <div class="metrics">
-          <div class="metric-card">
-            <small>Today</small><strong id="todayCount">0</strong>
-          </div>
-          <div class="metric-card">
-            <small>Selected Day</small><strong id="selectedCount">0</strong>
-          </div>
-          <div class="metric-card">
-            <small>This Month</small><strong id="monthCount">0</strong>
-          </div>
+          <div class="metric-card"><small>Today</small><strong id="todayCount">0</strong></div>
+          <div class="metric-card"><small>Selected Day</small><strong id="selectedCount">0</strong></div>
+          <div class="metric-card"><small>This Month</small><strong id="monthCount">0</strong></div>
         </div>
-
         <div class="grid-2">
           <div class="panel">
             <div class="calendar-head">
@@ -87,24 +91,24 @@
             </div>
             <div id="calendarGrid" class="calendar-grid"></div>
           </div>
-
           <div class="panel">
-            <h3 id="selectedDateTitle">Appointments</h3>
+            <h3 id="selectedDateTitle">Appointments Today</h3>
             <div id="selectedAppointments"></div>
           </div>
         </div>
       </section>
 
-      <!-- Patients Section -->
+      <!-- Patients Section - Separated Scheduling -->
       <section id="patients" class="hidden">
         <div class="page-hero">
           <div>
             <h2>Patients Management</h2>
-            <p>Add, view and schedule patients</p>
+            <p>Add patients and schedule appointments</p>
           </div>
         </div>
 
         <div class="grid-2">
+          <!-- Add Patient -->
           <div class="panel">
             <h3>Add New Patient</h3>
             <div class="form-group">
@@ -128,49 +132,57 @@
               <label>Diagnosis / Notes</label>
             </div>
             <button class="btn btn-primary" onclick="submitNewPatient()" style="width:100%">Save Patient</button>
+          </div>
 
-            <!-- Schedule Section -->
-            <div class="schedule-card">
-              <h3>Schedule Appointment</h3>
-              <div class="form-group">
-                <select id="schedulePatient"></select>
-                <label>Patient</label>
-              </div>
-              <div class="form-group">
-                <select id="scheduleSpecialization" onchange="loadDoctorsBySpecialization()"></select>
-                <label>Specialization</label>
-              </div>
-              <div class="form-group">
-                <select id="scheduleDoctor"></select>
-                <label>Doctor</label>
-              </div>
-              <div class="form-group">
-                <input id="scheduleDate" type="datetime-local" />
-                <label>Date & Time</label>
-              </div>
-              <div id="adminTimeSlots" class="time-grid"></div>
-              <button class="btn btn-primary" onclick="scheduleSelectedPatient()" style="width:100%; margin-top:12px;">
-                Confirm Appointment
-              </button>
-              <div id="adminScheduleStatus" class="email-status"></div>
+          <!-- Schedule Appointment (Separated) -->
+          <div class="panel schedule-card">
+            <h3>📅 Schedule Appointment</h3>
+            <p class="schedule-note">Select patient, doctor, and time slot</p>
+
+            <div class="form-group">
+              <select id="schedulePatient"></select>
+              <label>Patient</label>
             </div>
-          </div>
 
-          <div class="panel">
-            <h3>Patients List</h3>
-            <input type="text" id="patientSearch" class="search-input" placeholder="Search patients..." onkeyup="filterPatients()">
-            <table>
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Contact</th>
-                  <th>Condition</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody id="patientTable"></tbody>
-            </table>
+            <div class="form-group">
+              <select id="scheduleSpecialization" onchange="loadDoctorsBySpecialization()"></select>
+              <label>Specialization</label>
+            </div>
+
+            <div class="form-group">
+              <select id="scheduleDoctor"></select>
+              <label>Doctor</label>
+            </div>
+
+            <div class="form-group">
+              <input id="scheduleDate" type="datetime-local" />
+              <label>Date & Time</label>
+            </div>
+
+            <div id="adminTimeSlots" class="time-grid"></div>
+
+            <button class="btn btn-primary" onclick="scheduleSelectedPatient()" style="width:100%; margin-top: 16px;">
+              Confirm & Schedule Appointment
+            </button>
+            <div id="adminScheduleStatus" class="email-status" style="margin-top:12px;"></div>
           </div>
+        </div>
+
+        <!-- Patients List -->
+        <div class="panel" style="margin-top: 24px;">
+          <h3>All Patients</h3>
+          <input type="text" id="patientSearch" class="search-input" placeholder="Search by name or condition..." onkeyup="filterPatients()">
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Contact</th>
+                <th>Condition</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="patientTable"></tbody>
+          </table>
         </div>
       </section>
 
@@ -178,21 +190,24 @@
       <section id="notifications" class="hidden">
         <div class="page-hero">
           <div>
-            <h2>Notifications</h2>
-            <p>Send professional email updates</p>
+            <h2>Notifications Center</h2>
+            <p>Send email updates to patients</p>
           </div>
         </div>
         <div class="grid-2">
           <div class="panel">
-            <h3>Send New Notification</h3>
+            <h3>Send Notification</h3>
             <div class="form-group">
               <select id="notificationPatient"></select>
+              <label>Select Patient</label>
             </div>
             <div class="form-group">
-              <input id="notificationSubject" placeholder=" " />
+              <input id="notificationSubject" placeholder=" " value="CareFlow Update" />
+              <label>Subject</label>
             </div>
             <div class="form-group">
-              <textarea id="notificationMessage" rows="5" placeholder="Write message..."></textarea>
+              <textarea id="notificationMessage" rows="5" placeholder="Message content..."></textarea>
+              <label>Message</label>
             </div>
             <button class="btn btn-primary" onclick="sendEmailNotification()" style="width:100%">Send Email</button>
             <div id="emailStatus" class="email-status"></div>
