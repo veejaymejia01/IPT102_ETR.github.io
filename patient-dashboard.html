@@ -5,119 +5,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Patient Record</title>
     <link rel="stylesheet" href="style.css">
-    <style>
-        /* Mobile Menu Toggle */
-        .mobile-menu-btn {
-            display: none;
-            position: fixed;
-            top: 16px;
-            left: 16px;
-            z-index: 1100;
-            background: #2563eb;
-            color: white;
-            border: none;
-            width: 50px;
-            height: 50px;
-            border-radius: 12px;
-            font-size: 24px;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        }
-
-        @media (max-width: 900px) {
-            .mobile-menu-btn {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            }
-            .sidebar {
-                position: fixed;
-                top: 0;
-                left: -280px;
-                width: 260px;
-                height: 100vh;
-                z-index: 1000;
-                transition: left 0.3s ease;
-            }
-            .sidebar.show {
-                left: 0;
-            }
-            .main {
-                margin-left: 0 !important;
-                padding-top: 70px;
-            }
-        }
-    </style>
 </head>
 <body>
-    <!-- Mobile Menu Button -->
-    <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button>
-
-    <div class="app-shell">
-        <!-- Sidebar (same as admin/doctor) -->
-        <aside class="sidebar">
-            <div class="brand">
-                <div class="brand-icon">+</div>
-                <div>
-                    <h1>CareFlow</h1>
-                    <p>Appointment System</p>
-                </div>
+    <div class="main" style="max-width:900px;margin:auto;">
+        <div class="topbar">
+            <div>
+                <h2>Patient Record</h2>
+                <p>Edit patient information.</p>
             </div>
-            <div class="nav-list">
-                <button class="nav-btn" onclick="location.href='patient-dashboard.html'">Dashboard</button>
-                <button class="nav-btn active" onclick="location.href='patient-record.html'">My Record</button>
-                <button class="nav-btn" onclick="location.href='patient-appointments.html'">My Appointments</button>
+        </div>
+        <div class="panel">
+            <div class="panel-body stack"><input id="editPatientName" placeholder="Patient name"><input
+                    id="editPatientEmail" placeholder="Email"><input id="editPatientPhone" placeholder="Phone"><input
+                    id="editPatientCondition" placeholder="Condition"><input id="editPatientDiagnosis"
+                    placeholder="Diagnosis">
+                <div class="toolbar"><button class="btn btn-primary inline-btn"
+                        onclick="savePatient()">Save</button><button class="btn btn-secondary inline-btn"
+                        onclick="goBack()">Back</button></div>
             </div>
-            <div class="nav-spacer"></div>
-            <button class="logout-btn" onclick="logout()">Logout</button>
-        </aside>
-
-        <!-- Main Content -->
-        <main class="main">
-            <div class="topbar">
-                <div>
-                    <h2>Patient Record</h2>
-                    <p>Edit patient information.</p>
-                </div>
-            </div>
-            <div class="panel">
-                <div class="panel-body stack">
-                    <input id="editPatientName" placeholder="Patient name">
-                    <input id="editPatientEmail" placeholder="Email">
-                    <input id="editPatientPhone" placeholder="Phone">
-                    <input id="editPatientCondition" placeholder="Condition">
-                    <input id="editPatientDiagnosis" placeholder="Diagnosis">
-                    <div class="toolbar">
-                        <button class="btn btn-primary inline-btn" onclick="savePatient()">Save</button>
-                        <button class="btn btn-secondary inline-btn" onclick="goBack()">Back</button>
-                    </div>
-                </div>
-            </div>
-        </main>
+        </div>
     </div>
-
     <script src="patient-record.js"></script>
-    <script>
-        // Mobile Sidebar Toggle
-        function toggleSidebar() {
-            document.querySelector('.sidebar').classList.toggle('show');
-        }
-
-        // Optional: Close sidebar when clicking outside
-        document.addEventListener('click', function(e) {
-            const sidebar = document.querySelector('.sidebar');
-            const menuBtn = document.querySelector('.mobile-menu-btn');
-            if (!sidebar.contains(e.target) && !menuBtn.contains(e.target)) {
-                sidebar.classList.remove('show');
-            }
-        });
-
-        // Logout function (if not already in patient-record.js)
-        function logout() {
-            localStorage.removeItem("healthcare_token");
-            localStorage.removeItem("healthcare_user");
-            window.location.href = "index.html";
-        }
-    </script>
 </body>
 </html>
