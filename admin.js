@@ -1,4 +1,4 @@
-// ==================== ADMIN.JS - COMPLETE FILE ====================
+// ==================== ADMIN.JS - COMPLETE FILE (Add Patient Removed) ====================
 const API = "https://etr-backend.onrender.com/api";
 const token = localStorage.getItem("healthcare_token") || "";
 const currentUser = JSON.parse(localStorage.getItem("healthcare_user") || "null");
@@ -97,7 +97,6 @@ function renderCalendarBase(gridId, titleId) {
     el(titleId).textContent = currentDate.toLocaleString('default', { month: 'long', year: 'numeric' });
   }
 
-  // Day headers
   ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].forEach(day => {
     const d = document.createElement("div");
     d.className = "day-name";
@@ -110,14 +109,12 @@ function renderCalendarBase(gridId, titleId) {
   const firstDay = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-  // Padding
   for (let i = 0; i < firstDay; i++) {
     const pad = document.createElement("div");
     pad.className = "day-cell muted";
     grid.appendChild(pad);
   }
 
-  // Days
   for (let day = 1; day <= daysInMonth; day++) {
     const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
     const cell = document.createElement("div");
@@ -229,7 +226,7 @@ function renderPatients() {
   }).join("") : `<tr><td colspan="5" style="text-align:center;padding:40px;">No patients yet.</td></tr>`;
 }
 
-// ==================== LOAD & CRUD ====================
+// ==================== LOAD DATA ====================
 async function loadAll() {
   try {
     patients = await apiFetch("/patients");
@@ -244,26 +241,6 @@ async function loadAll() {
   }
 }
 
-async function submitNewPatient() {
-  const body = {
-    name: el("addName").value.trim(),
-    email: el("addEmail").value.trim(),
-    phone: el("addPhone").value.trim(),
-    condition: el("addCondition").value.trim() || "General",
-    diagnosis: el("addDiagnosis").value.trim() || "Pending assessment",
-  };
-  if (!body.name) return showToast("Name is required", "error");
-
-  try {
-    await apiFetch("/patients", { method: "POST", body: JSON.stringify(body) });
-    showToast("Patient added", "success");
-    document.querySelectorAll("#patients input").forEach(i => i.value = "");
-    await loadAll();
-  } catch (e) {
-    showToast("Failed to add patient", "error");
-  }
-}
-
 function selectPatientForSchedule(id) {
   el("schedulePatient").value = id;
   showAdminPage("patients");
@@ -272,7 +249,7 @@ function selectPatientForSchedule(id) {
 async function scheduleSelectedPatient() {
   const patientId = el("schedulePatient").value;
   const appointmentDate = el("scheduleDate").value;
-  if (!patientId || !appointmentDate) return showToast("Fill all fields", "error");
+  if (!patientId || !appointmentDate) return showToast("Please fill all fields", "error");
 
   try {
     const patient = patients.find(p => p.id === patientId);
@@ -284,18 +261,18 @@ async function scheduleSelectedPatient() {
     el("scheduleDate").value = "";
     await loadAll();
   } catch (e) {
-    showToast("Failed to schedule", "error");
+    showToast("Failed to schedule appointment", "error");
   }
 }
 
 async function deletePatient(id) {
-  if (!confirm("Delete patient?")) return;
+  if (!confirm("Delete this patient?")) return;
   try {
     await apiFetch(`/patients/${id}`, { method: "DELETE" });
     showToast("Patient deleted", "success");
     await loadAll();
   } catch (e) {
-    showToast("Failed to delete", "error");
+    showToast("Failed to delete patient", "error");
   }
 }
 
