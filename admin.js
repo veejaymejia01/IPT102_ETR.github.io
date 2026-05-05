@@ -1,27 +1,26 @@
-// ==================== admin.js - Full Updated Version with Doctor Selection ====================
+// ==================== ADMIN.JS - COMPLETE FILE ====================
 const API = "https://etr-backend.onrender.com/api";
 const token = localStorage.getItem("healthcare_token") || "";
-const currentUser = JSON.parse(
-  localStorage.getItem("healthcare_user") || "null"
-);
+const currentUser = JSON.parse(localStorage.getItem("healthcare_user") || "null");
 
-function el(id) {
-  return document.getElementById(id);
+function el(id) { return document.getElementById(id); }
+
+if (!currentUser || currentUser.role !== "admin" || !token) {
+  location.href = "index.html";
 }
 
-function logout() {
-  localStorage.removeItem("healthcare_token");
-  localStorage.removeItem("healthcare_user");
-  window.location.href = "index.html";
-}
+let patients = [];
+let appointments = [];
+let currentDate = new Date();
+let selectedDate = new Date();
 
+// ==================== API HELPER ====================
 async function apiFetch(url, options = {}) {
   const r = await fetch(API + url, {
     ...options,
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
-      ...(options.headers || {}),
     },
   });
   const d = await r.json().catch(() => ({}));
@@ -29,58 +28,28 @@ async function apiFetch(url, options = {}) {
   return d;
 }
 
-// ==================== DOCTORS DATABASE ====================
-const doctors = [
-  { id: "D001", name: "Dr. Maria Santos", specialization: "Cardiology" },
-  { id: "D002", name: "Dr. John Reyes", specialization: "Pediatrics" },
-  { id: "D003", name: "Dr. Ana Cruz", specialization: "General Medicine" },
-  { id: "D004", name: "Dr. Ramon Lim", specialization: "Dermatology" },
-  { id: "D005", name: "Dr. Elena Bautista", specialization: "Cardiology" },
-  { id: "D006", name: "Dr. Michael Tan", specialization: "Pediatrics" },
-  { id: "D007", name: "Dr. Sofia Morales", specialization: "General Medicine" },
-  { id: "D008", name: "Dr. Carlos Rivera", specialization: "Orthopedics" }
-];
-
-function loadSpecializations() {
-  const specs = [...new Set(doctors.map(d => d.specialization))];
-  const select = el("scheduleSpecialization");
-  if (!select) return;
-  select.innerHTML = `<option value="">Select Specialization</option>`;
-  specs.forEach(spec => {
-    const opt = document.createElement("option");
-    opt.value = spec;
-    opt.textContent = spec;
-    select.appendChild(opt);
-  });
+// ==================== TOAST ====================
+function showToast(message, type = "success") {
+  let toast = document.getElementById("toast");
+  if (!toast) {
+    toast = document.createElement("div");
+    toast.id = "toast";
+    toast.style.cssText = `position:fixed;top:20px;right:20px;padding:14px 20px;border-radius:12px;color:white;font-weight:600;z-index:9999;box-shadow:0 10px 30px rgba(0,0,0,0.2);`;
+    document.body.appendChild(toast);
+  }
+  toast.textContent = message;
+  toast.style.background = type === "success" ? "#15803d" : "#dc2626";
+  setTimeout(() => toast.remove(), 3000);
 }
 
-function loadDoctorsBySpecialization() {
-  const spec = el("scheduleSpecialization").value;
-  const doctorSelect = el("scheduleDoctor");
-  if (!doctorSelect) return;
-
-  doctorSelect.innerHTML = `<option value="">Select Doctor</option>`;
-
-  if (!spec) return;
-
-  const filtered = doctors.filter(d => d.specialization === spec);
-  filtered.forEach(doc => {
-    const opt = document.createElement("option");
-    opt.value = doc.id;
-    opt.textContent = doc.name;
-    doctorSelect.appendChild(opt);
-  });
+// ==================== LOGOUT ====================
+function logout() {
+  localStorage.removeItem("healthcare_token");
+  localStorage.removeItem("healthcare_user");
+  location.href = "index.html";
 }
 
-// ==================== HELPER FUNCTIONS ====================
-function showSection(id, btn = null) {
-  document.querySelectorAll("main section").forEach((s) => s.classList.add("hidden"));
-  const t = el(id);
-  if (t) t.classList.remove("hidden");
-  document.querySelectorAll(".nav-btn").forEach((n) => n.classList.remove("active"));
-  if (btn) btn.classList.add("active");
-}
-
+// ==================== DATE HELPERS ====================
 function formatDate(date) {
   return date.toISOString().split("T")[0];
 }
@@ -97,149 +66,109 @@ function getTimePart(item) {
   return raw;
 }
 
-function isWeekday(dateString) {
-  const d = new Date(dateString).getDay();
-  return d >= 1 && d <= 5;
+// ==================== ACCEPT / DECLINE ====================
+async function updateAppointmentStatus(appointmentId, newStatus) {
+  if (!confirm(`Mark appointment as "${newStatus}"?`)) return;
+  try {
+    await apiFetch(`/appointments/${appointmentId}/status`, {
+      method: "PATCH",
+      body: JSON.stringify({ status: newStatus })
+    });
+    showToast(`Appointment marked as ${newStatus}`, "success");
+    await loadAll();
+  } catch (e) {
+    showToast("Failed to update status", "error");
+  }
 }
 
-function isBusinessHour(dateString) {
-  const d = new Date(dateString);
-  const h = d.getHours();
-  const m = d.getMinutes();
-  return h >= 8 && (h < 18 || (h === 18 && m === 0));
+// ==================== CALENDAR ====================
+function isWeekday(dateStr) {
+  const d = new Date(dateStr);
+  return d.getDay() >= 1 && d.getDay() <= 5;
 }
 
-function validateScheduleDate(dateString) {
-  if (!dateString) return "Select appointment date and time.";
-  if (!isWeekday(dateString)) return "Appointments are only allowed Monday to Friday.";
-  if (!isBusinessHour(dateString)) return "Appointments are only allowed from 8:00 AM to 6:00 PM.";
-  return "";
-}
-
-const clinicTimeSlots = [
-  "08:00", "09:00", "10:00", "11:00", "13:00", "14:00", "15:00", "16:00", "17:00"
-];
-
-function to12Hour(time) {
-  const [h, m] = time.split(":").map(Number);
-  const s = h >= 12 ? "PM" : "AM";
-  const hr = h % 12 || 12;
-  return `${hr}:${String(m).padStart(2, "0")} ${s}`;
-}
-
-function renderTimeSlots(containerId, dateInputId) {
-  const c = el(containerId), input = el(dateInputId);
-  if (!c || !input) return;
-  c.innerHTML = clinicTimeSlots
-    .map(t => `<button type="button" class="time-btn" onclick="applyTimeSlot('${dateInputId}','${t}','${containerId}')">${to12Hour(t)}</button>`)
-    .join("");
-}
-
-function applyTimeSlot(dateInputId, time, containerId) {
-  const input = el(dateInputId);
-  if (!input) return;
-  const date = input.value ? input.value.split("T")[0] : formatDate(new Date());
-  input.value = `${date}T${time}`;
-  document.querySelectorAll(`#${containerId} .time-btn`).forEach(b => b.classList.remove("active"));
-  [...document.querySelectorAll(`#${containerId} .time-btn`)]
-    .find(b => b.textContent.trim() === to12Hour(time))?.classList.add("active");
-}
-
-function renderCalendarBase(gridId, titleId, currentDate, selectedDate, appointments, onSelect) {
+function renderCalendarBase(gridId, titleId) {
   const grid = el(gridId);
   if (!grid) return;
-  grid.innerHTML = "";
-  const y = currentDate.getFullYear(), m = currentDate.getMonth();
-  if (el(titleId)) el(titleId).textContent = currentDate.toLocaleString("default", { month: "long", year: "numeric" });
 
-  ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"].forEach(day => {
+  grid.innerHTML = "";
+
+  if (el(titleId)) {
+    el(titleId).textContent = currentDate.toLocaleString('default', { month: 'long', year: 'numeric' });
+  }
+
+  // Day headers
+  ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].forEach(day => {
     const d = document.createElement("div");
     d.className = "day-name";
     d.textContent = day;
     grid.appendChild(d);
   });
 
-  const first = new Date(y, m, 1), start = new Date(first);
-  start.setDate(start.getDate() - first.getDay());
+  const year = currentDate.getFullYear();
+  const month = currentDate.getMonth();
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-  for (let i = 0; i < 42; i++) {
-    const d = new Date(start);
-    d.setDate(start.getDate() + i);
-    const key = formatDate(d);
-    const cell = document.createElement("button");
+  // Padding
+  for (let i = 0; i < firstDay; i++) {
+    const pad = document.createElement("div");
+    pad.className = "day-cell muted";
+    grid.appendChild(pad);
+  }
+
+  // Days
+  for (let day = 1; day <= daysInMonth; day++) {
+    const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+    const cell = document.createElement("div");
     cell.className = "day-cell";
-    if (d.getMonth() !== m) cell.classList.add("muted");
-    if (formatDate(d) === formatDate(selectedDate)) cell.classList.add("selected");
-    if (formatDate(d) === formatDate(new Date())) cell.classList.add("today");
-    if (!isWeekday(key)) cell.classList.add("weekend");
 
-    const count = appointments.filter(a => getDatePart(a) === key).length;
-    cell.innerHTML = count ? `${d.getDate()}<br><small>${count} patient${count > 1 ? "s" : ""}</small>` : d.getDate();
-    if (isWeekday(key)) cell.onclick = () => onSelect(d);
+    if (dateStr === formatDate(selectedDate)) cell.classList.add("selected");
+    if (dateStr === formatDate(new Date())) cell.classList.add("today");
+    if (!isWeekday(dateStr)) cell.classList.add("weekend");
+
+    const count = appointments.filter(a => getDatePart(a) === dateStr).length;
+    cell.innerHTML = `${day}${count ? `<br><small>${count}</small>` : ''}`;
+
+    if (isWeekday(dateStr)) {
+      cell.style.cursor = "pointer";
+      cell.onclick = () => {
+        selectedDate = new Date(dateStr);
+        renderAppointmentsPage();
+      };
+    }
     grid.appendChild(cell);
   }
 }
 
-// ==================== MAIN VARIABLES ====================
-if (!currentUser || currentUser.role !== "admin" || !token)
-  location.href = "index.html";
-
-let patients = [], appointments = [], currentDate = new Date(), selectedDate = new Date();
-
-// ==================== PAGE RENDERING ====================
-function showAdminPage(id, btn) {
-  showSection(id, btn);
-  if (id === "appointments") renderAppointmentsPage();
-  if (id === "patients") {
-    renderPatients();
-    renderTimeSlots("adminTimeSlots", "scheduleDate");
-    loadSpecializations();        // Load doctors when patients tab opens
-  }
-  if (id === "notifications") {
-    loadPatientsForDropdown("notificationPatient");
-    loadEmailHistory();
-  }
+function renderCalendar() {
+  renderCalendarBase("calendarGrid", "calendarTitle");
 }
 
-async function loadAll() {
-  try {
-    patients = await apiFetch("/patients");
-    appointments = await apiFetch("/appointments");
-  } catch (e) {
-    console.error(e);
-  }
-  renderAppointmentsPage();
-  renderPatients();
-  renderNotifications();
-  renderTimeSlots("adminTimeSlots", "scheduleDate");
+function renderSelectedAppointments() {
+  const selectedStr = formatDate(selectedDate);
+  const list = appointments.filter(a => getDatePart(a) === selectedStr);
+
+  el("selectedDateTitle").textContent = selectedDate.toLocaleDateString('en-US', {
+    weekday: 'long', month: 'long', day: 'numeric', year: 'numeric'
+  });
+
+  el("selectedAppointments").innerHTML = list.length
+    ? list.map(a => `<div class="notice"><strong>${a.patientName}</strong><br>${getTimePart(a)} • ${a.status}</div>`).join("")
+    : `<div class="notice">No appointments on this day.</div>`;
 }
 
 function renderAppointmentsPage() {
   renderCalendar();
   renderSelectedAppointments();
-  const today = formatDate(new Date()),
-        selected = formatDate(selectedDate),
-        monthKey = selected.slice(0, 7);
+
+  const today = formatDate(new Date());
+  const selected = formatDate(selectedDate);
+  const monthKey = selected.slice(0, 7);
 
   el("todayCount").textContent = appointments.filter(a => getDatePart(a) === today).length;
   el("selectedCount").textContent = appointments.filter(a => getDatePart(a) === selected).length;
-  el("monthCount").textContent = appointments.filter(a => getDatePart(a).slice(0, 7) === monthKey).length;
-}
-
-function renderCalendar() {
-  renderCalendarBase("calendarGrid", "calendarTitle", currentDate, selectedDate, appointments, (d) => {
-    selectedDate = d;
-    renderAppointmentsPage();
-  });
-}
-
-function renderSelectedAppointments() {
-  const selected = formatDate(selectedDate);
-  const list = appointments.filter(a => getDatePart(a) === selected);
-  el("selectedDateTitle").textContent = selectedDate.toLocaleDateString("default", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
-  el("selectedAppointments").innerHTML = list.length
-    ? list.map(a => `<div class="notice"><strong>${a.patientName}</strong><br/>${getTimePart(a)} · ${a.doctorName || 'Doctor'} · ${a.status}</div>`).join("")
-    : `<div class="notice">No appointments scheduled for this day.</div>`;
+  el("monthCount").textContent = appointments.filter(a => getDatePart(a).slice(0,7) === monthKey).length;
 }
 
 function changeMonth(offset) {
@@ -247,163 +176,194 @@ function changeMonth(offset) {
   renderCalendar();
 }
 
+// ==================== TIME SLOTS ====================
+const clinicTimeSlots = ["08:00","09:00","10:00","11:00","13:00","14:00","15:00","16:00","17:00"];
+
+function renderTimeSlots(containerId, dateInputId) {
+  const c = el(containerId);
+  if (!c) return;
+  c.innerHTML = clinicTimeSlots.map(t => 
+    `<button type="button" class="time-btn" onclick="applyTimeSlot('${dateInputId}','${t}','${containerId}')">${t}</button>`
+  ).join("");
+}
+
+function applyTimeSlot(dateInputId, time) {
+  const input = el(dateInputId);
+  if (!input) return;
+  const date = input.value ? input.value.split("T")[0] : formatDate(new Date());
+  input.value = `${date}T${time}`;
+}
+
+// ==================== PATIENTS ====================
 function renderPatients() {
-  const table = el("patientTable");
-  table.innerHTML = patients.length
-    ? patients.map(p => `
+  const tbody = document.querySelector("#patientTable tbody");
+  if (!tbody) return;
+
+  tbody.innerHTML = patients.length ? patients.map(p => {
+    const patientApps = appointments.filter(a => 
+      a.patientId === p.id || a.patientName?.toLowerCase() === p.name?.toLowerCase()
+    );
+
+    const appHTML = patientApps.length ? patientApps.map(app => `
+      <div style="background:#f8fafc;padding:10px;margin:6px 0;border-radius:8px;font-size:0.9rem;">
+        <strong>${getTimePart(app)}</strong> — ${app.status}
+        ${app.status === "Scheduled" ? `
+          <button onclick="updateAppointmentStatus('${app.id}', 'Confirmed')" class="btn btn-success" style="margin-left:8px;padding:4px 12px;">Accept</button>
+          <button onclick="updateAppointmentStatus('${app.id}', 'Declined')" class="btn btn-danger" style="padding:4px 12px;">Decline</button>
+        ` : `<span style="color:gray;">(${app.status})</span>`}
+      </div>
+    `).join("") : `<span style="color:#888;">No appointments</span>`;
+
+    return `
       <tr>
-        <td>${p.name || ""}</td>
-        <td>${p.email || ""}<br/>${p.phone || ""}</td>
-        <td>${p.condition || "General"}</td>
+        <td><strong>${p.name}</strong></td>
+        <td>${p.email||'—'}<br>${p.phone||'—'}</td>
+        <td>${p.condition || 'General'}</td>
+        <td>${appHTML}</td>
         <td>
           <button class="btn btn-secondary" onclick="selectPatientForSchedule('${p.id}')">Schedule</button>
           <button class="btn btn-danger" onclick="deletePatient('${p.id}')">Delete</button>
         </td>
-      </tr>`).join("")
-    : `<tr><td colspan="4">No patients yet.</td></tr>`;
+      </tr>
+    `;
+  }).join("") : `<tr><td colspan="5" style="text-align:center;padding:40px;">No patients yet.</td></tr>`;
+}
 
-  const s = el("schedulePatient");
-  if (s) s.innerHTML = `<option value="">Select patient</option>` + patients.map(p => `<option value="${p.id}">${p.name}</option>`).join("");
+// ==================== LOAD & CRUD ====================
+async function loadAll() {
+  try {
+    patients = await apiFetch("/patients");
+    appointments = await apiFetch("/appointments");
+    renderAppointmentsPage();
+    renderPatients();
+    loadPatientsForDropdown("schedulePatient");
+    loadPatientsForDropdown("notificationPatient");
+    loadEmailHistory();
+  } catch (e) {
+    showToast("Failed to load data", "error");
+  }
+}
+
+async function submitNewPatient() {
+  const body = {
+    name: el("addName").value.trim(),
+    email: el("addEmail").value.trim(),
+    phone: el("addPhone").value.trim(),
+    condition: el("addCondition").value.trim() || "General",
+    diagnosis: el("addDiagnosis").value.trim() || "Pending assessment",
+  };
+  if (!body.name) return showToast("Name is required", "error");
+
+  try {
+    await apiFetch("/patients", { method: "POST", body: JSON.stringify(body) });
+    showToast("Patient added", "success");
+    document.querySelectorAll("#patients input").forEach(i => i.value = "");
+    await loadAll();
+  } catch (e) {
+    showToast("Failed to add patient", "error");
+  }
 }
 
 function selectPatientForSchedule(id) {
   el("schedulePatient").value = id;
-  el("scheduleDate")?.focus();
+  showAdminPage("patients");
 }
 
-// ==================== SCHEDULE APPOINTMENT WITH DOCTOR ====================
 async function scheduleSelectedPatient() {
   const patientId = el("schedulePatient").value;
   const appointmentDate = el("scheduleDate").value;
-  const doctorId = el("scheduleDoctor").value;
-  const statusEl = el("adminScheduleStatus");
-
-  if (!patientId) return alert("Please select a patient.");
-  if (!appointmentDate) return alert("Please select date and time.");
-  if (!doctorId) return alert("Please select a doctor.");
-
-  const patient = patients.find(p => p.id === patientId);
-  const doctor = doctors.find(d => d.id === doctorId);
-
-  const err = validateScheduleDate(appointmentDate);
-  if (err) return alert(err);
+  if (!patientId || !appointmentDate) return showToast("Fill all fields", "error");
 
   try {
-    const res = await apiFetch("/appointments", {
+    const patient = patients.find(p => p.id === patientId);
+    await apiFetch("/appointments", {
       method: "POST",
-      body: JSON.stringify({
-        patientId: patient.id,
-        patientName: patient.name,
-        appointmentDate,
-        doctorId: doctor.id,
-        doctorName: doctor.name,
-        status: "Scheduled"
-      })
+      body: JSON.stringify({ patientId, patientName: patient.name, appointmentDate, status: "Scheduled" })
     });
-
-    // Reset form
-    el("schedulePatient").value = "";
+    showToast("Appointment scheduled!", "success");
     el("scheduleDate").value = "";
-    el("scheduleDoctor").value = "";
-    el("scheduleSpecialization").value = "";
-
-    if (statusEl) {
-      statusEl.textContent = res.emailSent 
-        ? `✅ Appointment scheduled with ${doctor.name} (Email sent)`
-        : `✅ Appointment scheduled with ${doctor.name}`;
-      statusEl.style.color = "green";
-    }
-
     await loadAll();
-    showAdminPage("appointments", document.querySelector(".nav-btn"));
   } catch (e) {
-    alert("Failed to schedule appointment.");
+    showToast("Failed to schedule", "error");
   }
 }
 
 async function deletePatient(id) {
-  if (!confirm("Delete this patient?")) return;
-  await apiFetch(`/patients/${id}`, { method: "DELETE" });
-  await loadAll();
+  if (!confirm("Delete patient?")) return;
+  try {
+    await apiFetch(`/patients/${id}`, { method: "DELETE" });
+    showToast("Patient deleted", "success");
+    await loadAll();
+  } catch (e) {
+    showToast("Failed to delete", "error");
+  }
 }
 
 // ==================== NOTIFICATIONS ====================
-function renderNotifications() {
-  const s = el("notificationPatient");
-  if (!s) return;
-  s.innerHTML = `<option value="">Select patient</option>` + patients.map(p => `<option value="${p.id}">${p.name}</option>`).join("");
+function loadPatientsForDropdown(selectId) {
+  const select = el(selectId);
+  if (!select) return;
+  select.innerHTML = `<option value="">Select Patient</option>` +
+    patients.map(p => `<option value="${p.id}">${p.name}</option>`).join("");
 }
 
 async function sendEmailNotification() {
   const patientId = el("notificationPatient").value;
-  const subject = el("notificationSubject").value.trim() || "CareFlow Notification";
+  const subject = el("notificationSubject").value.trim();
   const message = el("notificationMessage").value.trim();
-  const status = el("emailStatus");
+  if (!patientId || !message) return showToast("Select patient and write message", "error");
 
-  if (status) status.textContent = "";
-
-  if (!patientId || !message) return alert("Select a patient and write a message.");
-
-  const res = await apiFetch("/email/send", {
-    method: "POST",
-    body: JSON.stringify({ patientId, subject, message })
-  });
-
-  if (status) {
-    status.textContent = res.emailSent ? "✅ Email sent successfully." : "⚠️ Email could not be sent.";
-    status.style.color = res.emailSent ? "green" : "orange";
+  try {
+    const res = await apiFetch("/email/send", {
+      method: "POST",
+      body: JSON.stringify({ patientId, subject, message })
+    });
+    el("emailStatus").textContent = res.emailSent ? "✅ Sent" : "⚠️ Not sent";
+    el("notificationMessage").value = "";
+    loadEmailHistory();
+  } catch (e) {
+    showToast("Failed to send email", "error");
   }
-
-  el("notificationSubject").value = "";
-  el("notificationMessage").value = "";
-  loadEmailHistory();
 }
 
 async function loadEmailHistory() {
-  const tbody = document.getElementById("emailHistoryTable");
+  const tbody = el("emailHistoryTable");
   if (!tbody) return;
-
   try {
     const history = await apiFetch("/email/history");
-    tbody.innerHTML = "";
-    if (history.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:20px;">No emails sent yet.</td></tr>`;
-      return;
-    }
-    history.forEach(item => {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${item.date || 'N/A'}</td>
-        <td>${item.patient || 'N/A'}</td>
-        <td>${item.subject || 'Notification'}</td>
-        <td style="color:${(item.status === "Sent" || item.status === "Scheduled") ? "green" : "red"}; text-align:center;">${item.status || 'Sent'}</td>
-        <td style="text-align:center;"><button onclick="deleteEmailLog(this)" style="background:none;border:none;color:red;cursor:pointer;">Delete</button></td>
-      `;
-      tbody.appendChild(tr);
-    });
+    tbody.innerHTML = history.length ? history.map(h => `
+      <tr>
+        <td>${h.date || 'N/A'}</td>
+        <td>${h.patient || 'N/A'}</td>
+        <td>${h.subject || 'Notification'}</td>
+        <td>${h.status || 'Sent'}</td>
+      </tr>
+    `).join("") : `<tr><td colspan="4" style="text-align:center;padding:20px;">No emails yet</td></tr>`;
   } catch (e) {
-    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:orange;">Failed to load history.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="4">Failed to load history</td></tr>`;
   }
 }
 
-function deleteEmailLog(btn) {
-  if (confirm("Delete this log?")) btn.closest("tr").remove();
-}
+// ==================== NAVIGATION ====================
+function showAdminPage(id, btn = null) {
+  document.querySelectorAll("section").forEach(s => s.classList.add("hidden"));
+  el(id)?.classList.remove("hidden");
 
-function loadPatientsForDropdown(selectId) {
-  const select = el(selectId);
-  if (!select) return;
-  select.innerHTML = '<option value="">Select patient</option>';
-  patients.forEach(p => {
-    const opt = document.createElement("option");
-    opt.value = p.id;
-    opt.textContent = p.name;
-    select.appendChild(opt);
-  });
+  document.querySelectorAll(".nav-btn").forEach(n => n.classList.remove("active"));
+  if (btn) btn.classList.add("active");
+
+  if (id === "appointments") renderAppointmentsPage();
+  if (id === "patients") {
+    renderPatients();
+    renderTimeSlots("adminTimeSlots", "scheduleDate");
+  }
+  if (id === "notifications") {
+    loadPatientsForDropdown("notificationPatient");
+    loadEmailHistory();
+  }
 }
 
 // ==================== INIT ====================
-loadAll().catch((e) => {
-  console.error(e);
-  alert("Failed to load admin data. Check backend connection.");
+document.addEventListener("DOMContentLoaded", () => {
+  loadAll();
 });
