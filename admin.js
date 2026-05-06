@@ -1,3 +1,4 @@
+// ==================== ADMIN.JS - COMPLETE FILE (Add Patient Removed) ====================
 const API = "https://etr-backend.onrender.com/api";
 const token = localStorage.getItem("healthcare_token") || "";
 const currentUser = JSON.parse(localStorage.getItem("healthcare_user") || "null");
