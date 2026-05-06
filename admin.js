@@ -344,3 +344,30 @@ function showAdminPage(id, btn = null) {
 document.addEventListener("DOMContentLoaded", () => {
   loadAll();
 });
+
+// ==================== DARK MODE ====================
+function toggleDarkMode() {
+  const html = document.documentElement;
+  html.classList.toggle('dark');
+
+  const btn = document.querySelector('.dark-toggle');
+  if (btn) {
+    btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+  }
+
+  localStorage.setItem('darkMode', html.classList.contains('dark'));
+}
+
+function loadDarkMode() {
+  const saved = localStorage.getItem('darkMode');
+  if (saved === 'true') {
+    document.documentElement.classList.add('dark');
+    const btn = document.querySelector('.dark-toggle');
+    if (btn) btn.textContent = '☀️';
+  }
+}
+
+// Call on page load
+document.addEventListener('DOMContentLoaded', () => {
+  loadDarkMode();
+});
