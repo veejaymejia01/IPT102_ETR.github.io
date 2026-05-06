@@ -24,27 +24,14 @@ function showToast(message, type = "success") {
   setTimeout(() => { toast.style.opacity = "0"; }, 3000);
 }
 
-function setButtonLoading(id, loading, defaultText) {
-  const btn = el(id);
-  if (!btn) return;
-  if (loading) {
-    btn.disabled = true;
-    btn.innerHTML = `<span class="spinner"></span> Please wait...`;
-  } else {
-    btn.disabled = false;
-    btn.textContent = defaultText;
-  }
-}
-
 // ==================== REMEMBER ME ====================
 function loadRememberedEmail() {
-  const saved = localStorage.getItem("remembered_email");
-  if (saved) {
-    const emailInput = el("loginEmail");
-    const rememberCheckbox = el("rememberMe");
-    if (emailInput) emailInput.value = saved;
-    if (rememberCheckbox) rememberCheckbox.checked = true;
-  }
+  const savedEmail = localStorage.getItem("remembered_email");
+  const emailInput = el("loginEmail");
+  const rememberCheckbox = el("rememberMe");
+
+  if (emailInput && savedEmail) emailInput.value = savedEmail;
+  if (rememberCheckbox) rememberCheckbox.checked = !!savedEmail;
 }
 
 // ==================== LOGIN ====================
@@ -52,41 +39,35 @@ async function login() {
   const email = el("loginEmail")?.value.trim();
   const password = el("loginPassword")?.value.trim();
   const remember = el("rememberMe")?.checked || false;
-  const errorBox = el("loginError");
-
-  if (errorBox) errorBox.textContent = "";
 
   if (!email || !password) {
-    if (errorBox) errorBox.textContent = "Enter email and password.";
+    showToast("Email and password are required", "error");
     return;
   }
 
-  setButtonLoading("loginBtn", true, "Sign In");
-
   try {
-    const data = await fetch(API + "/auth/login", {
+    const response = await fetch(API + "/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    }).then(r => r.json());
+      body: JSON.stringify({ email, password })
+    });
+    const data = await response.json();
 
     if (!data.token) throw new Error(data.error || "Login failed");
 
-    // Remember Me
     if (remember) {
       localStorage.setItem("remembered_email", email);
     } else {
       localStorage.removeItem("remembered_email");
     }
 
-    // Save session
     localStorage.setItem("healthcare_token", data.token);
     localStorage.setItem("healthcare_user", JSON.stringify(data.user));
 
     showToast("Login successful!", "success");
 
     setTimeout(() => {
-      const role = data.user.role;
+      const role = data.user?.role;
       if (role === "admin") location.href = "admin-dashboard.html";
       else if (role === "doctor") location.href = "doctor-dashboard.html";
       else if (role === "patient") location.href = "patient-dashboard.html";
@@ -94,14 +75,27 @@ async function login() {
     }, 800);
 
   } catch (e) {
-    showToast(e.message || "Login failed.", "error");
-    if (errorBox) errorBox.textContent = e.message || "Login failed.";
-  } finally {
-    setButtonLoading("loginBtn", false, "Sign In");
+    showToast(e.message || "Login failed", "error");
   }
 }
 
-// ==================== REGISTER ====================
+// ==================== SHOW / HIDE PASSWORD - FIXED ====================
+function togglePassword() {
+  const passwordField = el("loginPassword");
+  const icon = el("togglePassword");
+
+  if (!passwordField || !icon) return;
+
+  if (passwordField.type === "password") {
+    passwordField.type = "text";
+    icon.textContent = "🙈";
+  } else {
+    passwordField.type = "password";
+    icon.textContent = "👁";
+  }
+}
+
+// ==================== REGISTER & FORGOT ====================
 async function registerPatient() {
   const name = el("registerName")?.value.trim();
   const email = el("registerEmail")?.value.trim();
@@ -109,55 +103,37 @@ async function registerPatient() {
   const phone = el("registerPhone")?.value.trim();
 
   if (!name || !email || !password) {
-    showToast("Name, email, and password are required.", "error");
+    showToast("Name, email, and password are required", "error");
     return;
   }
-
-  setButtonLoading("registerBtn", true, "Register");
 
   try {
     await fetch(API + "/auth/register-patient", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, password, phone }),
-    }).then(r => r.json());
-
+      body: JSON.stringify({ name, email, password, phone })
+    });
     showToast("Registration successful! You can now login.", "success");
-    setTimeout(() => {
-      showLogin();
-      const loginEmail = el("loginEmail");
-      if (loginEmail) loginEmail.value = email;
-    }, 800);
+    setTimeout(showLogin, 1200);
   } catch (e) {
-    showToast(e.message || "Registration failed.", "error");
-  } finally {
-    setButtonLoading("registerBtn", false, "Register");
+    showToast("Registration failed", "error");
   }
 }
 
-// ==================== FORGOT PASSWORD ====================
 async function forgotPassword() {
   const email = el("forgotEmail")?.value.trim();
-  if (!email) {
-    showToast("Please enter your email.", "error");
-    return;
-  }
-
-  setButtonLoading("forgotBtn", true, "Send Reset Email");
+  if (!email) return showToast("Enter your email", "error");
 
   try {
     await fetch(API + "/auth/forgot-password", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email }),
-    }).then(r => r.json());
-
-    showToast("Password reset instructions sent to your email.", "success");
-    setTimeout(showLogin, 1000);
+      body: JSON.stringify({ email })
+    });
+    showToast("Reset instructions sent to your email", "success");
+    setTimeout(showLogin, 1500);
   } catch (e) {
-    showToast(e.message || "Failed to send reset email.", "error");
-  } finally {
-    setButtonLoading("forgotBtn", false, "Send Reset Email");
+    showToast("Failed to send reset email", "error");
   }
 }
 
@@ -181,28 +157,17 @@ function showRegister() {
 function showForgot() {
   hideAllAuthSections();
   el("forgotSection")?.classList.remove("hidden");
-  const loginEmail = el("loginEmail")?.value.trim();
-  if (loginEmail) el("forgotEmail").value = loginEmail;
-}
-
-function togglePassword(inputId, iconId) {
-  const input = el(inputId);
-  const icon = el(iconId);
-  if (!input || !icon) return;
-  if (input.type === "password") {
-    input.type = "text";
-    icon.textContent = "🙈";
-  } else {
-    input.type = "password";
-    icon.textContent = "👁";
-  }
 }
 
 // ==================== INIT ====================
 document.addEventListener("DOMContentLoaded", () => {
   loadRememberedEmail();
 
-  // Allow Enter key on password field
+  // Password Toggle
+  const toggleBtn = el("togglePassword");
+  if (toggleBtn) toggleBtn.addEventListener("click", togglePassword);
+
+  // Enter key login
   const passwordField = el("loginPassword");
   if (passwordField) {
     passwordField.addEventListener("keypress", (e) => {
