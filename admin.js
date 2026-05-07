@@ -378,3 +378,18 @@ document.addEventListener("DOMContentLoaded", () => {
   loadDarkMode();
   loadAll();
 });
+// ==================== MOBILE SIDEBAR TOGGLE ====================
+function toggleSidebar() {
+  const sidebar = document.querySelector('.sidebar');
+  sidebar.classList.toggle('open');
+}
+
+// Close sidebar when clicking a nav button on mobile
+document.querySelectorAll('.nav-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const sidebar = document.querySelector('.sidebar');
+    if (window.innerWidth <= 768) {
+      sidebar.classList.remove('open');
+    }
+  });
+});
