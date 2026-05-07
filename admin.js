@@ -17,13 +17,18 @@ let selectedDate = new Date();
 function toggleDarkMode() {
   const html = document.documentElement;
   html.classList.toggle('dark');
+
   const btn = document.querySelector('.dark-toggle');
-  if (btn) btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+  if (btn) {
+    btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+  }
+
   localStorage.setItem('darkMode', html.classList.contains('dark'));
 }
 
 function loadDarkMode() {
-  if (localStorage.getItem('darkMode') === 'true') {
+  const saved = localStorage.getItem('darkMode');
+  if (saved === 'true') {
     document.documentElement.classList.add('dark');
     const btn = document.querySelector('.dark-toggle');
     if (btn) btn.textContent = '☀️';
