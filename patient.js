@@ -1,4 +1,3 @@
-// ==================== patient.js (CLEAN VERSION) ====================
 const API = "https://etr-backend.onrender.com/api";
 const token = localStorage.getItem("healthcare_token") || "";
 const currentUser = JSON.parse(localStorage.getItem("healthcare_user") || "null");
@@ -6,7 +5,6 @@ const currentUser = JSON.parse(localStorage.getItem("healthcare_user") || "null"
 let appointments = [];
 let profile = null;
 
-// Sample Doctors with Specializations
 const doctors = [
   { id: "D001", name: "Dr. Maria Santos", specialization: "Cardiology" },
   { id: "D002", name: "Dr. John Reyes", specialization: "Pediatrics" },
@@ -22,20 +20,83 @@ function el(id) {
   return document.getElementById(id);
 }
 
-// ==================== AUTH & NAV ====================
-function logout() {
-  localStorage.removeItem("healthcare_token");
-  localStorage.removeItem("healthcare_user");
-  window.location.href = "index.html";
-}
-
+// ==================== SECTION SWITCHING ====================
 function showPatientPage(id, btn = null) {
   document.querySelectorAll("section").forEach(s => s.classList.add("hidden"));
-  const section = el(id);
-  if (section) section.classList.remove("hidden");
+  const target = el(id);
+  if (target) target.classList.remove("hidden");
 
-  document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("active"));
+  document.querySelectorAll(".nav-btn").forEach(n => n.classList.remove("active"));
   if (btn) btn.classList.add("active");
+}
+
+// ==================== LOAD SPECIALIZATIONS & DOCTORS ====================
+function loadSpecializations() {
+  const specs = [...new Set(doctors.map(d => d.specialization))];
+  const select = el("specializationSelect");
+  if (!select) return;
+
+  select.innerHTML = `<option value="">Select Specialization</option>`;
+  specs.forEach(spec => {
+    const opt = document.createElement("option");
+    opt.value = spec;
+    opt.textContent = spec;
+    select.appendChild(opt);
+  });
+}
+
+function loadDoctorsBySpecialization() {
+  const spec = el("specializationSelect").value;
+  const doctorSelect = el("doctorSelect");
+  if (!doctorSelect) return;
+
+  doctorSelect.innerHTML = `<option value="">Select Doctor</option>`;
+  if (!spec) return;
+
+  const filtered = doctors.filter(d => d.specialization === spec);
+  filtered.forEach(doc => {
+    const opt = document.createElement("option");
+    opt.value = doc.id;
+    opt.textContent = doc.name;
+    doctorSelect.appendChild(opt);
+  });
+}
+
+// ==================== BOOK APPOINTMENT ====================
+async function bookAppointment() {
+  const date = el("appointmentDate").value;
+  const doctorId = el("doctorSelect").value;
+  const statusEl = el("patientScheduleStatus");
+
+  if (!date || !doctorId) {
+    alert("Please select doctor and date/time");
+    return;
+  }
+
+  const doctor = doctors.find(d => d.id === doctorId);
+
+  try {
+    await apiFetch("/patient/appointments", {
+      method: "POST",
+      body: JSON.stringify({
+        appointmentDate: date,
+        doctorId: doctor.id,
+        doctorName: doctor.name
+      })
+    });
+
+    statusEl.style.color = "green";
+    statusEl.textContent = `✅ Booked with ${doctor.name}`;
+
+    el("appointmentDate").value = "";
+    el("doctorSelect").innerHTML = `<option value="">Select Doctor</option>`;
+    el("specializationSelect").value = "";
+
+    await loadAll();
+    showPatientPage("appointments");
+  } catch (e) {
+    alert("Failed to book. Try again.");
+  }
 }
 
 // ==================== API HELPER ====================
@@ -65,12 +126,10 @@ async function loadAll() {
 }
 
 function render() {
-  // Welcome name
   if (el("patientName") && profile) {
     el("patientName").textContent = profile.name || currentUser?.name || "Patient";
   }
 
-  // Next Appointment
   const next = appointments.find(a => a.status !== "Done");
   if (el("nextAppointmentBox")) {
     el("nextAppointmentBox").innerHTML = next
@@ -78,7 +137,6 @@ function render() {
       : "No upcoming appointments.";
   }
 
-  // Appointments Table
   const table = el("appointmentTable");
   if (table) {
     let html = `<tr><th>Date & Time</th><th>Doctor</th><th>Status</th></tr>`;
@@ -96,7 +154,6 @@ function render() {
     table.innerHTML = html;
   }
 
-  // Profile
   if (el("profileBox") && profile) {
     el("profileBox").innerHTML = `
       <h3>${profile.name}</h3>
@@ -105,81 +162,6 @@ function render() {
       <p><strong>Condition:</strong> ${profile.condition || "General"}</p>
       <p><strong>Diagnosis:</strong> ${profile.diagnosis || "Pending assessment"}</p>
     `;
-  }
-}
-
-// ==================== DOCTOR SPECIALIZATION ====================
-function loadSpecializations() {
-  const specs = [...new Set(doctors.map(d => d.specialization))];
-  const select = el("specializationSelect");
-  if (!select) return;
-
-  select.innerHTML = `<option value="">Select Specialization</option>`;
-  specs.forEach(spec => {
-    const opt = document.createElement("option");
-    opt.value = spec;
-    opt.textContent = spec;
-    select.appendChild(opt);
-  });
-}
-
-function loadDoctorsBySpecialization() {
-  const spec = el("specializationSelect").value;
-  const doctorSelect = el("doctorSelect");
-  if (!doctorSelect) return;
-
-  doctorSelect.innerHTML = `<option value="">Select Doctor</option>`;
-  if (!spec) return;
-
-  const filteredDoctors = doctors.filter(d => d.specialization === spec);
-  filteredDoctors.forEach(doc => {
-    const opt = document.createElement("option");
-    opt.value = doc.id;
-    opt.textContent = doc.name;
-    doctorSelect.appendChild(opt);
-  });
-}
-
-// ==================== BOOK APPOINTMENT ====================
-async function bookAppointment() {
-  const appointmentDate = el("appointmentDate").value;
-  const doctorId = el("doctorSelect").value;
-  const statusEl = el("patientScheduleStatus");
-
-  if (!appointmentDate) {
-    alert("Please select date and time");
-    return;
-  }
-  if (!doctorId) {
-    alert("Please select a doctor");
-    return;
-  }
-
-  const selectedDoctor = doctors.find(d => d.id === doctorId);
-
-  try {
-    const res = await apiFetch("/patient/appointments", {
-      method: "POST",
-      body: JSON.stringify({
-        appointmentDate,
-        doctorId: selectedDoctor.id,
-        doctorName: selectedDoctor.name
-      })
-    });
-
-    statusEl.style.color = "green";
-    statusEl.textContent = `✅ Appointment booked successfully with ${selectedDoctor.name}`;
-
-    // Reset form
-    el("appointmentDate").value = "";
-    el("doctorSelect").value = "";
-    el("specializationSelect").value = "";
-
-    await loadAll();
-    showPatientPage("appointments");
-  } catch (e) {
-    console.error(e);
-    alert("Failed to book appointment. Please try again.");
   }
 }
 
@@ -208,7 +190,6 @@ function renderTimeSlots(containerId, dateInputId) {
 function applyTimeSlot(dateInputId, time, containerId) {
   const input = el(dateInputId);
   if (!input) return;
-
   let date = input.value ? input.value.split("T")[0] : new Date().toISOString().split("T")[0];
   input.value = `${date}T${time}`;
 
@@ -217,19 +198,7 @@ function applyTimeSlot(dateInputId, time, containerId) {
   });
 }
 
-// ==================== HELPERS ====================
-function isWeekday(dateString) {
-  const d = new Date(dateString);
-  return d.getDay() >= 1 && d.getDay() <= 5;
-}
-
-function validateScheduleDate(dateString) {
-  if (!dateString) return "Please select date and time";
-  if (!isWeekday(dateString)) return "Appointments only Monday to Friday";
-  return "";
-}
-
-// ==================== MOBILE SIDEBAR TOGGLE ====================
+// ==================== MOBILE SIDEBAR ====================
 function toggleSidebar() {
   const sidebar = document.querySelector('.sidebar');
   sidebar.classList.toggle('open');
@@ -238,9 +207,7 @@ function toggleSidebar() {
 document.querySelectorAll('.nav-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     const sidebar = document.querySelector('.sidebar');
-    if (window.innerWidth <= 768) {
-      sidebar.classList.remove('open');
-    }
+    if (window.innerWidth <= 768) sidebar.classList.remove('open');
   });
 });
 
@@ -267,10 +234,7 @@ document.addEventListener("DOMContentLoaded", () => {
     window.location.href = "index.html";
     return;
   }
-
   loadDarkMode();
   loadAll().catch(console.error);
-
-  // Show dashboard by default
-  showPatientPage('dashboard');
+  showPatientPage("dashboard");
 });
