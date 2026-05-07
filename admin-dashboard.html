@@ -23,9 +23,13 @@
         </div>
         <div class="nav-spacer"></div>
         <button class="logout-btn" onclick="logout()">Logout</button>
+        
+        <!-- Dark Mode Toggle -->
+        <button onclick="toggleDarkMode()" class="dark-toggle" title="Toggle Dark Mode">🌙</button>
       </aside>
 
       <main class="main">
+        
         <!-- Appointments Section -->
         <section id="appointments">
           <div class="page-hero">
@@ -66,7 +70,7 @@
           </div>
         </section>
 
-        <!-- Patients Section with Scheduling -->
+        <!-- Patients Section -->
         <section id="patients" class="hidden">
           <div class="page-hero">
             <div>
@@ -75,7 +79,9 @@
             </div>
             <span class="hero-badge">Weekdays · 8 AM - 6 PM</span>
           </div>
+
           <div class="grid-2">
+            <!-- Add Patient + Schedule -->
             <div class="panel">
               <h3>Add Patient</h3>
               <input id="addName" placeholder="Full name" />
@@ -85,7 +91,7 @@
               <textarea id="addDiagnosis" placeholder="Notes or medical history summary"></textarea>
               <button class="btn btn-primary" onclick="submitNewPatient()">Save Patient</button>
 
-              <!-- Scheduling Section -->
+              <!-- Schedule Section -->
               <div class="schedule-card" style="margin-top:20px;">
                 <h3>Schedule Patient</h3>
                 <p class="schedule-note">Choose a patient, weekday date, and available clinic time.</p>
@@ -97,6 +103,7 @@
               </div>
             </div>
 
+            <!-- Patients List with Accept/Decline -->
             <div class="panel">
               <h3>Patients List</h3>
               <table>
@@ -105,6 +112,7 @@
                     <th>Name</th>
                     <th>Contact</th>
                     <th>Condition</th>
+                    <th>Upcoming Appointments</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
@@ -123,6 +131,7 @@
             </div>
             <span class="hero-badge">Email API</span>
           </div>
+
           <div class="grid-2">
             <div class="panel">
               <h3>Send Notification</h3>
@@ -153,6 +162,7 @@
             </div>
           </div>
         </section>
+
       </main>
     </section>
 
