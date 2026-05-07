@@ -363,21 +363,60 @@ async function sendEmailNotification() {
   }
 }
 
+// ==================== EMAIL HISTORY (FIXED) ====================
 async function loadEmailHistory() {
-  const tbody = el("emailHistoryTable");
+  const tbody = document.getElementById("emailHistoryTable");
   if (!tbody) return;
+
   try {
     const history = await apiFetch("/email/history");
-    tbody.innerHTML = history.length ? history.map(h => `
-      <tr>
-        <td>${h.date || 'N/A'}</td>
-        <td>${h.patient || 'N/A'}</td>
-        <td>${h.subject || 'Notification'}</td>
-        <td>${h.status || 'Sent'}</td>
-      </tr>
-    `).join("") : `<tr><td colspan="4" style="text-align:center;padding:20px;">No emails yet</td></tr>`;
+
+    tbody.innerHTML = "";
+
+    if (!history || history.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="5" style="text-align:center; padding:30px; color:#64748b;">
+            No emails sent yet.
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    history.forEach(item => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td style="padding:10px;">${item.date || 'N/A'}</td>
+        <td style="padding:10px;">${item.patient || 'N/A'}</td>
+        <td style="padding:10px;">${item.subject || 'Notification'}</td>
+        <td style="padding:10px; text-align:center; color:${(item.status === 'Sent' || item.status === 'Scheduled') ? '#16a34a' : '#dc2626'};">
+          ${item.status || 'Sent'}
+        </td>
+        <td style="padding:10px; text-align:center;">
+          <button onclick="deleteEmailLog(this)" 
+                  style="background:none; border:none; color:#dc2626; cursor:pointer; font-size:0.9rem;">
+            Delete
+          </button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
   } catch (e) {
-    tbody.innerHTML = `<tr><td colspan="4">Failed to load history</td></tr>`;
+    console.error("Failed to load email history:", e);
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="5" style="text-align:center; padding:30px; color:#f59e0b;">
+          Failed to load email history. Check backend connection.
+        </td>
+      </tr>
+    `;
+  }
+}
+
+function deleteEmailLog(btn) {
+  if (confirm("Delete this email log?")) {
+    btn.closest("tr").remove();
   }
 }
 
