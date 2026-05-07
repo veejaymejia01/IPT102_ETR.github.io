@@ -414,3 +414,49 @@ function loadPatientsForDropdown(selectId) {
     select.appendChild(opt);
   });
 }
+// ==================== DARK MODE ====================
+function toggleDarkMode() {
+  const html = document.documentElement;
+  html.classList.toggle('dark');
+  const btn = document.querySelector('.dark-toggle');
+  if (btn) btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+  localStorage.setItem('darkMode', html.classList.contains('dark'));
+}
+
+function loadDarkMode() {
+  if (localStorage.getItem('darkMode') === 'true') {
+    document.documentElement.classList.add('dark');
+    const btn = document.querySelector('.dark-toggle');
+    if (btn) btn.textContent = '☀️';
+  }
+}
+
+// ==================== FIXED SECTION SWITCHING ====================
+function showAdminPage(id, btn = null) {
+  // Hide all sections
+  document.querySelectorAll('main section').forEach(s => s.classList.add('hidden'));
+  
+  // Show only selected section
+  const target = document.getElementById(id);
+  if (target) target.classList.remove('hidden');
+
+  // Update active nav button
+  document.querySelectorAll('.nav-btn').forEach(n => n.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+
+  // Load data for section
+  if (id === 'appointments') renderAppointmentsPage();
+  if (id === 'patients') {
+    renderPatients();
+    renderTimeSlots('adminTimeSlots', 'scheduleDate');
+  }
+  if (id === 'notifications') {
+    loadPatientsForDropdown('notificationPatient');
+    loadEmailHistory();
+  }
+}
+
+// ==================== INIT ====================
+document.addEventListener('DOMContentLoaded', () => {
+  loadDarkMode();
+});
