@@ -283,3 +283,51 @@ document.addEventListener("DOMContentLoaded", () => {
   // Show dashboard by default
   showPatientPage('dashboard');
 });
+// ==================== DARK MODE ====================
+function toggleDarkMode() {
+  const html = document.documentElement;
+  html.classList.toggle('dark');
+  const btn = document.querySelector('.dark-toggle');
+  if (btn) btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+  localStorage.setItem('darkMode', html.classList.contains('dark'));
+}
+
+function loadDarkMode() {
+  if (localStorage.getItem('darkMode') === 'true') {
+    document.documentElement.classList.add('dark');
+    const btn = document.querySelector('.dark-toggle');
+    if (btn) btn.textContent = '☀️';
+  }
+}
+
+// ==================== SECTION SWITCHING ====================
+function showPatientPage(id, btn = null) {
+  document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
+  const target = document.getElementById(id);
+  if (target) target.classList.remove('hidden');
+
+  document.querySelectorAll('.nav-btn').forEach(n => n.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+}
+
+// ==================== MOBILE SIDEBAR TOGGLE ====================
+function toggleSidebar() {
+  const sidebar = document.querySelector('.sidebar');
+  sidebar.classList.toggle('open');
+}
+
+// Close sidebar when clicking a nav button on mobile
+document.querySelectorAll('.nav-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const sidebar = document.querySelector('.sidebar');
+    if (window.innerWidth <= 768) {
+      sidebar.classList.remove('open');
+    }
+  });
+});
+
+// ==================== INIT ====================
+document.addEventListener("DOMContentLoaded", () => {
+  loadDarkMode();
+  showPatientPage('dashboard');
+});
