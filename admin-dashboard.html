@@ -1,171 +1,46 @@
-<!doctype html>
-<html>
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Admin Dashboard</title>
-    <link rel="stylesheet" href="style.css" />
-  </head>
-  <body>
-    <section class="app-shell">
-      <aside class="sidebar">
-        <div class="brand">
-          <div class="brand-icon">+</div>
-          <div>
-            <h1>CareFlow</h1>
-            <p>Appointment System</p>
-          </div>
-        </div>
-        <div class="nav-list">
-          <button class="nav-btn active" onclick="showAdminPage('appointments', this)">Appointments</button>
-          <button class="nav-btn" onclick="showAdminPage('patients', this)">Patients</button>
-          <button class="nav-btn" onclick="showAdminPage('notifications', this)">Notifications</button>
-        </div>
-        <div class="nav-spacer"></div>
-        <button class="logout-btn" onclick="logout()">Logout</button>
-        
-        <!-- Dark Mode Toggle -->
-        <button onclick="toggleDarkMode()" class="dark-toggle" title="Toggle Dark Mode">🌙</button>
-      </aside>
+// ==================== DARK MODE ====================
+function toggleDarkMode() {
+  const html = document.documentElement;
+  html.classList.toggle('dark');
+  const btn = document.querySelector('.dark-toggle');
+  if (btn) btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+  localStorage.setItem('darkMode', html.classList.contains('dark'));
+}
 
-      <main class="main">
-        
-        <!-- Appointments Section -->
-        <section id="appointments">
-          <div class="page-hero">
-            <div>
-              <h2>Admin Appointments</h2>
-              <p>Clinic schedule overview. Weekday appointments only, 8:00 AM to 6:00 PM.</p>
-            </div>
-            <span class="hero-badge">Professional Clinic Workflow</span>
-          </div>
-          <div class="metrics">
-            <div class="metric-card">
-              <small>Today's Appointments</small><strong id="todayCount">0</strong>
-            </div>
-            <div class="metric-card">
-              <small>Selected Day</small><strong id="selectedCount">0</strong>
-            </div>
-            <div class="metric-card">
-              <small>This Month</small><strong id="monthCount">0</strong>
-            </div>
-          </div>
-          <div class="grid-2">
-            <div class="panel">
-              <div class="calendar-head">
-                <h3 id="calendarTitle">Calendar</h3>
-                <div>
-                  <button class="btn btn-secondary" onclick="changeMonth(-1)">Previous</button>
-                  <button class="btn btn-secondary" onclick="changeMonth(1)">Next</button>
-                </div>
-              </div>
-              <p class="subtle">Weekends are disabled. Select a weekday to view details.</p>
-              <div id="calendarGrid" class="calendar-grid"></div>
-            </div>
-            <div class="panel">
-              <h3 id="selectedDateTitle">Selected Day</h3>
-              <p class="subtle">Appointments for the selected day.</p>
-              <div id="selectedAppointments"></div>
-            </div>
-          </div>
-        </section>
+function loadDarkMode() {
+  if (localStorage.getItem('darkMode') === 'true') {
+    document.documentElement.classList.add('dark');
+    const btn = document.querySelector('.dark-toggle');
+    if (btn) btn.textContent = '☀️';
+  }
+}
 
-        <!-- Patients Section -->
-        <section id="patients" class="hidden">
-          <div class="page-hero">
-            <div>
-              <h2>Admin Patients</h2>
-              <p>Create, schedule, update, and delete patient visits.</p>
-            </div>
-            <span class="hero-badge">Weekdays · 8 AM - 6 PM</span>
-          </div>
+// ==================== FIXED SECTION SWITCHING ====================
+function showAdminPage(id, btn = null) {
+  // Hide all sections
+  document.querySelectorAll('main section').forEach(s => s.classList.add('hidden'));
+  
+  // Show only selected section
+  const target = document.getElementById(id);
+  if (target) target.classList.remove('hidden');
 
-          <div class="grid-2">
-            <!-- Add Patient + Schedule -->
-            <div class="panel">
-              <h3>Add Patient</h3>
-              <input id="addName" placeholder="Full name" />
-              <input id="addEmail" placeholder="Email address" />
-              <input id="addPhone" placeholder="Phone number" />
-              <input id="addCondition" placeholder="Condition" />
-              <textarea id="addDiagnosis" placeholder="Notes or medical history summary"></textarea>
-              <button class="btn btn-primary" onclick="submitNewPatient()">Save Patient</button>
+  // Update active nav button
+  document.querySelectorAll('.nav-btn').forEach(n => n.classList.remove('active'));
+  if (btn) btn.classList.add('active');
 
-              <!-- Schedule Section -->
-              <div class="schedule-card" style="margin-top:20px;">
-                <h3>Schedule Patient</h3>
-                <p class="schedule-note">Choose a patient, weekday date, and available clinic time.</p>
-                <select id="schedulePatient"></select>
-                <input id="scheduleDate" type="datetime-local" min="2025-01-01T08:00" />
-                <div id="adminTimeSlots" class="time-grid"></div>
-                <button class="btn btn-primary" onclick="scheduleSelectedPatient()">Schedule Patient</button>
-                <div id="adminScheduleStatus" class="email-status"></div>
-              </div>
-            </div>
+  // Load data for section
+  if (id === 'appointments') renderAppointmentsPage();
+  if (id === 'patients') {
+    renderPatients();
+    renderTimeSlots('adminTimeSlots', 'scheduleDate');
+  }
+  if (id === 'notifications') {
+    loadPatientsForDropdown('notificationPatient');
+    loadEmailHistory();
+  }
+}
 
-            <!-- Patients List with Accept/Decline -->
-            <div class="panel">
-              <h3>Patients List</h3>
-              <table>
-                <thead>
-                  <tr>
-                    <th>Name</th>
-                    <th>Contact</th>
-                    <th>Condition</th>
-                    <th>Upcoming Appointments</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody id="patientTable"></tbody>
-              </table>
-            </div>
-          </div>
-        </section>
-
-        <!-- Notifications Section -->
-        <section id="notifications" class="hidden">
-          <div class="page-hero">
-            <div>
-              <h2>Admin Notifications</h2>
-              <p>Select a patient and send a professional email notification.</p>
-            </div>
-            <span class="hero-badge">Email API</span>
-          </div>
-
-          <div class="grid-2">
-            <div class="panel">
-              <h3>Send Notification</h3>
-              <select id="notificationPatient"></select>
-              <input id="notificationSubject" placeholder="Email subject" />
-              <textarea id="notificationMessage" placeholder="Write your message here"></textarea>
-              <button class="btn btn-primary" onclick="sendEmailNotification()">Send Email</button>
-              <div id="emailStatus" class="email-status"></div>
-            </div>
-
-            <div class="panel">
-              <h3>Emails Sent (History)</h3>
-              <div class="notice" style="background:#f0fdf4; border:1px solid #16a34a; color:#166534; padding:12px; border-radius:8px; margin-bottom:12px;">
-                Emails are sent using Brevo. Check backend logs for full details.
-              </div>
-              <table style="width:100%; border-collapse:collapse;">
-                <thead>
-                  <tr style="background:#f1f5f9;">
-                    <th style="padding:8px; text-align:left;">Date</th>
-                    <th style="padding:8px; text-align:left;">Patient</th>
-                    <th style="padding:8px; text-align:left;">Subject</th>
-                    <th style="padding:8px; text-align:center;">Status</th>
-                    <th style="padding:8px; text-align:center;">Actions</th>
-                  </tr>
-                </thead>
-                <tbody id="emailHistoryTable"></tbody>
-              </table>
-            </div>
-          </div>
-        </section>
-
-      </main>
-    </section>
-
-    <script src="admin.js"></script>
-  </body>
-</html>
+// ==================== INIT ====================
+document.addEventListener('DOMContentLoaded', () => {
+  loadDarkMode();
+});
