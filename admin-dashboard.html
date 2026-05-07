@@ -9,7 +9,7 @@
 <body>
 
   <div class="app-shell">
-
+    
     <!-- Sidebar -->
     <div class="sidebar">
       <div class="brand">
@@ -28,6 +28,9 @@
 
       <div class="nav-spacer"></div>
       <button onclick="logout()" class="logout-btn">🚪 Logout</button>
+      
+      <!-- Dark Mode Toggle -->
+      <button onclick="toggleDarkMode()" class="dark-toggle" title="Toggle Dark Mode">🌙</button>
     </div>
 
     <!-- Main Content -->
@@ -76,7 +79,7 @@
         </div>
       </section>
 
-      <!-- Patients Section (Add New Patient Removed) -->
+      <!-- Patients Section -->
       <section id="patients" class="hidden">
         <div class="page-hero">
           <div>
@@ -85,7 +88,6 @@
           </div>
         </div>
 
-        <!-- Patients List with Accept/Decline -->
         <div class="panel">
           <h3>Patients List</h3>
           <table id="patientTable">
@@ -102,7 +104,6 @@
           </table>
         </div>
 
-        <!-- Schedule Appointment -->
         <div class="panel schedule-card">
           <h3>Schedule New Appointment</h3>
           <select id="schedulePatient"></select>
@@ -141,6 +142,7 @@
           </table>
         </div>
       </section>
+
     </div>
   </div>
 
