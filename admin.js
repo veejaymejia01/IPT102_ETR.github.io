@@ -1,4 +1,5 @@
 const API = "https://etr-backend.onrender.com/api";
+
 const token = localStorage.getItem("healthcare_token") || "";
 const currentUser = JSON.parse(localStorage.getItem("healthcare_user") || "null");
 
@@ -12,6 +13,48 @@ let patients = [];
 let appointments = [];
 let currentDate = new Date();
 let selectedDate = new Date();
+
+// ==================== DARK MODE ====================
+function toggleDarkMode() {
+  const html = document.documentElement;
+  html.classList.toggle('dark');
+
+  const btn = document.querySelector('.dark-toggle');
+  if (btn) {
+    btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+  }
+
+  localStorage.setItem('darkMode', html.classList.contains('dark'));
+}
+
+function loadDarkMode() {
+  const saved = localStorage.getItem('darkMode');
+  if (saved === 'true') {
+    document.documentElement.classList.add('dark');
+    const btn = document.querySelector('.dark-toggle');
+    if (btn) btn.textContent = '☀️';
+  }
+}
+
+// ==================== SECTION SWITCHING ====================
+function showAdminPage(id, btn = null) {
+  document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
+  const target = document.getElementById(id);
+  if (target) target.classList.remove('hidden');
+
+  document.querySelectorAll('.nav-btn').forEach(n => n.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+
+  if (id === 'appointments') renderAppointmentsPage();
+  if (id === 'patients') {
+    renderPatients();
+    renderTimeSlots('adminTimeSlots', 'scheduleDate');
+  }
+  if (id === 'notifications') {
+    loadPatientsForDropdown('notificationPatient');
+    loadEmailHistory();
+  }
+}
 
 // ==================== API HELPER ====================
 async function apiFetch(url, options = {}) {
@@ -33,7 +76,7 @@ function showToast(message, type = "success") {
   if (!toast) {
     toast = document.createElement("div");
     toast.id = "toast";
-    toast.style.cssText = `position:fixed;top:20px;right:20px;padding:14px 20px;border-radius:12px;color:white;font-weight:600;z-index:9999;box-shadow:0 10px 30px rgba(0,0,0,0.2);`;
+    toast.style.cssText = `position:fixed;top:20px;right:20px;padding:14px 20px;border-radius:12px;color:white;font-weight:600;z-index:9999;`;
     document.body.appendChild(toast);
   }
   toast.textContent = message;
@@ -49,15 +92,11 @@ function logout() {
 }
 
 // ==================== DATE HELPERS ====================
-function formatDate(date) {
-  return date.toISOString().split("T")[0];
-}
-
+function formatDate(date) { return date.toISOString().split("T")[0]; }
 function getDatePart(item) {
   const raw = String(item.appointmentDate || "");
   return raw.includes("T") ? raw.split("T")[0] : raw.split(" ")[0];
 }
-
 function getTimePart(item) {
   const raw = String(item.appointmentDate || "");
   if (raw.includes("T")) return raw.split("T")[1].slice(0, 5);
@@ -67,13 +106,13 @@ function getTimePart(item) {
 
 // ==================== ACCEPT / DECLINE ====================
 async function updateAppointmentStatus(appointmentId, newStatus) {
-  if (!confirm(`Mark appointment as "${newStatus}"?`)) return;
+  if (!confirm(`Mark this appointment as "${newStatus}"?`)) return;
   try {
     await apiFetch(`/appointments/${appointmentId}/status`, {
       method: "PATCH",
       body: JSON.stringify({ status: newStatus })
     });
-    showToast(`Appointment marked as ${newStatus}`, "success");
+    showToast(`Appointment ${newStatus.toLowerCase()}!`, "success");
     await loadAll();
   } catch (e) {
     showToast("Failed to update status", "error");
@@ -89,13 +128,13 @@ function isWeekday(dateStr) {
 function renderCalendarBase(gridId, titleId) {
   const grid = el(gridId);
   if (!grid) return;
-
   grid.innerHTML = "";
 
   if (el(titleId)) {
     el(titleId).textContent = currentDate.toLocaleString('default', { month: 'long', year: 'numeric' });
   }
 
+  // Day headers
   ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].forEach(day => {
     const d = document.createElement("div");
     d.className = "day-name";
@@ -108,12 +147,14 @@ function renderCalendarBase(gridId, titleId) {
   const firstDay = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
 
+  // Empty cells before first day
   for (let i = 0; i < firstDay; i++) {
     const pad = document.createElement("div");
     pad.className = "day-cell muted";
     grid.appendChild(pad);
   }
 
+  // Calendar days
   for (let day = 1; day <= daysInMonth; day++) {
     const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
     const cell = document.createElement("div");
@@ -124,7 +165,20 @@ function renderCalendarBase(gridId, titleId) {
     if (!isWeekday(dateStr)) cell.classList.add("weekend");
 
     const count = appointments.filter(a => getDatePart(a) === dateStr).length;
-    cell.innerHTML = `${day}${count ? `<br><small>${count}</small>` : ''}`;
+
+    // Show patient count at the bottom
+    if (count > 0) {
+      cell.innerHTML = `
+        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; width:100%;">
+          <div style="font-weight:700; font-size:1.1rem;">${day}</div>
+          <small style="font-size:0.65rem; color:#64748b; margin-top:2px; text-align:center; line-height:1;">
+            ${count} ${count === 1 ? 'patient' : 'patients'}
+          </small>
+        </div>
+      `;
+    } else {
+      cell.innerHTML = `<div style="font-weight:700; font-size:1.1rem;">${day}</div>`;
+    }
 
     if (isWeekday(dateStr)) {
       cell.style.cursor = "pointer";
@@ -133,13 +187,12 @@ function renderCalendarBase(gridId, titleId) {
         renderAppointmentsPage();
       };
     }
+
     grid.appendChild(cell);
   }
 }
 
-function renderCalendar() {
-  renderCalendarBase("calendarGrid", "calendarTitle");
-}
+function renderCalendar() { renderCalendarBase("calendarGrid", "calendarTitle"); }
 
 function renderSelectedAppointments() {
   const selectedStr = formatDate(selectedDate);
@@ -201,19 +254,27 @@ function renderPatients() {
     );
 
     const appHTML = patientApps.length ? patientApps.map(app => `
-      <div style="background:#f8fafc;padding:10px;margin:6px 0;border-radius:8px;font-size:0.9rem;">
+      <div style="
+        background: var(--card); 
+        color: var(--text);
+        padding: 10px; 
+        margin: 6px 0; 
+        border-radius: 8px; 
+        font-size: 0.9rem;
+        border: 1px solid var(--border);
+      ">
         <strong>${getTimePart(app)}</strong> — ${app.status}
         ${app.status === "Scheduled" ? `
-          <button onclick="updateAppointmentStatus('${app.id}', 'Confirmed')" class="btn btn-success" style="margin-left:8px;padding:4px 12px;">Accept</button>
-          <button onclick="updateAppointmentStatus('${app.id}', 'Declined')" class="btn btn-danger" style="padding:4px 12px;">Decline</button>
-        ` : `<span style="color:gray;">(${app.status})</span>`}
+          <button onclick="updateAppointmentStatus('${app.id}', 'Confirmed')" class="btn btn-success" style="margin-left:8px; padding:4px 12px; font-size:0.85rem;">Accept</button>
+          <button onclick="updateAppointmentStatus('${app.id}', 'Declined')" class="btn btn-danger" style="padding:4px 12px; font-size:0.85rem;">Decline</button>
+        ` : `<span style="color: var(--muted); font-size: 0.85rem;">(${app.status})</span>`}
       </div>
-    `).join("") : `<span style="color:#888;">No appointments</span>`;
+    `).join("") : `<span style="color: var(--muted);">No appointments</span>`;
 
     return `
       <tr>
         <td><strong>${p.name}</strong></td>
-        <td>${p.email||'—'}<br>${p.phone||'—'}</td>
+        <td>${p.email || '—'}<br>${p.phone || '—'}</td>
         <td>${p.condition || 'General'}</td>
         <td>${appHTML}</td>
         <td>
@@ -222,7 +283,7 @@ function renderPatients() {
         </td>
       </tr>
     `;
-  }).join("") : `<tr><td colspan="5" style="text-align:center;padding:40px;">No patients yet.</td></tr>`;
+  }).join("") : `<tr><td colspan="5" style="text-align:center; padding:40px; color: var(--muted);">No patients yet.</td></tr>`;
 }
 
 // ==================== LOAD DATA ====================
@@ -260,7 +321,7 @@ async function scheduleSelectedPatient() {
     el("scheduleDate").value = "";
     await loadAll();
   } catch (e) {
-    showToast("Failed to schedule appointment", "error");
+    showToast("Failed to schedule", "error");
   }
 }
 
@@ -271,7 +332,7 @@ async function deletePatient(id) {
     showToast("Patient deleted", "success");
     await loadAll();
   } catch (e) {
-    showToast("Failed to delete patient", "error");
+    showToast("Failed to delete", "error");
   }
 }
 
@@ -302,44 +363,80 @@ async function sendEmailNotification() {
   }
 }
 
+// ==================== EMAIL HISTORY (FIXED) ====================
 async function loadEmailHistory() {
-  const tbody = el("emailHistoryTable");
+  const tbody = document.getElementById("emailHistoryTable");
   if (!tbody) return;
+
   try {
     const history = await apiFetch("/email/history");
-    tbody.innerHTML = history.length ? history.map(h => `
-      <tr>
-        <td>${h.date || 'N/A'}</td>
-        <td>${h.patient || 'N/A'}</td>
-        <td>${h.subject || 'Notification'}</td>
-        <td>${h.status || 'Sent'}</td>
-      </tr>
-    `).join("") : `<tr><td colspan="4" style="text-align:center;padding:20px;">No emails yet</td></tr>`;
+
+    tbody.innerHTML = "";
+
+    if (!history || history.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="5" style="text-align:center; padding:30px; color:#64748b;">
+            No emails sent yet.
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    history.forEach(item => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td style="padding:10px;">${item.date || 'N/A'}</td>
+        <td style="padding:10px;">${item.patient || 'N/A'}</td>
+        <td style="padding:10px;">${item.subject || 'Notification'}</td>
+        <td style="padding:10px; text-align:center; color:${(item.status === 'Sent' || item.status === 'Scheduled') ? '#16a34a' : '#dc2626'};">
+          ${item.status || 'Sent'}
+        </td>
+        <td style="padding:10px; text-align:center;">
+          <button onclick="deleteEmailLog(this)" 
+                  style="background:none; border:none; color:#dc2626; cursor:pointer; font-size:0.9rem;">
+            Delete
+          </button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
   } catch (e) {
-    tbody.innerHTML = `<tr><td colspan="4">Failed to load history</td></tr>`;
+    console.error("Failed to load email history:", e);
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="5" style="text-align:center; padding:30px; color:#f59e0b;">
+          Failed to load email history. Check backend connection.
+        </td>
+      </tr>
+    `;
   }
 }
 
-// ==================== NAVIGATION ====================
-function showAdminPage(id, btn = null) {
-  document.querySelectorAll("section").forEach(s => s.classList.add("hidden"));
-  el(id)?.classList.remove("hidden");
-
-  document.querySelectorAll(".nav-btn").forEach(n => n.classList.remove("active"));
-  if (btn) btn.classList.add("active");
-
-  if (id === "appointments") renderAppointmentsPage();
-  if (id === "patients") {
-    renderPatients();
-    renderTimeSlots("adminTimeSlots", "scheduleDate");
-  }
-  if (id === "notifications") {
-    loadPatientsForDropdown("notificationPatient");
-    loadEmailHistory();
+function deleteEmailLog(btn) {
+  if (confirm("Delete this email log?")) {
+    btn.closest("tr").remove();
   }
 }
 
 // ==================== INIT ====================
 document.addEventListener("DOMContentLoaded", () => {
+  loadDarkMode();
   loadAll();
+});
+// ==================== MOBILE SIDEBAR TOGGLE ====================
+function toggleSidebar() {
+  const sidebar = document.querySelector('.sidebar');
+  sidebar.classList.toggle('open');
+}
+
+// Close sidebar when clicking a nav button on mobile
+document.querySelectorAll('.nav-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const sidebar = document.querySelector('.sidebar');
+    if (window.innerWidth <= 768) {
+      sidebar.classList.remove('open');
+    }
+  });
 });

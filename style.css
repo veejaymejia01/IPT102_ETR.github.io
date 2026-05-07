@@ -494,5 +494,120 @@ td {
     align-items: flex-start;
   }
 }
+/* ==================== DARK MODE (IMPROVED) ==================== */
+:root {
+  --bg: #f8fafc;
+  --card: #ffffff;
+  --text: #1e293b;
+  --muted: #64748b;
+  --border: #e2e8f0;
+  --primary: #2563eb;
+}
 
-make it responsive so it also fits in mobile browser
+.dark {
+  --bg: #0f172a;
+  --card: #1e293b;
+  --text: #f1f5f9;
+  --muted: #94a3b8;
+  --border: #334155;
+  --primary: #3b82f6;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.panel, .metric-card, .schedule-card, .page-hero {
+  background: var(--card);
+  border: 1px solid var(--border);
+}
+
+.dark-toggle {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 8px 14px;
+  border-radius: 9999px;
+  cursor: pointer;
+  font-size: 1.2rem;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  transition: all 0.3s ease;
+  z-index: 100;
+}
+
+.dark-toggle:hover {
+  transform: scale(1.1);
+}
+
+.day-cell {
+  background: var(--card);
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+
+.day-cell.weekend {
+  background: #f8fafc;
+  color: #94a3b8;
+}
+
+.dark .day-cell.weekend {
+  background: #1e293b;
+  color: #64748b;
+}
+
+.notice {
+  background: #f8fafc;
+  border-color: var(--border);
+}
+
+.dark .notice {
+  background: #1e293b;
+  border-color: #475569;
+}
+/* ==================== MOBILE FRIENDLY + COLLAPSIBLE SIDEBAR ==================== */
+.hamburger-btn {
+  display: none;
+  position: fixed;
+  top: 15px;
+  left: 15px;
+  z-index: 1000;
+  background: var(--primary);
+  color: white;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 1.3rem;
+  cursor: pointer;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+}
+
+@media (max-width: 768px) {
+  .hamburger-btn {
+    display: block;
+  }
+
+  .sidebar {
+    position: fixed;
+    left: -260px;
+    top: 0;
+    height: 100vh;
+    width: 260px;
+    transition: left 0.3s ease;
+    z-index: 999;
+    box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+  }
+
+  .sidebar.open {
+    left: 0;
+  }
+
+  .main {
+    margin-left: 0;
+    padding-top: 60px;
+  }
+}

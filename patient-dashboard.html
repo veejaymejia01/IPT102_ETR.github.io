@@ -3,11 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CareFlow - Patient Dashboard</title>
+  <title>Patient Dashboard - CareFlow</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
   <div class="app-shell">
+    
+    <!-- Hamburger Menu Button (Mobile) -->
+    <button onclick="toggleSidebar()" class="hamburger-btn">☰</button>
+
     <!-- Sidebar -->
     <div class="sidebar">
       <div class="brand">
@@ -17,66 +22,111 @@
           <p>Patient Portal</p>
         </div>
       </div>
+      
       <div class="nav-list">
         <button class="nav-btn active" onclick="showPatientPage('dashboard', this)">Dashboard</button>
         <button class="nav-btn" onclick="showPatientPage('book', this)">Book Appointment</button>
         <button class="nav-btn" onclick="showPatientPage('appointments', this)">My Appointments</button>
         <button class="nav-btn" onclick="showPatientPage('profile', this)">My Profile</button>
       </div>
-      <button onclick="logout()" class="logout-btn">Logout</button>
+      
+      <div class="nav-spacer"></div>
+      
+      <!-- Logout Button -->
+      <button onclick="logout()" class="logout-btn">🚪 Logout</button>
+      
+      <!-- Dark Mode Toggle -->
+      <button onclick="toggleDarkMode()" class="dark-toggle" title="Toggle Dark Mode">🌙</button>
     </div>
 
+    <!-- Main Content -->
     <div class="main">
-      <!-- Dashboard -->
+
+      <!-- Dashboard Section -->
       <section id="dashboard">
         <div class="page-hero">
           <div>
-            <h2>Welcome, <span id="patientName">Patient</span></h2>
+            <h2>Welcome, Patient</h2>
             <p>Manage your appointments easily</p>
           </div>
         </div>
-        <div id="nextAppointmentBox" class="panel">Loading...</div>
+
+        <div class="panel">
+          <h3>Quick Overview</h3>
+          <div id="nextAppointmentBox">Loading...</div>
+        </div>
       </section>
 
-      <!-- Book Appointment -->
+      <!-- Book Appointment Section -->
       <section id="book" class="hidden">
-        <div class="panel">
-          <h3>Book New Appointment</h3>
+        <div class="page-hero">
+          <div>
+            <h2>Book New Appointment</h2>
+            <p>Select specialization, doctor and time</p>
+          </div>
+        </div>
 
-          <label>Specialization</label>
-          <select id="specializationSelect" onchange="loadDoctorsBySpecialization()" class="full-width">
+        <div class="panel">
+          <h3>Book Appointment</h3>
+
+          <label><strong>Specialization</strong></label>
+          <select id="specializationSelect" onchange="loadDoctorsBySpecialization()">
             <option value="">Select Specialization</option>
+            <option value="Cardiology">Cardiology</option>
+            <option value="Pediatrics">Pediatrics</option>
+            <option value="General Medicine">General Medicine</option>
+            <option value="Dermatology">Dermatology</option>
+            <option value="Orthopedics">Orthopedics</option>
           </select>
 
-          <label>Doctor</label>
-          <select id="doctorSelect" class="full-width">
+          <label><strong>Doctor</strong></label>
+          <select id="doctorSelect">
             <option value="">Select Doctor</option>
           </select>
 
-          <label>Date & Time</label>
-          <input type="datetime-local" id="appointmentDate" class="full-width">
+          <label><strong>Date & Time</strong></label>
+          <input type="datetime-local" id="appointmentDate">
 
-          <div id="patientTimeSlots" class="time-grid"></div>
-
-          <button onclick="bookAppointment()" class="btn btn-primary">Book Appointment</button>
+          <button onclick="bookAppointment()" class="btn btn-primary" style="margin-top:15px;">Book Appointment</button>
           <p id="patientScheduleStatus" class="email-status"></p>
         </div>
       </section>
 
-      <!-- My Appointments -->
+      <!-- My Appointments Section -->
       <section id="appointments" class="hidden">
+        <div class="page-hero">
+          <div>
+            <h2>My Appointments</h2>
+            <p>View your scheduled appointments</p>
+          </div>
+        </div>
+
         <div class="panel">
-          <h3>My Appointments</h3>
-          <table id="appointmentTable">
-            <tr><th>Date</th><th>Doctor</th><th>Status</th></tr>
+          <h3>Upcoming Appointments</h3>
+          <table>
+            <thead>
+              <tr><th>Date & Time</th><th>Doctor</th><th>Status</th></tr>
+            </thead>
+            <tbody id="appointmentTable"></tbody>
           </table>
         </div>
       </section>
 
-      <!-- Profile -->
+      <!-- My Profile Section -->
       <section id="profile" class="hidden">
-        <div class="panel" id="profileBox">Loading profile...</div>
+        <div class="page-hero">
+          <div>
+            <h2>My Profile</h2>
+            <p>Your patient information</p>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h3>Profile Details</h3>
+          <div id="profileBox">Loading profile...</div>
+        </div>
       </section>
+
     </div>
   </div>
 
