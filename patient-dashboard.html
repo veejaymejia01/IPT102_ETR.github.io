@@ -10,7 +10,7 @@
 
   <div class="app-shell">
     
-    <!-- Hamburger Menu Button (Mobile Only) -->
+    <!-- Hamburger Menu Button -->
     <button onclick="toggleSidebar()" class="hamburger-btn">☰</button>
 
     <!-- Sidebar -->
@@ -60,32 +60,33 @@
         <div class="page-hero">
           <div>
             <h2>Book New Appointment</h2>
-            <p>Select your preferred specialization, doctor, and time</p>
+            <p>Select specialization, doctor and time</p>
           </div>
         </div>
 
         <div class="panel">
           <h3>Book Appointment</h3>
-          
+
           <label><strong>Specialization</strong></label>
-          <select id="bookSpecialization" onchange="loadDoctorsBySpecialization()">
+          <select id="specializationSelect" onchange="loadDoctorsBySpecialization()">
             <option value="">Select Specialization</option>
-            <option value="General">General Medicine</option>
             <option value="Cardiology">Cardiology</option>
+            <option value="Pediatrics">Pediatrics</option>
+            <option value="General Medicine">General Medicine</option>
             <option value="Dermatology">Dermatology</option>
             <option value="Orthopedics">Orthopedics</option>
           </select>
 
           <label><strong>Doctor</strong></label>
-          <select id="bookDoctor">
+          <select id="doctorSelect">
             <option value="">Select Doctor</option>
           </select>
 
           <label><strong>Date & Time</strong></label>
-          <input type="datetime-local" id="bookDateTime">
+          <input type="datetime-local" id="appointmentDate">
 
-          <button onclick="bookAppointment()" class="btn btn-primary" style="margin-top: 15px;">Book Appointment</button>
-          <p id="bookStatus" class="email-status"></p>
+          <button onclick="bookAppointment()" class="btn btn-primary" style="margin-top:15px;">Book Appointment</button>
+          <p id="patientScheduleStatus" class="email-status"></p>
         </div>
       </section>
 
