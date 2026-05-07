@@ -134,6 +134,7 @@ function renderCalendarBase(gridId, titleId) {
     el(titleId).textContent = currentDate.toLocaleString('default', { month: 'long', year: 'numeric' });
   }
 
+  // Day headers
   ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].forEach(day => {
     const d = document.createElement("div");
     d.className = "day-name";
@@ -146,12 +147,14 @@ function renderCalendarBase(gridId, titleId) {
   const firstDay = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
 
+  // Empty cells before first day
   for (let i = 0; i < firstDay; i++) {
     const pad = document.createElement("div");
     pad.className = "day-cell muted";
     grid.appendChild(pad);
   }
 
+  // Calendar days
   for (let day = 1; day <= daysInMonth; day++) {
     const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
     const cell = document.createElement("div");
@@ -162,7 +165,20 @@ function renderCalendarBase(gridId, titleId) {
     if (!isWeekday(dateStr)) cell.classList.add("weekend");
 
     const count = appointments.filter(a => getDatePart(a) === dateStr).length;
-    cell.innerHTML = `${day}${count ? `<br><small>${count}</small>` : ''}`;
+
+    // Show patient count at the bottom
+    if (count > 0) {
+      cell.innerHTML = `
+        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; width:100%;">
+          <div style="font-weight:700; font-size:1.1rem;">${day}</div>
+          <small style="font-size:0.65rem; color:#64748b; margin-top:2px; text-align:center; line-height:1;">
+            ${count} ${count === 1 ? 'patient' : 'patients'}
+          </small>
+        </div>
+      `;
+    } else {
+      cell.innerHTML = `<div style="font-weight:700; font-size:1.1rem;">${day}</div>`;
+    }
 
     if (isWeekday(dateStr)) {
       cell.style.cursor = "pointer";
@@ -171,6 +187,7 @@ function renderCalendarBase(gridId, titleId) {
         renderAppointmentsPage();
       };
     }
+
     grid.appendChild(cell);
   }
 }
