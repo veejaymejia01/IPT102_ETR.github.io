@@ -245,3 +245,41 @@ document.addEventListener("DOMContentLoaded", () => {
 
   loadAll().catch(console.error);
 });
+// ==================== DARK MODE ====================
+function toggleDarkMode() {
+  const html = document.documentElement;
+  html.classList.toggle('dark');
+  const btn = document.querySelector('.dark-toggle');
+  if (btn) btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+  localStorage.setItem('darkMode', html.classList.contains('dark'));
+}
+
+function loadDarkMode() {
+  if (localStorage.getItem('darkMode') === 'true') {
+    document.documentElement.classList.add('dark');
+    const btn = document.querySelector('.dark-toggle');
+    if (btn) btn.textContent = '☀️';
+  }
+}
+
+// ==================== SECTION SWITCHING (Only show clicked section) ====================
+function showPatientPage(id, btn = null) {
+  // Hide all sections
+  document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
+  
+  // Show only the clicked section
+  const target = document.getElementById(id);
+  if (target) target.classList.remove('hidden');
+
+  // Update active button
+  document.querySelectorAll('.nav-btn').forEach(n => n.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+}
+
+// ==================== INIT ====================
+document.addEventListener("DOMContentLoaded", () => {
+  loadDarkMode();
+  
+  // Show dashboard by default
+  showPatientPage('dashboard');
+});
