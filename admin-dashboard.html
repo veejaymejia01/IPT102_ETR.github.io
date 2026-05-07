@@ -1,46 +1,160 @@
-// ==================== DARK MODE ====================
-function toggleDarkMode() {
-  const html = document.documentElement;
-  html.classList.toggle('dark');
-  const btn = document.querySelector('.dark-toggle');
-  if (btn) btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
-  localStorage.setItem('darkMode', html.classList.contains('dark'));
-}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard - CareFlow</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
 
-function loadDarkMode() {
-  if (localStorage.getItem('darkMode') === 'true') {
-    document.documentElement.classList.add('dark');
-    const btn = document.querySelector('.dark-toggle');
-    if (btn) btn.textContent = '☀️';
-  }
-}
+  <div class="app-shell">
+    
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="brand">
+        <div class="brand-icon">●</div>
+        <div>
+          <h1>CareFlow</h1>
+          <p>Admin Portal</p>
+        </div>
+      </div>
+      
+      <div class="nav-list">
+        <button class="nav-btn active" onclick="showAdminPage('appointments', this)">📅 Appointments</button>
+        <button class="nav-btn" onclick="showAdminPage('patients', this)">👥 Patients</button>
+        <button class="nav-btn" onclick="showAdminPage('notifications', this)">✉️ Notifications</button>
+      </div>
+      
+      <div class="nav-spacer"></div>
+      <button onclick="logout()" class="logout-btn">🚪 Logout</button>
+      
+      <!-- Dark Mode Toggle -->
+      <button onclick="toggleDarkMode()" class="dark-toggle" title="Toggle Dark Mode">🌙</button>
+    </div>
 
-// ==================== FIXED SECTION SWITCHING ====================
-function showAdminPage(id, btn = null) {
-  // Hide all sections
-  document.querySelectorAll('main section').forEach(s => s.classList.add('hidden'));
-  
-  // Show only selected section
-  const target = document.getElementById(id);
-  if (target) target.classList.remove('hidden');
+    <!-- Main Content -->
+    <div class="main">
 
-  // Update active nav button
-  document.querySelectorAll('.nav-btn').forEach(n => n.classList.remove('active'));
-  if (btn) btn.classList.add('active');
+      <!-- Appointments Section -->
+      <section id="appointments">
+        <div class="page-hero">
+          <div>
+            <h2>Admin Appointments</h2>
+            <p>Clinic schedule overview • Weekdays only (8 AM - 6 PM)</p>
+          </div>
+        </div>
 
-  // Load data for section
-  if (id === 'appointments') renderAppointmentsPage();
-  if (id === 'patients') {
-    renderPatients();
-    renderTimeSlots('adminTimeSlots', 'scheduleDate');
-  }
-  if (id === 'notifications') {
-    loadPatientsForDropdown('notificationPatient');
-    loadEmailHistory();
-  }
-}
+        <div class="metrics">
+          <div class="metric-card">
+            <small>Today's Appointments</small>
+            <strong id="todayCount">0</strong>
+          </div>
+          <div class="metric-card">
+            <small>Selected Day</small>
+            <strong id="selectedCount">0</strong>
+          </div>
+          <div class="metric-card">
+            <small>This Month</small>
+            <strong id="monthCount">0</strong>
+          </div>
+        </div>
 
-// ==================== INIT ====================
-document.addEventListener('DOMContentLoaded', () => {
-  loadDarkMode();
-});
+        <div class="grid-2">
+          <div class="panel">
+            <div class="calendar-head">
+              <h3 id="calendarTitle">Calendar</h3>
+              <div>
+                <button onclick="changeMonth(-1)">← Previous</button>
+                <button onclick="changeMonth(1)">Next →</button>
+              </div>
+            </div>
+            <div id="calendarGrid" class="calendar-grid"></div>
+          </div>
+
+          <div class="panel">
+            <h3 id="selectedDateTitle">Selected Day</h3>
+            <div id="selectedAppointments"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Patients Section -->
+      <section id="patients" class="hidden">
+        <div class="page-hero">
+          <div>
+            <h2>Patients Management</h2>
+            <p>View patients and manage their appointments</p>
+          </div>
+        </div>
+
+        <!-- Patients List with Accept/Decline -->
+        <div class="panel">
+          <h3>Patients List</h3>
+          <table id="patientTable">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Contact</th>
+                <th>Condition</th>
+                <th>Upcoming Appointments</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+        <!-- Schedule Appointment -->
+        <div class="panel schedule-card">
+          <h3>Schedule New Appointment</h3>
+          <select id="schedulePatient"></select>
+          <input type="datetime-local" id="scheduleDate">
+          <div id="adminTimeSlots" class="time-grid"></div>
+          <button onclick="scheduleSelectedPatient()" class="btn btn-primary">Schedule Appointment</button>
+          <p id="adminScheduleStatus" class="email-status"></p>
+        </div>
+      </section>
+
+      <!-- Notifications Section -->
+      <section id="notifications" class="hidden">
+        <div class="page-hero">
+          <div>
+            <h2>Notifications</h2>
+            <p>Send email notifications to patients</p>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h3>Send Notification</h3>
+          <select id="notificationPatient"></select>
+          <input type="text" id="notificationSubject" placeholder="Subject" value="CareFlow Update">
+          <textarea id="notificationMessage" placeholder="Write message..."></textarea>
+          <button onclick="sendEmailNotification()" class="btn btn-primary">Send Email</button>
+          <p id="emailStatus" class="email-status"></p>
+        </div>
+
+        <div class="panel">
+          <h3>Email History</h3>
+          <table id="emailHistoryTable">
+            <thead>
+              <tr><th>Date</th><th>Patient</th><th>Subject</th><th>Status</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+  <!-- Mobile Bottom Navigation -->
+  <div class="mobile-bottom-nav">
+    <button onclick="showAdminPage('appointments', this)">📅</button>
+    <button onclick="showAdminPage('patients', this)">👥</button>
+    <button onclick="showAdminPage('notifications', this)">✉️</button>
+  </div>
+
+  <script src="admin.js"></script>
+</body>
+</html>
