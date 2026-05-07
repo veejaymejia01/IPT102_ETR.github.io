@@ -1,4 +1,4 @@
-// ==================== patient.js ====================
+// ==================== patient.js (CLEAN VERSION) ====================
 const API = "https://etr-backend.onrender.com/api";
 const token = localStorage.getItem("healthcare_token") || "";
 const currentUser = JSON.parse(localStorage.getItem("healthcare_user") || "null");
@@ -29,18 +29,13 @@ function logout() {
   window.location.href = "index.html";
 }
 
-function showPatientPage(id, btn) {
-  document.querySelectorAll("main section").forEach(s => s.classList.add("hidden"));
+function showPatientPage(id, btn = null) {
+  document.querySelectorAll("section").forEach(s => s.classList.add("hidden"));
   const section = el(id);
   if (section) section.classList.remove("hidden");
 
   document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("active"));
   if (btn) btn.classList.add("active");
-
-  if (id === "book") {
-    renderTimeSlots("patientTimeSlots", "appointmentDate");
-    loadSpecializations();
-  }
 }
 
 // ==================== API HELPER ====================
@@ -78,7 +73,7 @@ function render() {
   // Next Appointment
   const next = appointments.find(a => a.status !== "Done");
   if (el("nextAppointmentBox")) {
-    el("nextAppointmentBox").innerHTML = next 
+    el("nextAppointmentBox").innerHTML = next
       ? `<strong>Next Appointment:</strong><br>${next.appointmentDate} with ${next.doctorName || "Doctor"}`
       : "No upcoming appointments.";
   }
@@ -134,7 +129,6 @@ function loadDoctorsBySpecialization() {
   if (!doctorSelect) return;
 
   doctorSelect.innerHTML = `<option value="">Select Doctor</option>`;
-
   if (!spec) return;
 
   const filteredDoctors = doctors.filter(d => d.specialization === spec);
@@ -218,7 +212,6 @@ function applyTimeSlot(dateInputId, time, containerId) {
   let date = input.value ? input.value.split("T")[0] : new Date().toISOString().split("T")[0];
   input.value = `${date}T${time}`;
 
-  // Highlight active button
   document.querySelectorAll(`#${containerId} .time-btn`).forEach(btn => {
     btn.classList.toggle("active", btn.textContent.trim() === to12Hour(time));
   });
@@ -236,87 +229,12 @@ function validateScheduleDate(dateString) {
   return "";
 }
 
-// ==================== INIT ====================
-document.addEventListener("DOMContentLoaded", () => {
-  if (!currentUser || currentUser.role !== "patient") {
-    window.location.href = "index.html";
-    return;
-  }
-
-  loadAll().catch(console.error);
-});
-// ==================== DARK MODE ====================
-function toggleDarkMode() {
-  const html = document.documentElement;
-  html.classList.toggle('dark');
-  const btn = document.querySelector('.dark-toggle');
-  if (btn) btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
-  localStorage.setItem('darkMode', html.classList.contains('dark'));
-}
-
-function loadDarkMode() {
-  if (localStorage.getItem('darkMode') === 'true') {
-    document.documentElement.classList.add('dark');
-    const btn = document.querySelector('.dark-toggle');
-    if (btn) btn.textContent = '☀️';
-  }
-}
-
-// ==================== SECTION SWITCHING (Only show clicked section) ====================
-function showPatientPage(id, btn = null) {
-  // Hide all sections
-  document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
-  
-  // Show only the clicked section
-  const target = document.getElementById(id);
-  if (target) target.classList.remove('hidden');
-
-  // Update active button
-  document.querySelectorAll('.nav-btn').forEach(n => n.classList.remove('active'));
-  if (btn) btn.classList.add('active');
-}
-
-// ==================== INIT ====================
-document.addEventListener("DOMContentLoaded", () => {
-  loadDarkMode();
-  
-  // Show dashboard by default
-  showPatientPage('dashboard');
-});
-// ==================== DARK MODE ====================
-function toggleDarkMode() {
-  const html = document.documentElement;
-  html.classList.toggle('dark');
-  const btn = document.querySelector('.dark-toggle');
-  if (btn) btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
-  localStorage.setItem('darkMode', html.classList.contains('dark'));
-}
-
-function loadDarkMode() {
-  if (localStorage.getItem('darkMode') === 'true') {
-    document.documentElement.classList.add('dark');
-    const btn = document.querySelector('.dark-toggle');
-    if (btn) btn.textContent = '☀️';
-  }
-}
-
-// ==================== SECTION SWITCHING ====================
-function showPatientPage(id, btn = null) {
-  document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
-  const target = document.getElementById(id);
-  if (target) target.classList.remove('hidden');
-
-  document.querySelectorAll('.nav-btn').forEach(n => n.classList.remove('active'));
-  if (btn) btn.classList.add('active');
-}
-
 // ==================== MOBILE SIDEBAR TOGGLE ====================
 function toggleSidebar() {
   const sidebar = document.querySelector('.sidebar');
   sidebar.classList.toggle('open');
 }
 
-// Close sidebar when clicking a nav button on mobile
 document.querySelectorAll('.nav-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     const sidebar = document.querySelector('.sidebar');
@@ -326,8 +244,33 @@ document.querySelectorAll('.nav-btn').forEach(btn => {
   });
 });
 
+// ==================== DARK MODE ====================
+function toggleDarkMode() {
+  const html = document.documentElement;
+  html.classList.toggle('dark');
+  const btn = document.querySelector('.dark-toggle');
+  if (btn) btn.textContent = html.classList.contains('dark') ? '☀️' : '🌙';
+  localStorage.setItem('darkMode', html.classList.contains('dark'));
+}
+
+function loadDarkMode() {
+  if (localStorage.getItem('darkMode') === 'true') {
+    document.documentElement.classList.add('dark');
+    const btn = document.querySelector('.dark-toggle');
+    if (btn) btn.textContent = '☀️';
+  }
+}
+
 // ==================== INIT ====================
 document.addEventListener("DOMContentLoaded", () => {
+  if (!currentUser || currentUser.role !== "patient") {
+    window.location.href = "index.html";
+    return;
+  }
+
   loadDarkMode();
+  loadAll().catch(console.error);
+
+  // Show dashboard by default
   showPatientPage('dashboard');
 });
