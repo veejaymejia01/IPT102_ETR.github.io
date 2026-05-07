@@ -20,6 +20,15 @@ function el(id) {
   return document.getElementById(id);
 }
 
+// ==================== LOGOUT ====================
+function logout() {
+  if (confirm("Are you sure you want to logout?")) {
+    localStorage.removeItem("healthcare_token");
+    localStorage.removeItem("healthcare_user");
+    window.location.href = "index.html";
+  }
+}
+
 // ==================== SECTION SWITCHING ====================
 function showPatientPage(id, btn = null) {
   document.querySelectorAll("section").forEach(s => s.classList.add("hidden"));
