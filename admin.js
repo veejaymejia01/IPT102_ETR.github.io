@@ -254,19 +254,27 @@ function renderPatients() {
     );
 
     const appHTML = patientApps.length ? patientApps.map(app => `
-      <div style="background:#f8fafc;padding:10px;margin:6px 0;border-radius:8px;font-size:0.9rem;">
+      <div style="
+        background: var(--card); 
+        color: var(--text);
+        padding: 10px; 
+        margin: 6px 0; 
+        border-radius: 8px; 
+        font-size: 0.9rem;
+        border: 1px solid var(--border);
+      ">
         <strong>${getTimePart(app)}</strong> — ${app.status}
         ${app.status === "Scheduled" ? `
-          <button onclick="updateAppointmentStatus('${app.id}', 'Confirmed')" class="btn btn-success" style="margin-left:8px;padding:4px 12px;">Accept</button>
-          <button onclick="updateAppointmentStatus('${app.id}', 'Declined')" class="btn btn-danger" style="padding:4px 12px;">Decline</button>
-        ` : `<span style="color:gray;">(${app.status})</span>`}
+          <button onclick="updateAppointmentStatus('${app.id}', 'Confirmed')" class="btn btn-success" style="margin-left:8px; padding:4px 12px; font-size:0.85rem;">Accept</button>
+          <button onclick="updateAppointmentStatus('${app.id}', 'Declined')" class="btn btn-danger" style="padding:4px 12px; font-size:0.85rem;">Decline</button>
+        ` : `<span style="color: var(--muted); font-size: 0.85rem;">(${app.status})</span>`}
       </div>
-    `).join("") : `<span style="color:#888;">No appointments</span>`;
+    `).join("") : `<span style="color: var(--muted);">No appointments</span>`;
 
     return `
       <tr>
         <td><strong>${p.name}</strong></td>
-        <td>${p.email||'—'}<br>${p.phone||'—'}</td>
+        <td>${p.email || '—'}<br>${p.phone || '—'}</td>
         <td>${p.condition || 'General'}</td>
         <td>${appHTML}</td>
         <td>
@@ -275,7 +283,7 @@ function renderPatients() {
         </td>
       </tr>
     `;
-  }).join("") : `<tr><td colspan="5" style="text-align:center;padding:40px;">No patients yet.</td></tr>`;
+  }).join("") : `<tr><td colspan="5" style="text-align:center; padding:40px; color: var(--muted);">No patients yet.</td></tr>`;
 }
 
 // ==================== LOAD DATA ====================
